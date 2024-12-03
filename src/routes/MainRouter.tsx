@@ -13,9 +13,9 @@ import "../assets/styles/code.css";
 /** 기본 라우터 */
 const MainRouter = () => {
   const router = useDynamicRoutes();
-  const PUBLIC_GA_ID = `${import.meta.env.VITE_PUBLIC_GA_ID}`;
+  // const PUBLIC_GA_ID = `${import.meta.env.VITE_PUBLIC_GA_ID}`;
   useEffect(() => {
-    ReactGA.initialize(`${PUBLIC_GA_ID}`);
+    // ReactGA.initialize(`${PUBLIC_GA_ID}`);
   }, []);
 
   return (

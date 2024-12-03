@@ -11,7 +11,7 @@ import _ from "lodash";
 
 const YearlyProgressPage = () => {
   const [selectedDate, setSelectedDate] = useState<any>(new Date());
-  const [yearDetails, setYearDetails] = useState(new Date());
+  const [yearDetails, setYearDetails] = useState<any>(new Date());
 
   const today = dayjs();
 
