@@ -43,7 +43,7 @@ body {
   background-color: #f9f9f9;
   color: #333;
   display: flex;
-  flex-direction: column; /* 세로 방향 정렬 */
+  /* flex-direction: column; 세로 방향 정렬 */
   justify-content: center; /* 세로 중앙 정렬 */
   align-items: center; /* 가로 중앙 정렬 */
   height: 100%; /* html과 body 모두 100% 높이 설정 */
@@ -51,7 +51,9 @@ body {
 
 /* 전역 변수 */
 #root {
-  min-width: 34em;
+  min-width: 50em;
+  display: flex;
+  align-items: center; /* 컨텐츠 가로 중앙 정렬 */
   height: 100%; /* html과 body 모두 100% 높이 설정 */
   --primary-color: #3498db;
   --secondary-color: #2ecc71;
@@ -64,7 +66,7 @@ body {
 }
 
 /* 컨테이너 */
-.container {
+.wrapper {
   width: 100%; /* 모바일 화면 전체 폭 */
   max-width: 700px; /* 최대 너비 700px */
   padding: var(--padding-medium); /* 내부 여백 */

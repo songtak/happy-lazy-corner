@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { RouterProvider, HashRouter } from "react-router-dom";
 import ReactGA from "react-ga4";
+import CoupangAd from "@components/CoupangAd";
 
 import useDynamicRoutes from "@libs/hooks/useDynamicRoutes";
 import ScrollToTop from "@libs/ScrollToTop";
@@ -19,11 +20,25 @@ const MainRouter = () => {
   }, []);
 
   return (
-    <div className="container">
-      <RouterProvider router={router}>
-        <ScrollToTop />
-      </RouterProvider>
-    </div>
+    <>
+      <CoupangAd
+        id={823795}
+        trackingCode="AF3245048"
+        width="120"
+        height="600"
+      />
+      <div className="wrapper">
+        <RouterProvider router={router}>
+          <ScrollToTop />
+        </RouterProvider>
+      </div>
+      <CoupangAd
+        id={823796}
+        trackingCode="AF3245048"
+        width="120"
+        height="600"
+      />
+    </>
   );
 };
 

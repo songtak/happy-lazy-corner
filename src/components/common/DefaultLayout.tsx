@@ -24,7 +24,7 @@ const DefaultLayout = () => {
       </main>
 
       <footer className="footer ">
-        <span className="pointer">&copy; 2024 Songtak</span>
+        {/* <span className="pointer">&copy; 2024 Songtak</span> */}
       </footer>
     </>
   );
