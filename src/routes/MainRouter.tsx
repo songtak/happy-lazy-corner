@@ -4,11 +4,11 @@ import ReactGA from "react-ga4";
 
 import useDynamicRoutes from "@libs/hooks/useDynamicRoutes";
 import ScrollToTop from "@libs/ScrollToTop";
-import * as Common from "@components/common";
 
 // import "../assets/web.css";
 // import "../assets/mobile.css";
 import "../assets/styles/common.css";
+import "../assets/styles/code.css";
 
 /** 기본 라우터 */
 const MainRouter = () => {
@@ -20,14 +20,9 @@ const MainRouter = () => {
 
   return (
     <div className="container">
-      <Common.Header />
-      <Common.Main>
-        <RouterProvider router={router}>
-          <ScrollToTop />
-        </RouterProvider>
-      </Common.Main>
-
-      <Common.Footer />
+      <RouterProvider router={router}>
+        <ScrollToTop />
+      </RouterProvider>
     </div>
   );
 };

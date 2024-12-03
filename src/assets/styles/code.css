@@ -1,0 +1,43 @@
+/** ==[marginBottom]========================================================================== */
+
+.mb8 {
+  margin-bottom: 8px;
+}
+.mb16 {
+  margin-bottom: 16px;
+}
+.mb24 {
+  margin-bottom: 24px;
+}
+.mb32 {
+  margin-bottom: 32px;
+}
+.mb36 {
+  margin-bottom: 36px;
+}
+.mb40 {
+  margin-bottom: 40px;
+}
+
+/** ==[fontSize]=========================================================================== */
+.fs24 {
+  font-size: 24px;
+}
+.fs28 {
+  font-size: 28px;
+}
+.fs32 {
+  font-size: 32px;
+}
+.fs36 {
+  font-size: 36px;
+}
+.fs40 {
+  font-size: 40px;
+}
+
+/** ==[cursor]=========================================================================== */
+
+.pointer {
+  cursor: pointer;
+}

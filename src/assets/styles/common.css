@@ -1,5 +1,26 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap");
 
+/* @font-face {
+  font-family: "Futura";
+  font-weight: normal;
+  src: url("../fonts/Futura.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Futura";
+  font-weight: normal;
+  src: url("../fonts/Futura_Bold_Italic_font.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Futura";
+  font-weight: normal;
+  src: url("../fonts/Futura_Book_font.ttf") format("truetype");
+} */
+@font-face {
+  font-family: "Futura";
+  font-weight: normal;
+  src: url("../fonts/Futura_Book_Italic_font.ttf") format("truetype");
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -16,7 +37,8 @@ html {
 }
 
 body {
-  font-family: "Noto Sans KR", sans-serif;
+  font-family: "Futura";
+  /* font-family: "Noto Sans KR", sans-serif; */
   line-height: 1.6;
   background-color: #f9f9f9;
   color: #333;
@@ -24,10 +46,13 @@ body {
   flex-direction: column; /* 세로 방향 정렬 */
   justify-content: center; /* 세로 중앙 정렬 */
   align-items: center; /* 가로 중앙 정렬 */
+  height: 100%; /* html과 body 모두 100% 높이 설정 */
 }
 
 /* 전역 변수 */
-:root {
+#root {
+  min-width: 34em;
+  height: 100%; /* html과 body 모두 100% 높이 설정 */
   --primary-color: #3498db;
   --secondary-color: #2ecc71;
   --font-small: 0.875rem;
@@ -36,9 +61,6 @@ body {
   --padding-small: 8px;
   --padding-medium: 16px;
   --padding-large: 24px;
-}
-.root {
-  height: "-webkit-fill-available";
 }
 
 /* 컨테이너 */
@@ -51,8 +73,9 @@ body {
   border-radius: 8px; /* 둥근 모서리 */
   display: flex;
   flex-direction: column; /* 세로 방향 정렬 */
-  justify-content: space-between; /* 컨텐츠 공간 조절 */
+  /* justify-content: space-between; 컨텐츠 공간 조절 */
   align-items: center; /* 컨텐츠 가로 중앙 정렬 */
+  height: 100%; /* html과 body 모두 100% 높이 설정 */
 }
 .hidden {
   display: none;
@@ -62,10 +85,11 @@ body {
 }
 
 .header {
-  background-color: var(--primary-color);
-  color: white;
+  /* background-color: var(--primary-color); */
+  /* color: white; */
   padding: var(--padding-medium);
   text-align: center;
+  font-size: 3em;
 }
 .logo {
   font-size: var(--font-large);
@@ -73,8 +97,8 @@ body {
 }
 
 .footer {
-  background-color: var(--secondary-color);
-  color: white;
+  /* background-color: var(--secondary-color); */
+  /* color: white; */
   text-align: center;
   padding: var(--padding-small);
   position: fixed;
@@ -84,6 +108,8 @@ body {
 .main {
   padding: var(--padding-large);
   text-align: left;
+  width: 100%;
+  text-align: center;
 }
 .card {
   background-color: white;
@@ -98,4 +124,10 @@ body {
 }
 .card-content {
   font-size: var(--font-small);
+}
+
+/** ============================================================================= */
+
+.program_title {
+  font-size: 2em;
 }

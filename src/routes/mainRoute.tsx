@@ -3,6 +3,8 @@ import { RouteObject } from "react-router";
 import ErrorPage from "@pages/common/ErrorPage";
 
 import MainPage from "@/pages/MainPage";
+import DefaultLayout from "@components/common/DefaultLayout";
+import * as Program from "@/pages/programs";
 
 /** 기본 라우터 */
 const defaultRoutes: RouteObject[] = [
@@ -13,4 +15,18 @@ const defaultRoutes: RouteObject[] = [
   },
 ];
 
-export { defaultRoutes };
+const programRoutes: RouteObject[] = [
+  {
+    path: "/",
+    element: <DefaultLayout />, // PaywatchLayout 내에서 <Outlet />을 통해 자식 라우트 렌더링
+    errorElement: <ErrorPage />,
+    children: [
+      { index: true, element: <MainPage /> },
+
+      /** 남아있는 날들 */
+      { path: "/yearly-progress", element: <Program.YearlyProgressPage /> },
+    ],
+  },
+];
+
+export { defaultRoutes, programRoutes };
