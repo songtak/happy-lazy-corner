@@ -16,7 +16,7 @@ declare global {
         width: string;
         height: string;
         tsource?: string;
-        container?: string;
+        container?: any;
       }) => void;
     };
   }
