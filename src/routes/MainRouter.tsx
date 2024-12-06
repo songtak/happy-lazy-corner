@@ -37,8 +37,8 @@ const MainRouter = () => {
       <div
         className={`${!isMobile() && "wrapper"} `}
         style={{
-          height: isMobile() ? `calc(100% - 60px)` : "",
-          marginBottom: isMobile() ? `60px` : "",
+          overflow: isMobile() ? `auto` : "",
+          height: "100%",
         }}
       >
         <div className={`${isMobile() && "wrapper"}`}>
@@ -47,12 +47,14 @@ const MainRouter = () => {
           </RouterProvider>
         </div>
         {isMobile() && (
-          <CoupangAd
-            id={824414}
-            trackingCode="AF3245048"
-            width={window.innerWidth}
-            height="60"
-          />
+          <div className="ad_wrapper">
+            <CoupangAd
+              id={824414}
+              trackingCode="AF3245048"
+              width={window.innerWidth}
+              height="60"
+            />
+          </div>
         )}
       </div>
       {!isMobile() && (

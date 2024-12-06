@@ -1,9 +1,9 @@
 @media screen and (max-width: 1023px) {
   /* 전역 변수 */
   #root {
-    display: flex;
+    /* display: flex; */
     align-items: center; /* 컨텐츠 가로 중앙 정렬 */
-    height: 100%; /* html과 body 모두 100% 높이 설정 */
+    height: 100%;
     --primary-color: #3498db;
     --secondary-color: #2ecc71;
     --font-small: 0.875rem;
@@ -75,6 +75,12 @@
   }
   .card-content {
     font-size: var(--font-small);
+  }
+
+  /** ============================================================================= */
+  .ad_wrapper {
+    position: sticky;
+    bottom: 0px;
   }
 
   /** ============================================================================= */
