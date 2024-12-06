@@ -1,15 +1,18 @@
 import { useEffect, useRef } from "react";
 import { RouterProvider, HashRouter } from "react-router-dom";
 import ReactGA from "react-ga4";
-import CoupangAd from "@components/CoupangAd";
 
 import useDynamicRoutes from "@libs/hooks/useDynamicRoutes";
+import CoupangAd from "@components/CoupangAd";
 import ScrollToTop from "@libs/ScrollToTop";
+import { isMobile } from "@libs/helpers";
 
 // import "../assets/web.css";
 // import "../assets/mobile.css";
 import "../assets/styles/common.css";
 import "../assets/styles/code.css";
+import "../assets/styles/web.css";
+import "../assets/styles/mobile.css";
 
 /** 기본 라우터 */
 const MainRouter = () => {
@@ -19,25 +22,47 @@ const MainRouter = () => {
     // ReactGA.initialize(`${PUBLIC_GA_ID}`);
   }, []);
 
+  console.log("window.innerWidth", window.innerWidth);
+
   return (
     <>
-      <CoupangAd
-        id={823795}
-        trackingCode="AF3245048"
-        width="120"
-        height="600"
-      />
-      <div className="wrapper">
-        <RouterProvider router={router}>
-          <ScrollToTop />
-        </RouterProvider>
+      {!isMobile() && (
+        <CoupangAd
+          id={823795}
+          trackingCode="AF3245048"
+          width="120"
+          height="600"
+        />
+      )}
+      <div
+        className={`${!isMobile() && "wrapper"} `}
+        style={{
+          height: isMobile() ? `calc(100% - 60px)` : "",
+          marginBottom: isMobile() ? `60px` : "",
+        }}
+      >
+        <div className={`${isMobile() && "wrapper"}`}>
+          <RouterProvider router={router}>
+            <ScrollToTop />
+          </RouterProvider>
+        </div>
+        {isMobile() && (
+          <CoupangAd
+            id={824414}
+            trackingCode="AF3245048"
+            width={window.innerWidth}
+            height="60"
+          />
+        )}
       </div>
-      <CoupangAd
-        id={823796}
-        trackingCode="AF3245048"
-        width="120"
-        height="600"
-      />
+      {!isMobile() && (
+        <CoupangAd
+          id={823796}
+          trackingCode="AF3245048"
+          width="120"
+          height="600"
+        />
+      )}
     </>
   );
 };

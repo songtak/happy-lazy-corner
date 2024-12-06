@@ -123,14 +123,14 @@ const YearlyProgressPage = () => {
                 },
                 data: [
                   {
-                    // value: yearDetails?.elapsedDays,
-                    value: yearDetails?.progressPercentage,
-                    name: `지난 날 ${yearDetails?.elapsedDays}`,
+                    value: yearDetails?.elapsedDays,
+                    // value: yearDetails?.progressPercentage,
+                    name: `지난 날`,
                   },
                   {
-                    // value: yearDetails?.remainingDays,
-                    value: yearDetails?.remainingPercentage,
-                    name: `남은 날 ${yearDetails?.remainingDays}`,
+                    value: yearDetails?.remainingDays,
+                    // value: yearDetails?.remainingPercentage,
+                    name: `남은 날`,
                   },
                 ],
               },
@@ -138,11 +138,14 @@ const YearlyProgressPage = () => {
           }}
           opts={{ renderer: "svg", width: "auto", height: "auto" }}
         />
-        <div style={{ textAlign: "center" }} className="mb16">
-          {yearDetails?.remainingPercentage}%
-        </div>
-        <div style={{ textAlign: "center" }}>
+        <div
+          style={{ textAlign: "center", color: "rgb(84, 112, 198)" }}
+          className="mb16"
+        >
           {yearDetails?.progressPercentage}%
+        </div>
+        <div style={{ textAlign: "center", color: "rgb(145, 204, 117" }}>
+          {yearDetails?.remainingPercentage}%
         </div>
       </div>
     </div>

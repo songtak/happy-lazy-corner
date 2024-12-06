@@ -1,2 +1,86 @@
 @media all and (min-width: 1024px) {
+  /* 전역 변수 */
+  #root {
+    min-width: 50em;
+    display: flex;
+    align-items: center; /* 컨텐츠 가로 중앙 정렬 */
+    height: 100%; /* html과 body 모두 100% 높이 설정 */
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --font-small: 0.875rem;
+    --font-medium: 1rem;
+    --font-large: 1.25rem;
+    --padding-small: 8px;
+    --padding-medium: 16px;
+    --padding-large: 24px;
+  }
+
+  /* 컨테이너 */
+  .wrapper {
+    width: 100%; /* 모바일 화면 전체 폭 */
+    max-width: 700px; /* 최대 너비 700px */
+    padding: var(--padding-medium); /* 내부 여백 */
+    background-color: #fff; /* 흰색 배경 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+    border-radius: 8px; /* 둥근 모서리 */
+    display: flex;
+    flex-direction: column; /* 세로 방향 정렬 */
+    /* justify-content: space-between; 컨텐츠 공간 조절 */
+    align-items: center; /* 컨텐츠 가로 중앙 정렬 */
+    height: 100%; /* html과 body 모두 100% 높이 설정 */
+  }
+  .hidden {
+    display: none;
+  }
+  .text-center {
+    text-align: center;
+  }
+
+  .header {
+    /* background-color: var(--primary-color); */
+    /* color: white; */
+    padding: var(--padding-medium);
+    text-align: center;
+    font-size: 3em;
+  }
+  .logo {
+    font-size: var(--font-large);
+    font-weight: bold;
+  }
+
+  .footer {
+    /* background-color: var(--secondary-color); */
+    /* color: white; */
+    text-align: center;
+    padding: var(--padding-small);
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+  }
+  .main {
+    padding: var(--padding-large);
+    text-align: left;
+    width: 100%;
+    text-align: center;
+  }
+  .card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: var(--padding-medium);
+    margin-bottom: var(--padding-medium);
+  }
+  .card-title {
+    font-size: var(--font-medium);
+    margin-bottom: var(--padding-small);
+  }
+  .card-content {
+    font-size: var(--font-small);
+  }
+
+  /** ============================================================================= */
+
+  .program_title {
+    font-size: 2em;
+  }
 }
