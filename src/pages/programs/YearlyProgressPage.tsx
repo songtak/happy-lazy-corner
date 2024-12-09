@@ -138,15 +138,18 @@ const YearlyProgressPage = () => {
           }}
           opts={{ renderer: "svg", width: "auto", height: "auto" }}
         />
-        <div
-          style={{ textAlign: "center", color: "rgb(84, 112, 198)" }}
-          className="mb16"
-        >
-          {yearDetails?.progressPercentage}%
-        </div>
-        <div style={{ textAlign: "center", color: "rgb(145, 204, 117" }}>
-          {yearDetails?.remainingPercentage}%
-        </div>
+      </div>
+      <div
+        style={{ textAlign: "center", color: "rgb(84, 112, 198)" }}
+        className="mb16"
+      >
+        {yearDetails?.progressPercentage}%
+      </div>
+      <div
+        style={{ textAlign: "center", color: "rgb(145, 204, 117" }}
+        className="pb36"
+      >
+        {yearDetails?.remainingPercentage}%
       </div>
     </div>
   );

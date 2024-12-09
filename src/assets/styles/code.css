@@ -18,6 +18,26 @@
 .mb40 {
   margin-bottom: 40px;
 }
+/** ==[paddingBottom]========================================================================== */
+
+.pb8 {
+  padding-bottom: 8px;
+}
+.pb16 {
+  padding-bottom: 16px;
+}
+.pb24 {
+  padding-bottom: 24px;
+}
+.pb32 {
+  padding-bottom: 32px;
+}
+.pb36 {
+  padding-bottom: 36px;
+}
+.pb40 {
+  padding-bottom: 40px;
+}
 
 /** ==[fontSize]=========================================================================== */
 .fs24 {

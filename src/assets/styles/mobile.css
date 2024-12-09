@@ -27,6 +27,7 @@
     /* justify-content: space-between; 컨텐츠 공간 조절 */
     align-items: center; /* 컨텐츠 가로 중앙 정렬 */
     height: 100%; /* html과 body 모두 100% 높이 설정 */
+    overflow: auto;
   }
   .hidden {
     display: none;
@@ -79,7 +80,7 @@
 
   /** ============================================================================= */
   .ad_wrapper {
-    position: sticky;
+    position: relative;
     bottom: 0px;
   }
 
