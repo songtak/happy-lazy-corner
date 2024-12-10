@@ -4,28 +4,23 @@
     <meta charset="utf-8" />
     <title>Single Page Apps for GitHub Pages</title>
     <script type="text/javascript">
-      var segmentCount = 1;
-
-      var l = window.location;
-      l.replace(
-        l.protocol +
+      (function () {
+        var l = window.location;
+        // GitHub Pages에서 루트 URL로 리다이렉트
+        var redirectUrl =
+          l.protocol +
           "//" +
           l.hostname +
           (l.port ? ":" + l.port : "") +
-          l.pathname
-            .split("/")
-            .slice(0, 1 + segmentCount)
-            .join("/") +
-          "/?p=/" +
-          l.pathname
-            .slice(1)
-            .split("/")
-            .slice(segmentCount)
-            .join("/")
-            .replace(/&/g, "~and~") +
-          (l.search ? "&q=" + l.search.slice(1).replace(/&/g, "~and~") : "") +
-          l.hash
-      );
+          "/#" +
+          l.pathname +
+          l.search +
+          l.hash;
+
+        if (l.pathname !== "/") {
+          window.location.replace(redirectUrl);
+        }
+      })();
     </script>
   </head>
   <body></body>

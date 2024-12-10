@@ -10,6 +10,19 @@
   </head>
   <body>
     <div id="root"></div>
+    <script type="text/javascript">
+      (function () {
+        var l = window.location;
+        // 쿼리 문자열이나 해시를 확인
+        if (l.search || l.hash) {
+          return;
+        }
+        // React Router의 SPA 라우팅을 위해 해시(#) 추가
+        if (l.pathname !== "/") {
+          window.history.replaceState(null, null, "/#" + l.pathname + l.search);
+        }
+      })();
+    </script>
     <!-- <script type="text/javascript">
       (function (l) {
         if (l.search[1] === "/") {
@@ -28,7 +41,7 @@
         }
       })(window.location);
     </script> -->
-    <script type="text/javascript">
+    <!-- <script type="text/javascript">
       (function (l) {
         if (l.search) {
           var q = {};
@@ -51,6 +64,6 @@
           }
         }
       })(window.location);
-    </script>
+    </script> -->
   </body>
 </html>
