@@ -11,6 +11,18 @@
   <body>
     <div id="root"></div>
     <script type="text/javascript">
+      (function (l) {
+        if (l.pathname !== "/") {
+          // 브라우저 히스토리 라우팅을 유지하며 파라미터를 복원
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname + l.search + l.hash
+          );
+        }
+      })(window.location);
+    </script>
+    <!-- <script type="text/javascript">
       (function () {
         var l = window.location;
         // 쿼리 문자열이나 해시를 확인
@@ -22,7 +34,7 @@
           window.history.replaceState(null, null, "/#" + l.pathname + l.search);
         }
       })();
-    </script>
+    </script> -->
     <!-- <script type="text/javascript">
       (function (l) {
         if (l.search[1] === "/") {

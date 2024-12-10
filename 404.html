@@ -2,23 +2,23 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Single Page Apps for GitHub Pages</title>
+    <title>Page Not Found</title>
     <script type="text/javascript">
       (function () {
         var l = window.location;
-        // GitHub Pages에서 루트 URL로 리다이렉트
-        var redirectUrl =
+
+        // 루트 경로 및 파라미터 포함 URL로 리다이렉트
+        var newUrl =
           l.protocol +
           "//" +
-          l.hostname +
-          (l.port ? ":" + l.port : "") +
-          "/#" +
+          l.host +
           l.pathname +
-          l.search +
-          l.hash;
+          (l.search || "") +
+          (l.hash || "");
 
-        if (l.pathname !== "/") {
-          window.location.replace(redirectUrl);
+        if (!l.pathname.startsWith("/index.html")) {
+          window.history.replaceState(null, null, newUrl);
+          window.location.href = "/";
         }
       })();
     </script>
