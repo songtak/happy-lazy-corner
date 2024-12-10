@@ -7,19 +7,20 @@
       (function () {
         var l = window.location;
 
-        // 루트 경로 및 파라미터 포함 URL로 리다이렉트
+        // GitHub Pages에서는 /index.html로 라우팅 필요
         var newUrl =
           l.protocol +
           "//" +
-          l.host +
+          l.hostname +
+          (l.port ? ":" + l.port : "") +
+          "/index.html" +
           l.pathname +
-          (l.search || "") +
-          (l.hash || "");
+          l.search +
+          l.hash;
 
-        if (!l.pathname.startsWith("/index.html")) {
-          window.history.replaceState(null, null, newUrl);
-          window.location.href = "/";
-        }
+        // 현재 경로를 유지하고, React 라우터가 처리하도록 함
+        window.history.replaceState(null, null, l.pathname + l.search + l.hash);
+        window.location.replace(newUrl);
       })();
     </script>
   </head>
