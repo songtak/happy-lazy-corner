@@ -2,26 +2,30 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Page Not Found</title>
+    <title>Single Page Apps for GitHub Pages</title>
     <script type="text/javascript">
-      (function () {
-        var l = window.location;
+      var segmentCount = 1;
 
-        // GitHub Pages에서는 /index.html로 라우팅 필요
-        var newUrl =
-          l.protocol +
+      var l = window.location;
+      l.replace(
+        l.protocol +
           "//" +
           l.hostname +
           (l.port ? ":" + l.port : "") +
-          "/index.html" +
-          l.pathname +
-          l.search +
-          l.hash;
-
-        // 현재 경로를 유지하고, React 라우터가 처리하도록 함
-        window.history.replaceState(null, null, l.pathname + l.search + l.hash);
-        window.location.replace(newUrl);
-      })();
+          l.pathname
+            .split("/")
+            .slice(0, 1 + segmentCount)
+            .join("/") +
+          "/?p=/" +
+          l.pathname
+            .slice(1)
+            .split("/")
+            .slice(segmentCount)
+            .join("/")
+            .replace(/&/g, "~and~") +
+          (l.search ? "&q=" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+          l.hash
+      );
     </script>
   </head>
   <body></body>
