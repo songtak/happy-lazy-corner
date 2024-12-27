@@ -22,8 +22,6 @@ const MainRouter = () => {
     // ReactGA.initialize(`${PUBLIC_GA_ID}`);
   }, []);
 
-  console.log("window.innerWidth", window.innerWidth);
-
   return (
     <>
       {!isMobile() && (

@@ -5,7 +5,6 @@ import * as path from "path";
 // https://vitejs.dev/config/
 export default defineConfig({
   // base: "/happy-lazy-corner/",
-  base: "/my-repo/", // 저장소 이름으로 변경
   plugins: [react()],
   resolve: {
     alias: [
