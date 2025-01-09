@@ -17,18 +17,26 @@ const defaultRoutes: RouteObject[] = [
 
 const programRoutes: RouteObject[] = [
   {
-    path: "/",
-    element: <DefaultLayout />, // PaywatchLayout 내에서 <Outlet />을 통해 자식 라우트 렌더링
+    path: "/yearly-progress",
+    element: <Program.YearlyProgressPage />,
     errorElement: <ErrorPage />,
-    children: [
-      { index: true, element: <MainPage /> },
-      // { index: true, element: <Program.YearlyProgressPage /> },
-
-      /** 남아있는 날들 */
-      { path: "/yearly-progress", element: <Program.YearlyProgressPage /> },
-    ],
   },
 ];
+
+// const programRoutes: RouteObject[] = [
+//   {
+//     path: "/",
+//     element: <DefaultLayout />, // PaywatchLayout 내에서 <Outlet />을 통해 자식 라우트 렌더링
+//     errorElement: <ErrorPage />,
+//     children: [
+//       { index: true, element: <MainPage /> },
+//       // { index: true, element: <Program.YearlyProgressPage /> },
+
+//       /** 남아있는 날들 */
+//       { path: "/yearly-progress", element: <Program.YearlyProgressPage /> },
+//     ],
+//   },
+// ];
 
 const projectList = [
   { id: 1, path: "/yearly-progress", title: "올해 남아 있는 날들" },

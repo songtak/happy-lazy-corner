@@ -40,6 +40,7 @@ const MainRouter = () => {
         }}
       >
         <div className={`${isMobile() && "wrapper"}`}>
+          {/* @ts-ignore */}
           <RouterProvider router={router}>
             <ScrollToTop />
           </RouterProvider>
