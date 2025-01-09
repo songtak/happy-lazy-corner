@@ -1,3 +1,5 @@
 import YearlyProgressPage from "./YearlyProgressPage";
+import LostAndFoundPage from "./LostAndFoundPage";
+import LostAndFoundPageJW from "./LostAndFoundPageJW";
 
-export { YearlyProgressPage };
+export { YearlyProgressPage, LostAndFoundPage, LostAndFoundPageJW };

@@ -21,6 +21,16 @@ const programRoutes: RouteObject[] = [
     element: <Program.YearlyProgressPage />,
     errorElement: <ErrorPage />,
   },
+  {
+    path: "/lost-and-found",
+    element: <Program.LostAndFoundPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/lost-and-found-for-jw",
+    element: <Program.LostAndFoundPageJW />,
+    errorElement: <ErrorPage />,
+  },
 ];
 
 // const programRoutes: RouteObject[] = [
@@ -39,7 +49,8 @@ const programRoutes: RouteObject[] = [
 // ];
 
 const projectList = [
-  { id: 1, path: "/yearly-progress", title: "올해 남아 있는 날들" },
+  { id: 1, path: "/yearly-progress", title: "올해 남아 있는 날들 💪" },
+  { id: 2, path: "/lost-and-found", title: "경찰청 분실물 센터 👮" },
 ];
 
 export { defaultRoutes, programRoutes, projectList };

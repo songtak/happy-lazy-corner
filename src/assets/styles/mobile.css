@@ -41,7 +41,7 @@
     /* color: white; */
     padding: var(--padding-medium);
     text-align: center;
-    font-size: 3em;
+    font-size: 1.8em;
   }
   .logo {
     font-size: var(--font-large);
@@ -84,6 +84,110 @@
     bottom: 0px;
   }
 
+  /** ============================================================================= */
+  .simple-input {
+    width: 100%;
+    max-width: 240px;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+
+  .simple-input:focus {
+    border-color: #000000;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  }
+
+  .cute-button {
+    background: linear-gradient(135deg, #ffb8b8, #a2bfef);
+    border: none;
+    border-radius: 50px;
+    letter-spacing: 2px;
+
+    padding: 8px 40px;
+    font-size: 0.8rem;
+    /* font-weight: bold; */
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    outline: none;
+  }
+
+  .cute-button:hover {
+    background: linear-gradient(135deg, #000000, #000000);
+    transform: scale(1.1);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .cute-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  .cute-button:disabled {
+    background: linear-gradient(135deg, #888888, #bbbbbb);
+    color: #cccccc;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    text-shadow: none;
+    opacity: 0.6; /* 흐리게 처리 */
+  }
+
+  /** ============================================================================= */
+  .table-container {
+    max-width: 800px;
+    margin: 20px auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .table-wrapper {
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 15px;
+    text-align: left;
+  }
+
+  .table thead {
+    background-color: #f4f4f4;
+    border-bottom: 2px solid #ddd;
+  }
+
+  .table thead th {
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .table tbody tr {
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.2s;
+  }
+
+  .table tbody tr:hover {
+    background-color: #f9f9f9;
+  }
+
+  .table tbody td {
+    font-size: 14px;
+    color: #555;
+  }
   /** ============================================================================= */
 
   .program_title {

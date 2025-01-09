@@ -1,7 +1,10 @@
-import React from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import React, { ReactNode } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
-const DefaultLayout = () => {
+interface Props {
+  children: ReactNode;
+}
+const DefaultLayout = ({ children }: Props) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -10,21 +13,22 @@ const DefaultLayout = () => {
       <header
         className={`header ${location.pathname !== "/" && "program_title"}`}
       >
-        <span
-          className="pointer"
-          onClick={() => {
-            navigate("/");
-          }}
-        >
-          HAPPY LAZY CORNER
-        </span>
+        {location.pathname === "/" && (
+          <span
+            className="pointer"
+            onClick={() => {
+              navigate("/");
+            }}
+          >
+            HAPPY 🧡 LAZY 🧡 CORNER
+          </span>
+        )}
       </header>
-      <main className="main">
-        <Outlet />
-      </main>
+      <main className="main">{children}</main>
 
       <footer className="footer ">
         {/* <span className="pointer">&copy; 2024 Songtak</span> */}
+        <div>다른 내용 알아보기</div>
       </footer>
     </>
   );

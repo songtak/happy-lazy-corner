@@ -3,8 +3,6 @@ import { useEffect, useRef } from "react";
 function CoupangAd({ id, trackingCode, width, height }: any) {
   const adContainerRef = useRef<HTMLDivElement | null>(null);
 
-  console.log("width", width);
-
   useEffect(() => {
     // 동적으로 스크립트 추가
     const script = document.createElement("script");
