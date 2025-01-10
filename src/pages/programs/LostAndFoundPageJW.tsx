@@ -39,7 +39,9 @@ const columns = [
 
 //  http://apis.data.go.kr/1320000/LostGoodsInfoInqireService
 const LostAndFoundPageJW = () => {
-  const BASE_URL = "http://apis.data.go.kr/1320000/LosPtfundInfoInqireService/";
+  const BASE_URL =
+    // "https://apis.data.go.kr/1320000/LosPtfundInfoInqireService/";
+    " http://apis.data.go.kr/1320000/LosfundInfoInqireService/";
 
   const today = dayjs().format("YYYYMMDD");
   const startDay = dayjs("2025-01-08");
@@ -67,7 +69,7 @@ const LostAndFoundPageJW = () => {
       setLoading(true);
 
       const response = await axios.get(
-        BASE_URL + "getPtLosfundInfoAccToClAreaPd",
+        BASE_URL + "getLosfundInfoAccToClAreaPd",
         {
           params: {
             serviceKey: VITE_DATA_API_DE_KEY,

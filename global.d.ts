@@ -9,4 +9,10 @@ declare global {
   interface Window {
     adfit?: Adfit;
   }
+
+  interface DROPDOWN {
+    // id: number;
+    key: string | number;
+    value: string | number;
+  }
 }
