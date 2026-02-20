@@ -24,7 +24,9 @@ const DefaultLayout = ({ children }: Props) => {
           </span>
         )}
       </header>
-      <main className="main">{children}</main>
+      <main className="main" style={{ paddingBottom: "4rem" }}>
+        {children}
+      </main>
 
       <footer className="footer ">
         {/* <span className="pointer">&copy; 2024 Songtak</span> */}

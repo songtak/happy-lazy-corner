@@ -46,7 +46,16 @@ const MainRouter = () => {
           </RouterProvider>
         </div>
         {isMobile() && (
-          <div className="ad_wrapper">
+          <div
+            className="ad_wrapper"
+            style={{
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 999,
+            }}
+          >
             <CoupangAd
               id={824414}
               trackingCode="AF3245048"

@@ -23,6 +23,16 @@ const programRoutes: RouteObject[] = [
   },
   {
     path: "/lost-and-found",
+    element: <Program.LostAndFoundMainPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/lost-and-found/search",
+    element: <Program.LostAndFoundSearchPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/lost-and-found/transport/:type",
     element: <Program.LostAndFoundPage />,
     errorElement: <ErrorPage />,
   },
