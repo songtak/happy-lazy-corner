@@ -110,7 +110,7 @@ const LostAndFoundMainPage = () => {
         BASE_URL + "getPtLosfundInfoAccToClAreaPd",
         {
           params: {
-            serviceKey: VITE_DATA_API_DE_KEY,
+            serviceKey: VITE_DATA_API_EN_KEY,
             numOfRows: 100,
             pageNo: 1,
             START_YMD: findDayStart,
@@ -188,6 +188,18 @@ const LostAndFoundMainPage = () => {
     // }
   };
 
+  const forceScrollTop = () => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    const appScrollContainer = document.getElementById("app-scroll-container");
+    appScrollContainer?.scrollTo({ top: 0, behavior: "auto" });
+    document.querySelectorAll<HTMLElement>(".wrapper, .main").forEach((el) => {
+      el.scrollTop = 0;
+      el.scrollTo({ top: 0, behavior: "auto" });
+    });
+  };
+
   const scrollToTransportSection = () => {
     transportSectionRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -255,11 +267,11 @@ const LostAndFoundMainPage = () => {
               borderRadius: "24px",
               background: "linear-gradient(135deg, #22c1c3 0%, #3a86ff 100%)",
               color: "white",
-              fontFamily: "GLight",
+              fontFamily: "GMedium",
               fontSize: "14px",
               fontWeight: 600,
               padding: "12px 24px",
-              boxShadow: "0 8px 20px rgba(58, 134, 255, 0.35)",
+              boxShadow: "0 4px 10px rgba(58, 134, 255, 0.35)",
               "&:hover": {
                 background: "linear-gradient(135deg, #1db1b3 0%, #2f74ea 100%)",
                 boxShadow: "0 10px 24px rgba(58, 134, 255, 0.42)",
@@ -306,22 +318,27 @@ const LostAndFoundMainPage = () => {
               <Button
                 key={label}
                 variant="outlined"
-                onClick={() =>
+                onClick={() => {
+                  forceScrollTop();
                   navigate(
                     `/lost-and-found/transport/${transportTypeMap[label]}`,
-                  )
-                }
+                  );
+                  window.setTimeout(forceScrollTop, 0);
+                  window.setTimeout(forceScrollTop, 120);
+                }}
                 sx={{
                   fontWeight: 700,
                   borderRadius: "30px",
                   width: "220px",
                   height: "50px",
                   fontSize: "16px",
-                  borderWidth: "2px",
-                  borderColor: "#3a86ff",
+                  borderWidth: "1px",
+                  // borderColor: "#3a86ff",
+                  borderColor:
+                    "linear-gradient(135deg, #22c1c3 0%, #3a86ff 100%)",
                   color: "#2f74ea",
-                  fontFamily: "GLight",
-                  boxShadow: "0 6px 14px rgba(58, 134, 255, 0.2)",
+                  fontFamily: "GMedium",
+                  boxShadow: "0 2px 2px rgba(58, 134, 255, 0.2)",
                   "&:hover": {
                     borderColor: "#2f74ea",
                     backgroundColor: "rgba(58, 134, 255, 0.08)",

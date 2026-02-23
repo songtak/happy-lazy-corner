@@ -1,5 +1,6 @@
 import React, { useLayoutEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 import DefaultLayout from "@/components/common/DefaultLayout";
 import {
@@ -38,22 +39,71 @@ const typeConfig: Record<
 };
 
 const LostAndFoundPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { type } = useParams<{ type: string }>();
   const config = type ? typeConfig[type as TransportType] : undefined;
   const TransportComponent = config?.component;
 
-  useLayoutEffect(() => {
+  const forceScrollTop = () => {
     window.scrollTo({ top: 0, behavior: "auto" });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-    document
-      .querySelectorAll<HTMLElement>(".wrapper, .main")
-      .forEach((el) => el.scrollTo({ top: 0, behavior: "auto" }));
-  }, [type]);
+    const appScrollContainer = document.getElementById("app-scroll-container");
+    appScrollContainer?.scrollTo({ top: 0, behavior: "auto" });
+    document.querySelectorAll<HTMLElement>(".wrapper, .main").forEach((el) => {
+      el.scrollTop = 0;
+      el.scrollTo({ top: 0, behavior: "auto" });
+    });
+  };
+
+  useLayoutEffect(() => {
+    forceScrollTop();
+    const timer1 = window.setTimeout(forceScrollTop, 0);
+    const timer2 = window.setTimeout(forceScrollTop, 80);
+    const timer3 = window.setTimeout(forceScrollTop, 180);
+    requestAnimationFrame(forceScrollTop);
+    return () => {
+      window.clearTimeout(timer1);
+      window.clearTimeout(timer2);
+      window.clearTimeout(timer3);
+    };
+  }, [location.pathname, type]);
 
   return (
     <DefaultLayout>
       <div style={{ minHeight: "100vh" }}>
+        <div
+        // style={{
+        //   width: "100%",
+        //   // marginTop: "-30px",
+        //   display: "flex",
+        //   justifyContent: "flex-start",
+        // }}
+        >
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label="뒤로가기"
+            style={{
+              width: "32px",
+              height: "32px",
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+              marginTop: "-46px",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "32px",
+              marginLeft: "-8px",
+              color: "black",
+            }}
+          >
+            <ArrowLeft size={22} />
+          </button>
+        </div>
         {config ? (
           <>
             <div
@@ -63,7 +113,11 @@ const LostAndFoundPage = () => {
               {config.title}
             </div>
             {/* <div className="glight fs16">{config.description}</div> */}
-            {TransportComponent && <TransportComponent />}
+            {TransportComponent && (
+              <div style={{ width: "100%", maxWidth: "420px", margin: "0 auto" }}>
+                <TransportComponent />
+              </div>
+            )}
           </>
         ) : (
           <>

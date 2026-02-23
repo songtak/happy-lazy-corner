@@ -14,8 +14,12 @@ import axios from "axios";
 import dayjs from "dayjs";
 
 import DefaultLayout from "@/components/common/DefaultLayout";
-const VITE_DATA_API_EN_KEY = `${import.meta.env.VITE_DATA_API_EN_KEY}`;
-const VITE_DATA_API_DE_KEY = `${import.meta.env.VITE_DATA_API_DE_KEY}`;
+const VITE_DATA_API_EN_KEY = decodeURIComponent(
+  `${import.meta.env.VITE_DATA_API_EN_KEY || ""}`,
+);
+const VITE_DATA_API_DE_KEY = decodeURIComponent(
+  `${import.meta.env.VITE_DATA_API_DE_KEY || ""}`,
+);
 
 type TableColumn = {
   key: string;
@@ -66,7 +70,8 @@ const locationCodeList: DROPDOWN[] = [
 
 //  http://apis.data.go.kr/1320000/LostGoodsInfoInqireService
 const LostAndFoundPage = () => {
-  const BASE_URL = "http://apis.data.go.kr/1320000/LosPtfundInfoInqireService/";
+  const BASE_URL =
+    "https://apis.data.go.kr/1320000/LosPtfundInfoInqireService/";
 
   const today = dayjs().format("YYYYMMDD");
   const now = dayjs();
@@ -108,7 +113,6 @@ const LostAndFoundPage = () => {
       );
 
       const parsed = JSON.parse(response.data);
-      console.log("parsed", parsed);
 
       parsed.response.body.items.item.length > 0 &&
         setLocationData(parsed.response.body.items.item);
@@ -178,48 +182,48 @@ const LostAndFoundPage = () => {
     <DefaultLayout>
       <div style={{ fontFamily: "GLight" }}>
         <div className="mb24 fs28 glight">👮 분실물 센터 🚨</div>
-      <div>
         <div>
-          <div className="pb8">
-            <TextField
-              className="simple-input pb16"
-              type="text"
-              onKeyUp={(e) => {
-                onCheckEnter(e);
-              }}
-              placeholder="물품명"
-              value={name}
-              onChange={(e) => {
-                handleChangeInput("name", e.target.value);
-              }}
-              size="small"
-              //   maxLength={25}
-            />
-          </div>
-          <div className=" pb8">
-            <Box sx={{ minWidth: 120 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="demo-simple-select-label">지역</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  // value={findLocation.value}
-                  label="Age"
-                  onChange={(e) => {
-                    setFindLocation(e.target.value as string);
-                  }}
-                >
-                  {locationCodeList.map((item: DROPDOWN, i: number) => (
-                    <MenuItem key={i} value={item.key}>
-                      {item.value}
-                    </MenuItem>
-                  ))}
-                  {/* <MenuItem value={20}>Twenty</MenuItem>
+          <div>
+            <div className="pb8">
+              <TextField
+                className="simple-input pb16"
+                type="text"
+                onKeyUp={(e) => {
+                  onCheckEnter(e);
+                }}
+                placeholder="물품명"
+                value={name}
+                onChange={(e) => {
+                  handleChangeInput("name", e.target.value);
+                }}
+                size="small"
+                //   maxLength={25}
+              />
+            </div>
+            <div className=" pb8">
+              <Box sx={{ minWidth: 120 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-simple-select-label">지역</InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    // value={findLocation.value}
+                    label="Age"
+                    onChange={(e) => {
+                      setFindLocation(e.target.value as string);
+                    }}
+                  >
+                    {locationCodeList.map((item: DROPDOWN, i: number) => (
+                      <MenuItem key={i} value={item.key}>
+                        {item.value}
+                      </MenuItem>
+                    ))}
+                    {/* <MenuItem value={20}>Twenty</MenuItem>
                   <MenuItem value={30}>Thirty</MenuItem> */}
-                </Select>
-              </FormControl>
-            </Box>
-            {/* <TextField
+                  </Select>
+                </FormControl>
+              </Box>
+              {/* <TextField
               className="simple-input pb16"
               type="text"
               onKeyUp={(e) => {
@@ -233,123 +237,125 @@ const LostAndFoundPage = () => {
               size="small"
               //   maxLength={25}
             /> */}
-          </div>
-          <div style={{ display: "block ruby" }}>
-            <LocalizationProvider
-              dateAdapter={AdapterDayjs}
-              adapterLocale="ko"
+            </div>
+            <div style={{ display: "block ruby" }}>
+              <LocalizationProvider
+                dateAdapter={AdapterDayjs}
+                adapterLocale="ko"
 
-              // adapterLocale={koLocale}
-            >
-              <DemoContainer components={["DatePicker"]}>
-                <DatePicker
-                  label="생년월일"
-                  //   defaultValue={now.subtract(32, "year")}
-                  value={findDayStart === null ? null : dayjs(findDayStart)}
-                  onChange={(newValue: any) => {
-                    setFindDayStart(dayjs(newValue).format("YYYY-MM-DD"));
-                  }}
-                  openTo="day"
-                  views={["year", "month", "day"]}
-                  slotProps={{
-                    textField: {
-                      // onChange: () => {},
-                      value: findDayStart === null ? null : dayjs(findDayStart),
-                      placeholder: "생년월일",
-                      label: "",
-                      style: { width: "240px" },
-                      size: "small",
-                    },
-                  }}
-                />
-              </DemoContainer>
-            </LocalizationProvider>
-          </div>
-          ~
-          <div style={{ display: "block ruby" }}>
-            <LocalizationProvider
-              dateAdapter={AdapterDayjs}
-              adapterLocale="ko"
+                // adapterLocale={koLocale}
+              >
+                <DemoContainer components={["DatePicker"]}>
+                  <DatePicker
+                    label="생년월일"
+                    //   defaultValue={now.subtract(32, "year")}
+                    value={findDayStart === null ? null : dayjs(findDayStart)}
+                    onChange={(newValue: any) => {
+                      setFindDayStart(dayjs(newValue).format("YYYY-MM-DD"));
+                    }}
+                    openTo="day"
+                    views={["year", "month", "day"]}
+                    slotProps={{
+                      textField: {
+                        // onChange: () => {},
+                        value:
+                          findDayStart === null ? null : dayjs(findDayStart),
+                        placeholder: "생년월일",
+                        label: "",
+                        style: { width: "240px" },
+                        size: "small",
+                      },
+                    }}
+                  />
+                </DemoContainer>
+              </LocalizationProvider>
+            </div>
+            ~
+            <div style={{ display: "block ruby" }}>
+              <LocalizationProvider
+                dateAdapter={AdapterDayjs}
+                adapterLocale="ko"
 
-              // adapterLocale={koLocale}
-            >
-              <DemoContainer components={["DatePicker"]}>
-                <DatePicker
-                  label="생년월일"
-                  //   defaultValue={now.subtract(32, "year")}
-                  value={findDayEnd === null ? null : dayjs(findDayEnd)}
-                  onChange={(newValue: any) => {
-                    setFindDayEnd(dayjs(newValue).format("YYYY-MM-DD"));
-                  }}
-                  openTo="day"
-                  views={["year", "month", "day"]}
-                  slotProps={{
-                    textField: {
-                      // onChange: () => {},
-                      value: findDayEnd === null ? null : dayjs(findDayEnd),
-                      placeholder: "생년월일",
-                      label: "",
-                      style: { width: "240px" },
-                      size: "small",
-                    },
-                  }}
-                />
-              </DemoContainer>
-            </LocalizationProvider>
-          </div>
-        </div>
-        <div style={{ paddingTop: "40px" }}>
-          <Button
-            sx={{
-              borderRadius: "24px",
-              background: "linear-gradient(135deg, #22c1c3 0%, #3a86ff 100%)",
-              color: "white",
-              fontFamily: "GLight",
-              fontSize: "14px",
-              fontWeight: 600,
-              padding: "12px 24px",
-              boxShadow: "0 8px 20px rgba(58, 134, 255, 0.35)",
-              "&:hover": {
-                background: "linear-gradient(135deg, #1db1b3 0%, #2f74ea 100%)",
-                boxShadow: "0 10px 24px rgba(58, 134, 255, 0.42)",
-              },
-            }}
-            onClick={() => {
-              handleClickSearch();
-            }}
-          >
-            찾아보기
-          </Button>
-        </div>
-      </div>
-
-      <div>
-        {loading && <div>검색중 🔍</div>}
-        {totalData.length > 0 && (
-          <div className="table-container">
-            <div className="table-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    {columns.map((column) => (
-                      <th key={column.key}>{column.header}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {totalData.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {columns.map((column) => (
-                        <td key={column.key}>{row[column.key]}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                // adapterLocale={koLocale}
+              >
+                <DemoContainer components={["DatePicker"]}>
+                  <DatePicker
+                    label="생년월일"
+                    //   defaultValue={now.subtract(32, "year")}
+                    value={findDayEnd === null ? null : dayjs(findDayEnd)}
+                    onChange={(newValue: any) => {
+                      setFindDayEnd(dayjs(newValue).format("YYYY-MM-DD"));
+                    }}
+                    openTo="day"
+                    views={["year", "month", "day"]}
+                    slotProps={{
+                      textField: {
+                        // onChange: () => {},
+                        value: findDayEnd === null ? null : dayjs(findDayEnd),
+                        placeholder: "생년월일",
+                        label: "",
+                        style: { width: "240px" },
+                        size: "small",
+                      },
+                    }}
+                  />
+                </DemoContainer>
+              </LocalizationProvider>
             </div>
           </div>
-        )}
-      </div>
+          <div style={{ paddingTop: "40px" }}>
+            <Button
+              sx={{
+                borderRadius: "24px",
+                background: "linear-gradient(135deg, #22c1c3 0%, #3a86ff 100%)",
+                color: "white",
+                fontFamily: "GLight",
+                fontSize: "14px",
+                fontWeight: 600,
+                padding: "12px 24px",
+                boxShadow: "0 8px 20px rgba(58, 134, 255, 0.35)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #1db1b3 0%, #2f74ea 100%)",
+                  boxShadow: "0 10px 24px rgba(58, 134, 255, 0.42)",
+                },
+              }}
+              onClick={() => {
+                handleClickSearch();
+              }}
+            >
+              찾아보기
+            </Button>
+          </div>
+        </div>
+
+        <div>
+          {loading && <div>검색중 🔍</div>}
+          {totalData.length > 0 && (
+            <div className="table-container">
+              <div className="table-wrapper">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      {columns.map((column) => (
+                        <th key={column.key}>{column.header}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {totalData.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {columns.map((column) => (
+                          <td key={column.key}>{row[column.key]}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </DefaultLayout>
   );

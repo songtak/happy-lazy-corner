@@ -33,6 +33,7 @@ const MainRouter = () => {
         />
       )}
       <div
+        id="app-scroll-container"
         className={`${!isMobile() && "wrapper"} `}
         style={{
           overflow: isMobile() ? `auto` : "",

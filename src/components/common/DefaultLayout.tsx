@@ -29,7 +29,20 @@ const DefaultLayout = ({ children }: Props) => {
       </main>
 
       <footer className="footer ">
-        {/* <span className="pointer">&copy; 2024 Songtak</span> */}
+        <a
+          href="https://www.instagram.com/sn9tk"
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            fontSize: "12px",
+            color: "#9a9a9a",
+            textDecoration: "none",
+            display: "inline-block",
+            marginBottom: "4px",
+          }}
+        >
+          © 2026 Songtak. All rights reserved.
+        </a>
         <div style={{ fontSize: "8px", color: "#d1d1d1" }}>
           이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를
           제공받습니다.

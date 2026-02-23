@@ -36,4 +36,18 @@ export default defineConfig({
       { find: "@stores", replacement: path.resolve(__dirname, "src/stores") },
     ],
   },
+  server: {
+    proxy: {
+      "/api/bus": {
+        target: "http://ws.bus.go.kr",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/bus/, ""),
+      },
+      "/api/seoul": {
+        target: "http://openapi.seoul.go.kr:8088",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/seoul/, ""),
+      },
+    },
+  },
 });
