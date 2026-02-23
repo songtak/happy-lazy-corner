@@ -34,8 +34,7 @@ const BusComponent = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "http://ws.bus.go.kr/busRouteInfo/getRouteInfo",
-        // "/api/bus/api/rest/busRouteInfo/getRouteInfo",
+        "https://ws.bus.go.kr/api/rest/busRouteInfo/getRouteInfo",
         {
           params: {
             resultType: "json",
@@ -51,7 +50,7 @@ const BusComponent = () => {
 
       if (VITE_SEOUL_DATA_API_DE_KEY) {
         const seoulResponse = await axios.get(
-          `/api/seoul/${VITE_SEOUL_DATA_API_DE_KEY}/json/lostArticleInfo/1/5/`,
+          `https://openapi.seoul.go.kr:8088/${VITE_SEOUL_DATA_API_DE_KEY}/json/lostArticleInfo/1/5/`,
         );
         console.log("lostArticleInfo response", seoulResponse.data);
       }
