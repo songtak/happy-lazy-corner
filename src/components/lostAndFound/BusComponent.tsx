@@ -34,7 +34,8 @@ const BusComponent = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "/api/bus/api/rest/busRouteInfo/getRouteInfo",
+        "http://ws.bus.go.kr/busRouteInfo/getRouteInfo",
+        // "/api/bus/api/rest/busRouteInfo/getRouteInfo",
         {
           params: {
             resultType: "json",
@@ -260,7 +261,10 @@ const BusComponent = () => {
               }}
               variant="outlined"
               onClick={() =>
-                window.open("https://www.lost112.go.kr/find/findList.do", "_blank")
+                window.open(
+                  "https://www.lost112.go.kr/find/findList.do",
+                  "_blank",
+                )
               }
             >
               경찰청 분실물 조회하기
