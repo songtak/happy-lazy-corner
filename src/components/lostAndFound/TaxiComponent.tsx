@@ -107,8 +107,8 @@ const TaxiComponent = () => {
       const target = ref.current;
       if (!target) return;
 
-      const appScrollContainer = document.getElementById(
-        "app-scroll-container",
+      const appScrollContainer = document.querySelector<HTMLElement>(
+        "#app-scroll, #app-scroll-container",
       );
       if (appScrollContainer) {
         const containerRect = appScrollContainer.getBoundingClientRect();

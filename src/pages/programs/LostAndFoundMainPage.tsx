@@ -98,8 +98,6 @@ const LostAndFoundMainPage = () => {
     useState<boolean>(false);
   const transportSectionRef = useRef<HTMLDivElement | null>(null);
 
-  console.log("findLocation", findLocation);
-
   /** 분류별, 지역별, 기간별 습득물 정보 조회 */
   const fetchLocationData = async () => {
     try {
@@ -192,7 +190,9 @@ const LostAndFoundMainPage = () => {
     window.scrollTo({ top: 0, behavior: "auto" });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-    const appScrollContainer = document.getElementById("app-scroll-container");
+    const appScrollContainer = document.querySelector<HTMLElement>(
+      "#app-scroll, #app-scroll-container",
+    );
     appScrollContainer?.scrollTo({ top: 0, behavior: "auto" });
     document.querySelectorAll<HTMLElement>(".wrapper, .main").forEach((el) => {
       el.scrollTop = 0;
