@@ -8,6 +8,7 @@
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
+    "prefetch:bus-route-info": "node scripts/prefetch-seoul-bus-route-info.mjs",
     "deploy": "gh-pages -d dist",
     "postbuild": "cp dist/index.html dist/404.html"
   },

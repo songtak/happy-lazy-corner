@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { Autocomplete, Button, TextField } from "@mui/material";
+import axios, { AxiosError } from "axios";
 
 import seoulBus from "@/assets/seoul_bus_id.json";
-import seoulBusRouteInfo from "@/assets/seoul_bus_route_info.json";
 
 type BusOption = {
   rte_nm: string;
@@ -13,8 +13,13 @@ type CorpItem = {
   corpNm?: string;
 };
 
-type RouteInfoItem = {
-  itemList?: CorpItem[];
+type BulkRouteInfoItem = {
+  rte_id: string;
+  rte_nm: string;
+  headerCd?: string;
+  headerMsg?: string;
+  itemList: CorpItem[];
+  fromCache?: boolean;
 };
 
 const extractPhone = (text: string) => {
@@ -22,28 +27,195 @@ const extractPhone = (text: string) => {
   return match ? match[0] : "";
 };
 
+const ROUTE_INFO_CACHE_KEY = "busRouteInfoCacheV1";
+const ROUTE_INFO_BULK_KEY = "busRouteInfoBulkV1";
+
+const readRouteCache = (): Record<string, CorpItem[]> => {
+  try {
+    const raw = localStorage.getItem(ROUTE_INFO_CACHE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) as Record<string, CorpItem[]>;
+  } catch {
+    return {};
+  }
+};
+
+const writeRouteCache = (cache: Record<string, CorpItem[]>) => {
+  localStorage.setItem(ROUTE_INFO_CACHE_KEY, JSON.stringify(cache));
+};
+
+const downloadJsonFile = (filename: string, data: unknown) => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json;charset=utf-8",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+const sleep = (ms: number) =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+
 const BusComponent = () => {
+  const serviceKey = decodeURIComponent(
+    `${import.meta.env.VITE_DATA_API_EN_KEY || ""}`.trim(),
+  );
+  const BUS_ROUTE_INFO_URL = "/api/bus/busRouteInfo/getRouteInfo";
+  // const BUS_ROUTE_INFO_URL =
+  //   "http://ws.bus.go.kr/api/rest/busRouteInfo/getRouteInfo";
+
   const [busNumber, setBusNumber] = useState("");
   const [selectedBus, setSelectedBus] = useState<BusOption | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkDoneCount, setBulkDoneCount] = useState(0);
+  const [bulkSuccessCount, setBulkSuccessCount] = useState(0);
+  const [bulkFailCount, setBulkFailCount] = useState(0);
   const [corpList, setCorpList] = useState<CorpItem[]>([]);
-  const [hasSearched, setHasSearched] = useState(false);
-
   const busOptions = useMemo(() => (seoulBus.DATA as BusOption[]) ?? [], []);
-  const routeInfoMap = useMemo(
-    () =>
-      ((seoulBusRouteInfo as { data?: Record<string, RouteInfoItem> }).data ??
-        {}) as Record<string, RouteInfoItem>,
-    [],
-  );
 
-  const handleClickSubmit = () => {
+  const handleClickSubmit = async () => {
     if (!selectedBus) return;
-    setHasSearched(true);
-    const routeInfo = routeInfoMap[selectedBus.rte_id];
-    const itemList = Array.isArray(routeInfo?.itemList)
-      ? routeInfo.itemList
-      : [];
-    setCorpList(itemList);
+
+    try {
+      setLoading(true);
+      const routeId = selectedBus.rte_id;
+      const cache = readRouteCache();
+      const cachedList = cache[routeId];
+      if (cachedList?.length) {
+        setCorpList(cachedList);
+        return;
+      }
+
+      const response = await axios.get(BUS_ROUTE_INFO_URL, {
+        params: {
+          resultType: "json",
+          ServiceKey: serviceKey,
+          busRouteId: routeId,
+        },
+        timeout: 10000,
+      });
+      const itemList = (response.data?.msgBody?.itemList ?? []) as CorpItem[];
+      console.log("getRouteInfo response", itemList);
+      console.log("getRouteInfo header", response.data?.msgHeader);
+      if (itemList.length > 0) {
+        writeRouteCache({
+          ...cache,
+          [routeId]: itemList,
+        });
+      }
+      setCorpList(itemList);
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.code === "ECONNABORTED") {
+        console.error("getRouteInfo timeout", axiosError.message);
+      }
+      if (axiosError.code === "ERR_NETWORK") {
+        console.error("getRouteInfo network/cors error");
+      }
+      console.error("getRouteInfo error", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClickDownloadAll = async () => {
+    if (bulkLoading) return;
+    setBulkLoading(true);
+    setBulkDoneCount(0);
+    setBulkSuccessCount(0);
+    setBulkFailCount(0);
+
+    const cache = readRouteCache();
+    const result: {
+      generatedAt: string;
+      total: number;
+      successCount: number;
+      failCount: number;
+      data: Record<string, BulkRouteInfoItem>;
+      failures: Array<{ rte_id: string; rte_nm: string; error: string }>;
+    } = {
+      generatedAt: new Date().toISOString(),
+      total: busOptions.length,
+      successCount: 0,
+      failCount: 0,
+      data: {},
+      failures: [],
+    };
+
+    try {
+      for (let i = 0; i < busOptions.length; i += 1) {
+        const bus = busOptions[i];
+        const routeId = bus.rte_id;
+        const cachedList = cache[routeId];
+
+        if (cachedList?.length) {
+          result.successCount += 1;
+          result.data[routeId] = {
+            rte_id: routeId,
+            rte_nm: bus.rte_nm,
+            itemList: cachedList,
+            fromCache: true,
+          };
+          setBulkSuccessCount(result.successCount);
+          setBulkDoneCount(i + 1);
+          continue;
+        }
+
+        try {
+          const response = await axios.get(BUS_ROUTE_INFO_URL, {
+            params: {
+              resultType: "json",
+              ServiceKey: serviceKey,
+              busRouteId: routeId,
+            },
+            timeout: 10000,
+          });
+          const itemList = (response.data?.msgBody?.itemList ??
+            []) as CorpItem[];
+          const headerCd = response.data?.msgHeader?.headerCd as
+            | string
+            | undefined;
+          const headerMsg = response.data?.msgHeader?.headerMsg as
+            | string
+            | undefined;
+
+          cache[routeId] = itemList;
+          result.successCount += 1;
+          result.data[routeId] = {
+            rte_id: routeId,
+            rte_nm: bus.rte_nm,
+            headerCd,
+            headerMsg,
+            itemList,
+          };
+          setBulkSuccessCount(result.successCount);
+        } catch (error) {
+          result.failCount += 1;
+          result.failures.push({
+            rte_id: routeId,
+            rte_nm: bus.rte_nm,
+            error: error instanceof Error ? error.message : String(error),
+          });
+          setBulkFailCount(result.failCount);
+        } finally {
+          setBulkDoneCount(i + 1);
+          await sleep(120);
+        }
+      }
+
+      result.generatedAt = new Date().toISOString();
+      writeRouteCache(cache);
+      localStorage.setItem(ROUTE_INFO_BULK_KEY, JSON.stringify(result));
+      downloadJsonFile(`seoul_bus_route_info_${Date.now()}.json`, result);
+    } finally {
+      setBulkLoading(false);
+    }
   };
 
   return (
@@ -104,12 +276,12 @@ const BusComponent = () => {
             typeof value !== "string" && option.rte_id === value.rte_id
           }
           filterOptions={(options, state) => {
-            const keyword = state.inputValue.trim().toLowerCase();
+            const keyword = state.inputValue.trim();
             if (!keyword) return options;
             return options.filter(
               (option) =>
-                option.rte_nm.toLowerCase().startsWith(keyword) ||
-                option.rte_nm.toLowerCase().endsWith(keyword),
+                option.rte_nm.startsWith(keyword) ||
+                option.rte_nm.endsWith(keyword),
             );
           }}
           onChange={(_, value) => {
@@ -124,7 +296,6 @@ const BusComponent = () => {
           onInputChange={(_, value) => {
             setBusNumber(value.slice(0, 7));
             setSelectedBus(null);
-            setHasSearched(false);
           }}
           ListboxProps={{
             sx: {
@@ -153,7 +324,7 @@ const BusComponent = () => {
         <Button
           variant="contained"
           onClick={handleClickSubmit}
-          disabled={!selectedBus}
+          disabled={loading || !selectedBus}
           sx={{
             fontFamily: "GMedium",
             borderRadius: "18px",
@@ -167,16 +338,37 @@ const BusComponent = () => {
         >
           검색
         </Button>
+        {/* <Button
+          variant="outlined"
+          onClick={handleClickDownloadAll}
+          disabled={bulkLoading}
+          sx={{
+            fontFamily: "GMedium",
+            borderRadius: "18px",
+            padding: "8px 18px",
+          }}
+        >
+          {bulkLoading ? "전체 다운로드 중..." : "노선정보 다운로드"}
+        </Button> */}
       </div>
-      {hasSearched && corpList.length === 0 && (
-        <div className="glight" style={{ marginTop: "8px" }}>
-          검색 결과가 없습니다.
+      {bulkLoading && (
+        <div className="glight" style={{ fontSize: 12 }}>
+          진행률: {bulkDoneCount}/{busOptions.length} (성공 {bulkSuccessCount},
+          실패 {bulkFailCount})
         </div>
       )}
       {corpList.length > 0 && (
         <>
+          {/* <iframe
+            src="https://news.seoul.go.kr/traffic/find#list/1"
+            style={{ width: "100%", height: "600px", border: "none" }}
+          /> */}
+
+          {/* <div className="glight" style={{ fontWeight: 600 }}>
+            운수사
+          </div> */}
           <div style={{ marginBottom: "24px", marginTop: "16px" }}>
-            {corpList.map((corp: CorpItem, index: number) => {
+            {corpList.map((corp: any, index: number) => {
               const corpText = `${corp?.corpNm ?? ""}`;
               const phone = extractPhone(corpText);
               const tel = phone.replace(/[^0-9]/g, "");

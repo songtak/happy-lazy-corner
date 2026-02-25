@@ -1,5 +1,5 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
+import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -19,9 +19,28 @@ const firebaseConfig = {
   measurementId: "G-JX8M3NZQ5K",
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const proxyFirebaseConfig = {
+  apiKey: "AIzaSyCHaXG5d1YqQQGKmpB_A21tMit6avEizIg",
+  authDomain: "public-data-proxy.firebaseapp.com",
+  projectId: "public-data-proxy",
+  storageBucket: "public-data-proxy.firebasestorage.app",
+  messagingSenderId: "646248728066",
+  appId: "1:646248728066:web:b011b98fb6d619c7c6491b",
+  measurementId: "G-RN0SJ4NBL5",
+};
+
+// Initialize Firebase (main project)
+export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+export const analytics =
+  typeof window !== "undefined" ? getAnalytics(app) : null;
+
+// Initialize Firebase (proxy project as secondary app)
+const PROXY_APP_NAME = "public-data-proxy";
+export const proxyApp =
+  getApps().find((item) => item.name === PROXY_APP_NAME) ||
+  initializeApp(proxyFirebaseConfig, PROXY_APP_NAME);
+export const proxyAnalytics =
+  typeof window !== "undefined" ? getAnalytics(proxyApp) : null;
 
 // Initialize Firestore
 export const db = getFirestore(app);

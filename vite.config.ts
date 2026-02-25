@@ -39,7 +39,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api/bus": {
-        target: "http://ws.bus.go.kr",
+        target: "http://ws.bus.go.kr/api/rest",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/bus/, ""),
       },
