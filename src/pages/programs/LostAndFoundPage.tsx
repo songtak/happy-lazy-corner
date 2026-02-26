@@ -46,11 +46,21 @@ const LostAndFoundPage = () => {
   const TransportComponent = config?.component;
 
   const forceScrollTop = () => {
-    window.scrollTo({ top: 0, behavior: "auto" });
+    window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-    const appScrollContainer = document.querySelector<HTMLElement>("#app-scroll, #app-scroll-container");
-    appScrollContainer?.scrollTo({ top: 0, behavior: "auto" });
+    const scrollingElement = document.scrollingElement as HTMLElement | null;
+    if (scrollingElement) {
+      scrollingElement.scrollTop = 0;
+      scrollingElement.scrollTo({ top: 0, behavior: "auto" });
+    }
+    const appScrollContainer = document.querySelector<HTMLElement>(
+      "#app-scroll, #app-scroll-container",
+    );
+    if (appScrollContainer) {
+      appScrollContainer.scrollTop = 0;
+      appScrollContainer.scrollTo({ top: 0, behavior: "auto" });
+    }
     document.querySelectorAll<HTMLElement>(".wrapper, .main").forEach((el) => {
       el.scrollTop = 0;
       el.scrollTo({ top: 0, behavior: "auto" });
@@ -62,17 +72,24 @@ const LostAndFoundPage = () => {
     const timer1 = window.setTimeout(forceScrollTop, 0);
     const timer2 = window.setTimeout(forceScrollTop, 80);
     const timer3 = window.setTimeout(forceScrollTop, 180);
-    requestAnimationFrame(forceScrollTop);
+    const timer4 = window.setTimeout(forceScrollTop, 320);
+    const timer5 = window.setTimeout(forceScrollTop, 520);
+    const raf1 = requestAnimationFrame(forceScrollTop);
+    const raf2 = requestAnimationFrame(() => requestAnimationFrame(forceScrollTop));
     return () => {
       window.clearTimeout(timer1);
       window.clearTimeout(timer2);
       window.clearTimeout(timer3);
+      window.clearTimeout(timer4);
+      window.clearTimeout(timer5);
+      window.cancelAnimationFrame(raf1);
+      window.cancelAnimationFrame(raf2);
     };
   }, [location.pathname, type]);
 
   return (
     <DefaultLayout>
-      <div style={{ minHeight: "100vh" }}>
+      <div style={{ width: "100%", minHeight: "100vh" }}>
         <div
         // style={{
         //   width: "100%",
@@ -97,7 +114,7 @@ const LostAndFoundPage = () => {
               alignItems: "center",
               justifyContent: "center",
               marginBottom: "32px",
-              marginLeft: "-8px",
+              marginLeft: "0px",
               color: "black",
             }}
           >
@@ -114,7 +131,14 @@ const LostAndFoundPage = () => {
             </div>
             {/* <div className="glight fs16">{config.description}</div> */}
             {TransportComponent && (
-              <div style={{ width: "100%", maxWidth: "420px", margin: "0 auto" }}>
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: "420px",
+                  margin: "0 auto",
+                  minHeight: "calc(100vh - 160px)",
+                }}
+              >
                 <TransportComponent />
               </div>
             )}

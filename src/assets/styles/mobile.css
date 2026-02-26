@@ -12,10 +12,12 @@
     --padding-small: 8px;
     --padding-medium: 16px;
     --padding-large: 24px;
+    width: -webkit-fill-available;
   }
 
   /* 컨테이너 */
   .wrapper {
+    box-sizing: border-box;
     width: 100%; /* 모바일 화면 전체 폭 */
     max-width: 700px; /* 최대 너비 700px */
     padding: var(--padding-medium); /* 내부 여백 */
@@ -58,9 +60,10 @@
     width: 100%;
   }
   .main {
+    box-sizing: border-box;
     padding: var(--padding-large);
+    /* width: 100%; */
     text-align: left;
-    width: 100%;
     text-align: center;
   }
   .card {
@@ -93,7 +96,9 @@
     border: 1px solid #000000;
     border-radius: 4px;
     outline: none;
-    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition:
+      border-color 0.2s ease-in-out,
+      box-shadow 0.2s ease-in-out;
   }
 
   .simple-input:focus {
