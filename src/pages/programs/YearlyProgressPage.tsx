@@ -81,7 +81,7 @@ const YearlyProgressPage = () => {
     <div
       style={{
         fontFamily: "GMedium",
-        width: "100vw",
+        width: "100%",
         // marginLeft: "calc(50% - 50vw)",
       }}
     >

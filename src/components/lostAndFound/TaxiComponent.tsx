@@ -6,8 +6,7 @@ type YesNo = "" | "yes" | "no";
 type PaymentType = "" | "card" | "transfer" | "cash";
 
 const cardStyle: React.CSSProperties = {
-  width: "82vw",
-  // width: "100%",
+  width: "100%",
   boxSizing: "border-box",
   border: "1px solid #e6ecff",
   borderRadius: "18px",
@@ -21,6 +20,8 @@ const buttonStyle = {
   fontFamily: "GMedium",
   padding: "8px 12px",
   width: "100%",
+  minWidth: 0,
+  boxSizing: "border-box",
 };
 
 const TaxiLostNotice = ({ style }: { style?: React.CSSProperties }) => {
@@ -54,7 +55,7 @@ const TaxiLostNotice = ({ style }: { style?: React.CSSProperties }) => {
         <Button
           sx={{
             marginTop: "12px",
-            width: "280px",
+            width: "100%",
             fontFamily: "GMedium",
             borderRadius: "18px",
           }}
@@ -70,7 +71,7 @@ const TaxiLostNotice = ({ style }: { style?: React.CSSProperties }) => {
         </Button>
         <Button
           sx={{
-            width: "280px",
+            width: "100%",
             fontFamily: "GMedium",
             borderRadius: "18px",
           }}
@@ -167,6 +168,7 @@ const TaxiComponent = () => {
 
   return (
     <div
+      className="taxi-flow"
       style={{
         marginTop: "24px",
         display: "flex",

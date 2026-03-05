@@ -37,8 +37,8 @@ const programRoutes: RouteObject[] = [
     errorElement: <ErrorPage />,
   },
   {
-    path: "/lost-and-found-for-jw",
-    element: <Program.LostAndFoundPageJW />,
+    path: "/seasonal-food",
+    element: <Program.SeasonalFoodPage />,
     errorElement: <ErrorPage />,
   },
 ];
@@ -61,6 +61,7 @@ const programRoutes: RouteObject[] = [
 const projectList = [
   { id: 1, path: "/yearly-progress", title: "올해 남아 있는 날들 💪" },
   { id: 2, path: "/lost-and-found", title: "경찰청 분실물 센터 👮" },
+  { id: 3, path: "/seasonal-food", title: "제철 음식 추천기 🍎" },
 ];
 
 export { defaultRoutes, programRoutes, projectList };

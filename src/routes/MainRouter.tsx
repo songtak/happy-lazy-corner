@@ -66,15 +66,18 @@ const MainRouter = () => {
         id="app-scroll"
         className={`${!isMobile() && "wrapper"} `}
         style={{
-          overflowY: "auto",
+          overflowY: isMobile() ? "auto" : "scroll",
+          scrollbarGutter: "stable",
           WebkitOverflowScrolling: "touch",
-          height: "100%",
+          // height: "100%",
         }}
       >
         <div
           className={`${isMobile() && "wrapper"}`}
           style={
-            isMobile() ? { overflow: "visible", height: "auto" } : undefined
+            isMobile()
+              ? { overflow: "visible", height: "auto", minHeight: "100vh" }
+              : undefined
           }
         >
           {/* @ts-ignore */}
