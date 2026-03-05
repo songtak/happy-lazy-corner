@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import ingredientDb from "@/assets/seasonalFood/ingredient_db.json";
 
+const DEPLOY_BASE_URL = "https://songtak.github.io/happy-lazy-corner";
+const INGREDIENT_IMAGE_PATH = "src/assets/seasonalFood/img";
+
 type IngredientItem = {
   id: number;
   name: string;
@@ -93,13 +96,21 @@ const SeasonalFoodPage = () => {
       (item) => item.months.includes(currentMonth),
     );
 
-    const tournamentSize = getTournamentSize(roundSize, monthlyIngredients.length);
+    const tournamentSize = getTournamentSize(
+      roundSize,
+      monthlyIngredients.length,
+    );
     if (tournamentSize < 2) {
-      setErrorMessage(`${currentMonth}월 재료가 부족해서 월드컵을 시작할 수 없어요.`);
+      setErrorMessage(
+        `${currentMonth}월 재료가 부족해서 월드컵을 시작할 수 없어요.`,
+      );
       return;
     }
 
-    const randomPick = getShuffledIngredients(monthlyIngredients).slice(0, tournamentSize);
+    const randomPick = getShuffledIngredients(monthlyIngredients).slice(
+      0,
+      tournamentSize,
+    );
 
     setRoundPool(randomPick);
     setWinners([]);
@@ -134,6 +145,24 @@ const SeasonalFoodPage = () => {
     if (!champion) return;
     const query = encodeURIComponent(`${champion.name} 맛집`);
     window.open(`https://map.naver.com/p/search/${query}`, "_blank");
+  };
+
+  const getAbsoluteUrl = (path: string) =>
+    `${DEPLOY_BASE_URL}/${path.replace(/^\/+/, "")}`;
+
+  const getIngredientImageUrl = (item: IngredientItem) => {
+    if (item.imgUrl) {
+      if (
+        item.imgUrl.startsWith("http://") ||
+        item.imgUrl.startsWith("https://")
+      ) {
+        return item.imgUrl;
+      }
+      return getAbsoluteUrl(item.imgUrl);
+    }
+    return getAbsoluteUrl(
+      `${INGREDIENT_IMAGE_PATH}/${encodeURIComponent(item.name)}.png`,
+    );
   };
 
   const leftItem = roundPool[battleIndex];
@@ -256,7 +285,8 @@ const SeasonalFoodPage = () => {
                           height: "44px",
                           border: "none",
                           borderBottom:
-                            option.value !== roundOptions[roundOptions.length - 1].value
+                            option.value !==
+                            roundOptions[roundOptions.length - 1].value
                               ? "1px solid #f3f4f6"
                               : "none",
                           textAlign: "left",
@@ -269,7 +299,10 @@ const SeasonalFoodPage = () => {
                               : hoveredOption === option.value
                                 ? "#f3f4f6"
                                 : "#ffffff",
-                          color: option.value === selectedRound ? "#166534" : "#374151",
+                          color:
+                            option.value === selectedRound
+                              ? "#166534"
+                              : "#374151",
                         }}
                       >
                         {option.label}
@@ -386,137 +419,150 @@ const SeasonalFoodPage = () => {
             </div>
 
             <div style={{ display: "flex", gap: "12px" }}>
-              {[leftItem, rightItem].map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => handlePickWinner(item)}
-                  style={{
-                    flex: 1,
-                    border: "1px solid #dbe2ea",
-                    backgroundColor: "#ffffff",
-                    borderRadius: "14px",
-                    padding: "0",
-                    overflow: "hidden",
-                    cursor: "pointer",
-                  }}
-                >
-                  <div
+              {[leftItem, rightItem].map((item) => {
+                const imageUrl = getIngredientImageUrl(item);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handlePickWinner(item)}
                     style={{
-                      height: "200px",
-                      backgroundColor: "#e2e8f0",
-                      backgroundImage: item.imgUrl ? `url(${item.imgUrl})` : "none",
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#1e293b",
-                      fontSize: "14px",
+                      flex: 1,
+                      border: "1px solid #dbe2ea",
+                      backgroundColor: "#ffffff",
+                      borderRadius: "14px",
+                      padding: "0",
+                      overflow: "hidden",
+                      cursor: "pointer",
                     }}
                   >
-                    {!item.imgUrl && "imgUrl 준비중"}
-                  </div>
-                  <div
-                    style={{
-                      padding: "12px",
-                      fontSize: "20px",
-                      color: "#0f172a",
-                      fontWeight: 700,
-                      textAlign: "center",
-                    }}
-                  >
-                    {item.name}
-                  </div>
-                </button>
-              ))}
+                    <div
+                      style={{
+                        height: "200px",
+                        backgroundColor: "#e2e8f0",
+                        backgroundImage: imageUrl ? `url(${imageUrl})` : "none",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#1e293b",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {!imageUrl && "imgUrl 준비중"}
+                    </div>
+                    <div
+                      style={{
+                        padding: "12px",
+                        fontSize: "20px",
+                        color: "#0f172a",
+                        fontWeight: 700,
+                        textAlign: "center",
+                      }}
+                    >
+                      {item.name}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
         {champion && (
           <div style={{ marginTop: "20px" }}>
-            <div
-              style={{
-                textAlign: "center",
-                fontSize: "16px",
-                color: "#475569",
-                marginBottom: "10px",
-              }}
-            >
-              최종 우승
-            </div>
-            <div
-              style={{
-                border: "1px solid #dbe2ea",
-                borderRadius: "14px",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  height: "220px",
-                  backgroundColor: "#e2e8f0",
-                  backgroundImage: champion.imgUrl ? `url(${champion.imgUrl})` : "none",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#1e293b",
-                  fontSize: "14px",
-                }}
-              >
-                {!champion.imgUrl && "imgUrl 준비중"}
-              </div>
-              <div
-                style={{
-                  padding: "12px",
-                  fontSize: "22px",
-                  color: "#0f172a",
-                  fontWeight: 700,
-                  textAlign: "center",
-                }}
-              >
-                {champion.name}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={resetTournament}
-              style={{
-                width: "100%",
-                marginTop: "12px",
-                height: "48px",
-                borderRadius: "12px",
-                border: "1px solid #cbd5e1",
-                backgroundColor: "#ffffff",
-                color: "#0f172a",
-                fontSize: "15px",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              다시 하기
-            </button>
-            <button
-              type="button"
-              onClick={handleClickFindNearbyRestaurants}
-              style={{
-                width: "100%",
-                marginTop: "10px",
-                height: "48px",
-                borderRadius: "12px",
-                border: "1px solid #bae6fd",
-                backgroundColor: "#f0f9ff",
-                color: "#0c4a6e",
-                fontSize: "15px",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              주변 맛집 찾아보기 :eyes:
-            </button>
+            {(() => {
+              const championImageUrl = getIngredientImageUrl(champion);
+              return (
+                <>
+                  <div
+                    style={{
+                      textAlign: "center",
+                      fontSize: "16px",
+                      color: "#475569",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    최종 우승
+                  </div>
+                  <div
+                    style={{
+                      border: "1px solid #dbe2ea",
+                      borderRadius: "14px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "220px",
+                        backgroundColor: "#e2e8f0",
+                        backgroundImage: championImageUrl
+                          ? `url(${championImageUrl})`
+                          : "none",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#1e293b",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {!championImageUrl && "imgUrl 준비중"}
+                    </div>
+                    <div
+                      style={{
+                        padding: "12px",
+                        fontSize: "22px",
+                        color: "#0f172a",
+                        fontWeight: 700,
+                        textAlign: "center",
+                      }}
+                    >
+                      {champion.name}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleClickFindNearbyRestaurants}
+                    style={{
+                      width: "100%",
+                      marginTop: "10px",
+                      height: "48px",
+                      borderRadius: "12px",
+                      border: "1px solid #bae6fd",
+                      backgroundColor: "#f0f9ff",
+                      color: "#0c4a6e",
+                      fontSize: "15px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    주변 맛집 찾아보기 👀
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetTournament}
+                    style={{
+                      width: "100%",
+                      marginTop: "12px",
+                      height: "48px",
+                      borderRadius: "12px",
+                      border: "1px solid #cbd5e1",
+                      backgroundColor: "#ffffff",
+                      color: "#0f172a",
+                      fontSize: "15px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    다시 하기
+                  </button>
+                </>
+              );
+            })()}
           </div>
         )}
       </div>
