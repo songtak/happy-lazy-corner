@@ -206,6 +206,7 @@ const SeasonalFoodPage = () => {
           style={{
             margin: 0,
             fontSize: "30px",
+            fontWeight: 300,
             textAlign: "center",
             color: "#0f172a",
             transform: "translateY(-4px)",
@@ -215,9 +216,8 @@ const SeasonalFoodPage = () => {
         </h1>
         <div
           style={{
-            marginTop: "32px",
-            borderTop: "1px solid #e2e8f0",
-            paddingTop: "32px",
+            marginTop: "20px",
+            paddingTop: "20px",
           }}
         >
           <div style={{ marginBottom: "10px" }}>
@@ -497,9 +497,9 @@ const SeasonalFoodPage = () => {
 
           <div
             style={{
-              marginTop: "32px",
+              marginTop: "20px",
               borderTop: "1px solid #e2e8f0",
-              paddingTop: "32px",
+              paddingTop: "20px",
             }}
           >
             <div
@@ -575,7 +575,7 @@ const SeasonalFoodPage = () => {
           {selectedSeason && (
             <div
               style={{
-                marginTop: "32px",
+                marginTop: "20px",
               }}
             >
               <div
@@ -871,9 +871,9 @@ const SeasonalFoodPage = () => {
           )}
           <div
             style={{
-              marginTop: "32px",
+              marginTop: "20px",
               borderTop: "1px solid #e2e8f0",
-              paddingTop: "32px",
+              paddingTop: "20px",
             }}
           >
             <button
