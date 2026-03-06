@@ -1,10 +1,16 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import ingredientDb from "@/assets/seasonalFood/ingredient_db.json";
 
 const DEPLOY_BASE_URL = "https://songtak.github.io/happy-lazy-corner";
 const INGREDIENT_IMAGE_PATH = "/sfimg";
+const SEASON_MONTH_MAP: Record<string, number[]> = {
+  봄: [3, 4, 5],
+  여름: [6, 7, 8],
+  가을: [9, 10, 11],
+  겨울: [12, 1, 2],
+};
 
 type IngredientItem = {
   id: number;
@@ -20,20 +26,31 @@ const SeasonalFoodPage = () => {
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const currentDay = now.getDate();
-  const [visibleCount, setVisibleCount] = useState<number>(3);
-  const [selectedIngredient, setSelectedIngredient] =
-    useState<IngredientItem | null>(null);
+
+  const [monthlyVisibleCount, setMonthlyVisibleCount] = useState<number>(1);
+  const [seasonVisibleCount, setSeasonVisibleCount] = useState<number>(5);
+  const [expandedIngredientId, setExpandedIngredientId] = useState<
+    number | null
+  >(null);
+  const [selectedSeason, setSelectedSeason] = useState<string | null>(null);
+  const [clickedCardId, setClickedCardId] = useState<number | null>(null);
+  const [isMonthlyMoreAnimating, setIsMonthlyMoreAnimating] =
+    useState<boolean>(false);
+  const [isSeasonMoreAnimating, setIsSeasonMoreAnimating] =
+    useState<boolean>(false);
+  const cardClickTimerRef = useRef<number | null>(null);
+  const monthlyMoreTimerRef = useRef<number | null>(null);
+  const seasonMoreTimerRef = useRef<number | null>(null);
+
   const todayLabel = `${String(currentMonth).padStart(2, "0")}월 ${String(
     currentDay,
   ).padStart(2, "0")}일`;
 
-  const monthlyIngredients = useMemo(
-    () =>
-      (ingredientDb as IngredientItem[])
-        .filter((item) => item.months.includes(currentMonth))
-        .sort((a, b) => a.name.localeCompare(b.name, "ko")),
-    [currentMonth],
-  );
+  const monthlyIngredients = useMemo(() => {
+    return (ingredientDb as IngredientItem[])
+      .filter((item) => item.months.includes(currentMonth))
+      .sort((a, b) => a.name.localeCompare(b.name, "ko"));
+  }, [currentMonth]);
 
   const shuffledMonthlyIngredients = useMemo(() => {
     const shuffled = [...monthlyIngredients];
@@ -44,10 +61,44 @@ const SeasonalFoodPage = () => {
     return shuffled;
   }, [monthlyIngredients]);
 
-  const visibleIngredients = shuffledMonthlyIngredients.slice(
+  const visibleMonthlyIngredients = shuffledMonthlyIngredients.slice(
     0,
-    Math.min(visibleCount, shuffledMonthlyIngredients.length),
+    Math.min(monthlyVisibleCount, shuffledMonthlyIngredients.length),
   );
+
+  const seasonIngredients = useMemo(() => {
+    if (!selectedSeason) return [];
+    const targetMonths = SEASON_MONTH_MAP[selectedSeason];
+    return (ingredientDb as IngredientItem[])
+      .filter((item) =>
+        item.months.some((month) => targetMonths.includes(month)),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name, "ko"));
+  }, [selectedSeason]);
+
+  const visibleSeasonIngredients = seasonIngredients.slice(
+    0,
+    Math.min(seasonVisibleCount, seasonIngredients.length),
+  );
+
+  useEffect(() => {
+    setExpandedIngredientId(null);
+  }, [selectedSeason]);
+
+  useEffect(() => {
+    setSeasonVisibleCount(5);
+  }, [selectedSeason]);
+
+  useEffect(() => {
+    return () => {
+      if (cardClickTimerRef.current)
+        window.clearTimeout(cardClickTimerRef.current);
+      if (monthlyMoreTimerRef.current)
+        window.clearTimeout(monthlyMoreTimerRef.current);
+      if (seasonMoreTimerRef.current)
+        window.clearTimeout(seasonMoreTimerRef.current);
+    };
+  }, []);
 
   const getAbsoluteUrl = (path: string) =>
     `${DEPLOY_BASE_URL}/${path.replace(/^\/+/, "")}`;
@@ -69,12 +120,52 @@ const SeasonalFoodPage = () => {
 
   const handleClickFoodTag = (food: string) => {
     const query = encodeURIComponent(food);
-    window.open(`https://search.naver.com/search.naver?query=${query}`, "_blank");
+    window.open(
+      `https://search.naver.com/search.naver?query=${query}`,
+      "_blank",
+    );
   };
 
   const handleClickFindRestaurants = (name: string) => {
     const query = encodeURIComponent(`${name} 맛집`);
-    window.open(`https://search.naver.com/search.naver?query=${query}`, "_blank");
+    window.open(
+      `https://search.naver.com/search.naver?query=${query}`,
+      "_blank",
+    );
+  };
+
+  const handleCardClick = (id: number) => {
+    if (cardClickTimerRef.current)
+      window.clearTimeout(cardClickTimerRef.current);
+    setClickedCardId(id);
+    setExpandedIngredientId((prev) => (prev === id ? null : id));
+    cardClickTimerRef.current = window.setTimeout(() => {
+      setClickedCardId(null);
+    }, 200);
+  };
+
+  const handleClickMonthlyMore = () => {
+    setIsMonthlyMoreAnimating(true);
+    setMonthlyVisibleCount((prev) =>
+      Math.min(prev + 3, shuffledMonthlyIngredients.length),
+    );
+    if (monthlyMoreTimerRef.current)
+      window.clearTimeout(monthlyMoreTimerRef.current);
+    monthlyMoreTimerRef.current = window.setTimeout(() => {
+      setIsMonthlyMoreAnimating(false);
+    }, 180);
+  };
+
+  const handleClickSeasonMore = () => {
+    setIsSeasonMoreAnimating(true);
+    setSeasonVisibleCount((prev) =>
+      Math.min(prev + 5, seasonIngredients.length),
+    );
+    if (seasonMoreTimerRef.current)
+      window.clearTimeout(seasonMoreTimerRef.current);
+    seasonMoreTimerRef.current = window.setTimeout(() => {
+      setIsSeasonMoreAnimating(false);
+    }, 180);
   };
 
   return (
@@ -97,7 +188,7 @@ const SeasonalFoodPage = () => {
             transform: "translateY(-4px)",
           }}
         >
-          제철 사냥꾼
+          제철 음식 사냥꾼
         </h1>
         <div
           style={{
@@ -111,43 +202,18 @@ const SeasonalFoodPage = () => {
           {todayLabel}
         </div>
 
-        <button
-          type="button"
-          onClick={() => navigate("/seasonal-food-/worldcub")}
-          style={{
-            width: "100%",
-            marginTop: "16px",
-            height: "52px",
-            borderRadius: "14px",
-            border: "1px solid rgba(30, 41, 59, 0.55)",
-            background:
-              "linear-gradient(135deg, #334155 0%, #1f2937 55%, #0f172a 100%)",
-            color: "#ffffff",
-            fontSize: "16px",
-            fontWeight: 700,
-            letterSpacing: "0.2px",
-            cursor: "pointer",
-          }}
-        >
-          제철음식 월드컵
-        </button>
-
         <div
           style={{
-            marginTop: "20px",
+            marginTop: "32px",
             borderTop: "1px solid #e2e8f0",
-            paddingTop: "14px",
+            paddingTop: "32px",
           }}
         >
-          <div
-            style={{
-              marginBottom: "10px",
-            }}
-          >
+          <div style={{ marginBottom: "10px" }}>
             <div
               style={{
-                fontSize: "17px",
-                fontWeight: 700,
+                fontSize: "24px",
+                fontWeight: 200,
                 color: "#0f172a",
               }}
             >
@@ -159,16 +225,16 @@ const SeasonalFoodPage = () => {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-              gap: "12px",
+              gap: "18px",
             }}
           >
-            {visibleIngredients.map((item) => {
+            {visibleMonthlyIngredients.map((item) => {
               const imageUrl = getIngredientImageUrl(item);
               return (
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setSelectedIngredient(item)}
+                  onClick={() => handleCardClick(item.id)}
                   style={{
                     textAlign: "left",
                     padding: 0,
@@ -178,6 +244,13 @@ const SeasonalFoodPage = () => {
                     overflow: "hidden",
                     backgroundColor: "#ffffff",
                     cursor: "pointer",
+                    transform:
+                      clickedCardId === item.id ? "scale(0.985)" : "scale(1)",
+                    boxShadow:
+                      clickedCardId === item.id
+                        ? "0 8px 18px rgba(15, 23, 42, 0.14)"
+                        : "0 4px 12px rgba(15, 23, 42, 0.06)",
+                    transition: "transform 0.16s ease, box-shadow 0.16s ease",
                   }}
                 >
                   <div
@@ -208,28 +281,101 @@ const SeasonalFoodPage = () => {
                           color: "#64748b",
                           textAlign: "center",
                           lineHeight: 1.4,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
+                          display:
+                            expandedIngredientId === item.id
+                              ? "block"
+                              : "-webkit-box",
+                          WebkitLineClamp:
+                            expandedIngredientId === item.id ? "unset" : 2,
                           WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
+                          overflow:
+                            expandedIngredientId === item.id
+                              ? "visible"
+                              : "hidden",
                         }}
                       >
                         {item.description}
                       </div>
                     )}
                   </div>
+
+                  {expandedIngredientId === item.id && (
+                    <div style={{ padding: "0 10px 12px 10px" }}>
+                      <div
+                        style={{
+                          marginTop: "2px",
+                          borderTop: "1px solid #e2e8f0",
+                          paddingTop: "10px",
+                        }}
+                      >
+                        {!!item.foods?.length && (
+                          <div
+                            style={{
+                              marginTop: "8px",
+                              marginBottom: "8px",
+                              display: "flex",
+                              flexWrap: "wrap",
+                              justifyContent: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            {item.foods.map((food) => (
+                              <button
+                                key={food}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleClickFoodTag(food);
+                                }}
+                                style={{
+                                  border: "none",
+                                  borderRadius: "999px",
+                                  backgroundColor: "#e0f2fe",
+                                  color: "#0c4a6e",
+                                  padding: "3px 7px",
+                                  fontSize: "11px",
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                #{food}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleClickFindRestaurants(item.name);
+                          }}
+                          style={{
+                            width: "100%",
+                            marginTop: "10px",
+                            height: "40px",
+                            borderRadius: "10px",
+                            border: "1px solid #bae6fd",
+                            backgroundColor: "#f0f9ff",
+                            color: "#0c4a6e",
+                            fontSize: "13px",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {item.name} 맛집 찾아보기
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </button>
               );
             })}
           </div>
-          {visibleCount < shuffledMonthlyIngredients.length && (
+
+          {monthlyVisibleCount < shuffledMonthlyIngredients.length && (
             <button
               type="button"
-              onClick={() =>
-                setVisibleCount((prev) =>
-                  Math.min(prev + 5, shuffledMonthlyIngredients.length),
-                )
-              }
+              onClick={handleClickMonthlyMore}
               style={{
                 width: "100%",
                 marginTop: "12px",
@@ -245,16 +391,22 @@ const SeasonalFoodPage = () => {
                 justifyContent: "center",
                 gap: "4px",
                 cursor: "pointer",
+                transform: isMonthlyMoreAnimating ? "scale(0.985)" : "scale(1)",
+                boxShadow: isMonthlyMoreAnimating
+                  ? "0 6px 14px rgba(15, 23, 42, 0.12)"
+                  : "none",
+                transition: "transform 0.16s ease, box-shadow 0.16s ease",
               }}
             >
               더보기 <ChevronDown size={14} />
             </button>
           )}
-          {visibleCount >= shuffledMonthlyIngredients.length &&
-            shuffledMonthlyIngredients.length > 3 && (
+
+          {monthlyVisibleCount >= shuffledMonthlyIngredients.length &&
+            shuffledMonthlyIngredients.length > 1 && (
               <button
                 type="button"
-                onClick={() => setVisibleCount(3)}
+                onClick={() => setMonthlyVisibleCount(1)}
                 style={{
                   width: "100%",
                   marginTop: "12px",
@@ -275,121 +427,318 @@ const SeasonalFoodPage = () => {
                 접기 <ChevronUp size={14} />
               </button>
             )}
-        </div>
-      </div>
-      {selectedIngredient && (
-        <div
-          onClick={() => setSelectedIngredient(null)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(15, 23, 42, 0.55)",
-            zIndex: 1000,
-            padding: "16px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+
           <div
-            onClick={(e) => e.stopPropagation()}
             style={{
-              width: "100%",
-              maxWidth: "520px",
-              maxHeight: "86vh",
-              overflowY: "auto",
-              backgroundColor: "#ffffff",
-              borderRadius: "16px",
-              border: "1px solid #dbe2ea",
-              boxShadow: "0 18px 38px rgba(15, 23, 42, 0.24)",
+              marginTop: "32px",
+              borderTop: "1px solid #e2e8f0",
+              paddingTop: "32px",
             }}
           >
             <div
               style={{
-                height: "260px",
-                backgroundColor: "#e2e8f0",
-                backgroundImage: `url(${getIngredientImageUrl(selectedIngredient)})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
+                marginBottom: "10px",
+                fontSize: "24px",
+                color: "#0f172a",
+                fontWeight: 400,
               }}
-            />
-            <div style={{ padding: "14px" }}>
-              <div
-                style={{
-                  fontSize: "24px",
-                  fontWeight: 700,
-                  color: "#0f172a",
-                  textAlign: "center",
-                }}
-              >
-                {selectedIngredient.name}
-              </div>
-              {!!selectedIngredient.description && (
-                <div
+            >
+              계절별 제철 식재료
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                gap: "8px",
+              }}
+            >
+              {["봄", "여름", "가을", "겨울"].map((season) => (
+                <button
+                  key={season}
+                  type="button"
+                  onClick={() =>
+                    setSelectedSeason((prev) =>
+                      prev === season ? null : season,
+                    )
+                  }
                   style={{
-                    marginTop: "10px",
+                    height: "38px",
+                    borderRadius: "999px",
+                    borderColor:
+                      season === "봄"
+                        ? "#facc15"
+                        : season === "여름"
+                          ? "#7dd3fc"
+                          : season === "가을"
+                            ? "#fb923c"
+                            : "#dbe2ea",
+                    borderStyle: "solid",
+                    borderWidth: "1px",
+                    backgroundColor:
+                      selectedSeason === season
+                        ? season === "봄"
+                          ? "#facc15"
+                          : season === "여름"
+                            ? "#7dd3fc"
+                            : season === "가을"
+                              ? "#fb923c"
+                              : "#dbe2ea"
+                        : "#ffffff",
+                    color:
+                      selectedSeason === season
+                        ? "#ffffff"
+                        : season === "봄"
+                          ? "#854d0e"
+                          : season === "여름"
+                            ? "#075985"
+                            : season === "가을"
+                              ? "#9a3412"
+                              : "#334155",
                     fontSize: "14px",
-                    color: "#475569",
-                    lineHeight: 1.6,
-                    textAlign: "center",
+                    fontWeight: 700,
+                    cursor: "pointer",
                   }}
                 >
-                  {selectedIngredient.description}
-                </div>
-              )}
-              {!!selectedIngredient.foods?.length && (
-                <div
-                  style={{
-                    marginTop: "12px",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    justifyContent: "center",
-                    gap: "6px",
-                  }}
-                >
-                  {selectedIngredient.foods.map((food) => (
-                    <button
-                      key={food}
-                      type="button"
-                      onClick={() => handleClickFoodTag(food)}
-                      style={{
-                        border: "none",
-                        borderRadius: "999px",
-                        backgroundColor: "#e0f2fe",
-                        color: "#0c4a6e",
-                        padding: "3px 7px",
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                      }}
-                    >
-                      #{food}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={() => handleClickFindRestaurants(selectedIngredient.name)}
-                style={{
-                  width: "100%",
-                  marginTop: "12px",
-                  height: "46px",
-                  borderRadius: "12px",
-                  border: "1px solid #bae6fd",
-                  backgroundColor: "#f0f9ff",
-                  color: "#0c4a6e",
-                  fontSize: "15px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                {selectedIngredient.name} 맛집 찾아보기
-              </button>
+                  {season}
+                </button>
+              ))}
             </div>
           </div>
+
+          {selectedSeason && (
+            <div
+              style={{
+                marginTop: "32px",
+              }}
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr",
+                  gap: "10px",
+                }}
+              >
+                {visibleSeasonIngredients.map((item) => {
+                  const imageUrl = getIngredientImageUrl(item);
+                  return (
+                    <button
+                      key={`season-${item.id}`}
+                      type="button"
+                      onClick={() => handleCardClick(item.id)}
+                      style={{
+                        textAlign: "left",
+                        padding: 0,
+                        width: "100%",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "12px",
+                        overflow: "hidden",
+                        backgroundColor: "#ffffff",
+                        cursor: "pointer",
+                        transform:
+                          clickedCardId === item.id
+                            ? "scale(0.985)"
+                            : "scale(1)",
+                        boxShadow:
+                          clickedCardId === item.id
+                            ? "0 8px 18px rgba(15, 23, 42, 0.14)"
+                            : "0 4px 12px rgba(15, 23, 42, 0.06)",
+                        transition:
+                          "transform 0.16s ease, box-shadow 0.16s ease",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          padding: "9px 10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "64px",
+                            height: "64px",
+                            flexShrink: 0,
+                            borderRadius: "8px",
+                            backgroundColor: "#e2e8f0",
+                            backgroundImage: imageUrl
+                              ? `url(${imageUrl})`
+                              : "none",
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                          }}
+                        />
+                        <div style={{ minWidth: 0, width: "100%" }}>
+                          <div
+                            style={{
+                              fontSize: "17px",
+                              color: "#0f172a",
+                              fontWeight: 700,
+                            }}
+                          >
+                            {item.name}
+                          </div>
+                          {!!item.description && (
+                            <div
+                              style={{
+                                marginTop: "4px",
+                                fontSize: "12px",
+                                color: "#64748b",
+                                lineHeight: 1.4,
+                                display:
+                                  expandedIngredientId === item.id
+                                    ? "block"
+                                    : "-webkit-box",
+                                WebkitLineClamp:
+                                  expandedIngredientId === item.id
+                                    ? "unset"
+                                    : 1,
+                                WebkitBoxOrient: "vertical",
+                                overflow:
+                                  expandedIngredientId === item.id
+                                    ? "visible"
+                                    : "hidden",
+                              }}
+                            >
+                              {item.description}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {expandedIngredientId === item.id && (
+                        <div style={{ padding: "0 10px 10px 10px" }}>
+                          <div
+                            style={{
+                              marginTop: "2px",
+                              borderTop: "1px solid #e2e8f0",
+                              paddingTop: "10px",
+                            }}
+                          >
+                            {!!item.foods?.length && (
+                              <div
+                                style={{
+                                  marginTop: "8px",
+                                  marginBottom: "8px",
+                                  display: "flex",
+                                  flexWrap: "wrap",
+                                  justifyContent: "center",
+                                  gap: "6px",
+                                }}
+                              >
+                                {item.foods.map((food) => (
+                                  <button
+                                    key={food}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleClickFoodTag(food);
+                                    }}
+                                    style={{
+                                      border: "none",
+                                      borderRadius: "999px",
+                                      backgroundColor: "#e0f2fe",
+                                      color: "#0c4a6e",
+                                      padding: "3px 7px",
+                                      fontSize: "11px",
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    #{food}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleClickFindRestaurants(item.name);
+                              }}
+                              style={{
+                                width: "100%",
+                                marginTop: "10px",
+                                height: "40px",
+                                borderRadius: "10px",
+                                border: "1px solid #bae6fd",
+                                backgroundColor: "#f0f9ff",
+                                color: "#0c4a6e",
+                                fontSize: "13px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              {item.name} 맛집 찾아보기
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              {seasonVisibleCount < seasonIngredients.length && (
+                <button
+                  type="button"
+                  onClick={handleClickSeasonMore}
+                  style={{
+                    width: "100%",
+                    marginTop: "12px",
+                    height: "42px",
+                    borderRadius: "10px",
+                    border: "1px solid #dbe2ea",
+                    backgroundColor: "#ffffff",
+                    color: "#475569",
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "4px",
+                    cursor: "pointer",
+                    transform: isSeasonMoreAnimating
+                      ? "scale(0.985)"
+                      : "scale(1)",
+                    boxShadow: isSeasonMoreAnimating
+                      ? "0 6px 14px rgba(15, 23, 42, 0.12)"
+                      : "none",
+                    transition: "transform 0.16s ease, box-shadow 0.16s ease",
+                  }}
+                >
+                  더보기 <ChevronDown size={14} />
+                </button>
+              )}
+            </div>
+          )}
+          <div
+            style={{
+              marginTop: "32px",
+              borderTop: "1px solid #e2e8f0",
+              paddingTop: "32px",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => navigate("/seasonal-food-/worldcub")}
+              style={{
+                width: "100%",
+                height: "52px",
+                borderRadius: "14px",
+                border: "1px solid rgba(30, 41, 59, 0.55)",
+                background:
+                  "linear-gradient(135deg, #334155 0%, #1f2937 55%, #0f172a 100%)",
+                color: "#ffffff",
+                fontSize: "16px",
+                fontWeight: 700,
+                letterSpacing: "0.2px",
+                cursor: "pointer",
+              }}
+            >
+              제철음식 월드컵
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
