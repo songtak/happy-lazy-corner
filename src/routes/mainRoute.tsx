@@ -41,6 +41,11 @@ const programRoutes: RouteObject[] = [
     element: <Program.SeasonalFoodPage />,
     errorElement: <ErrorPage />,
   },
+  {
+    path: "/seasonal-food-/worldcub",
+    element: <Program.SeasonalFoodWorldcubPage />,
+    errorElement: <ErrorPage />,
+  },
 ];
 
 // const programRoutes: RouteObject[] = [

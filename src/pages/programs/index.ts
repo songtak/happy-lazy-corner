@@ -4,6 +4,7 @@ import LostAndFoundPage from "./LostAndFoundPage";
 import LostAndFoundMainPage from "./LostAndFoundMainPage";
 import LostAndFoundPageJW from "./LostAndFoundPageJW";
 import SeasonalFoodPage from "./SeasonalFoodPage";
+import SeasonalFoodWorldcubPage from "./SeasonalFoodWorldcubPage";
 
 export {
   YearlyProgressPage,
@@ -12,4 +13,5 @@ export {
   LostAndFoundMainPage,
   LostAndFoundPageJW,
   SeasonalFoodPage,
+  SeasonalFoodWorldcubPage,
 };

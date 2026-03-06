@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import ingredientDb from "@/assets/seasonalFood/ingredient_db.json";
 
 const DEPLOY_BASE_URL = "https://songtak.github.io/happy-lazy-corner";
-const INGREDIENT_IMAGE_PATH = "src/assets/seasonalFood/img";
+const INGREDIENT_IMAGE_PATH = "/sfimg";
 
 type IngredientItem = {
   id: number;
@@ -10,142 +12,42 @@ type IngredientItem = {
   months: number[];
   imgUrl?: string;
   description?: string;
+  foods?: string[];
 };
 
-/** 제철 음식 추천기 */
 const SeasonalFoodPage = () => {
-  const [selectedRound, setSelectedRound] = useState<string>("32");
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const [hoveredOption, setHoveredOption] = useState<string | null>(null);
-  const [isStartHovered, setIsStartHovered] = useState<boolean>(false);
-  const [isStartPressed, setIsStartPressed] = useState<boolean>(false);
-  const [roundPool, setRoundPool] = useState<IngredientItem[]>([]);
-  const [winners, setWinners] = useState<IngredientItem[]>([]);
-  const [battleIndex, setBattleIndex] = useState<number>(0);
-  const [currentRoundLabel, setCurrentRoundLabel] = useState<string>("");
-  const [champion, setChampion] = useState<IngredientItem | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const currentMonth = new Date().getMonth() + 1;
-  const monthCopyList = [`나의 ${currentMonth}월 제철 음식 원픽은?`];
-  const monthCopy = monthCopyList[currentMonth % monthCopyList.length];
+  const navigate = useNavigate();
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentDay = now.getDate();
+  const [visibleCount, setVisibleCount] = useState<number>(3);
+  const [selectedIngredient, setSelectedIngredient] =
+    useState<IngredientItem | null>(null);
+  const todayLabel = `${String(currentMonth).padStart(2, "0")}월 ${String(
+    currentDay,
+  ).padStart(2, "0")}일`;
 
-  const roundOptions = [
-    { value: "32", label: "32강" },
-    { value: "16", label: "16강" },
-    { value: "8", label: "8강" },
-  ];
+  const monthlyIngredients = useMemo(
+    () =>
+      (ingredientDb as IngredientItem[])
+        .filter((item) => item.months.includes(currentMonth))
+        .sort((a, b) => a.name.localeCompare(b.name, "ko")),
+    [currentMonth],
+  );
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!dropdownRef.current) return;
-      if (!dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const getShuffledIngredients = (ingredients: IngredientItem[]) => {
-    const cloned = [...ingredients];
-    for (let i = cloned.length - 1; i > 0; i -= 1) {
+  const shuffledMonthlyIngredients = useMemo(() => {
+    const shuffled = [...monthlyIngredients];
+    for (let i = shuffled.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1));
-      [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    return cloned;
-  };
+    return shuffled;
+  }, [monthlyIngredients]);
 
-  const getTournamentSize = (requestedSize: number, availableCount: number) => {
-    const maxSize = Math.min(requestedSize, availableCount);
-    if (maxSize < 2) return 0;
-    return 2 ** Math.floor(Math.log2(maxSize));
-  };
-
-  const getRoundTone = (roundSize: number) => {
-    if (roundSize >= 32) {
-      return { bg: "#ecfeff", border: "#67e8f9", text: "#155e75" };
-    }
-    if (roundSize >= 16) {
-      return { bg: "#eef2ff", border: "#a5b4fc", text: "#3730a3" };
-    }
-    if (roundSize >= 8) {
-      return { bg: "#fff7ed", border: "#fdba74", text: "#9a3412" };
-    }
-    if (roundSize >= 4) {
-      return { bg: "#fff1f2", border: "#fda4af", text: "#9f1239" };
-    }
-    return { bg: "#fef2f2", border: "#f87171", text: "#991b1b" };
-  };
-
-  const resetTournament = () => {
-    setRoundPool([]);
-    setWinners([]);
-    setBattleIndex(0);
-    setCurrentRoundLabel("");
-    setChampion(null);
-    setErrorMessage("");
-  };
-
-  const handleStart = () => {
-    const roundSize = Number(selectedRound);
-    const monthlyIngredients = (ingredientDb as IngredientItem[]).filter(
-      (item) => item.months.includes(currentMonth),
-    );
-
-    const tournamentSize = getTournamentSize(
-      roundSize,
-      monthlyIngredients.length,
-    );
-    if (tournamentSize < 2) {
-      setErrorMessage(
-        `${currentMonth}월 재료가 부족해서 월드컵을 시작할 수 없어요.`,
-      );
-      return;
-    }
-
-    const randomPick = getShuffledIngredients(monthlyIngredients).slice(
-      0,
-      tournamentSize,
-    );
-
-    setRoundPool(randomPick);
-    setWinners([]);
-    setBattleIndex(0);
-    setCurrentRoundLabel(`${randomPick.length}강`);
-    setChampion(null);
-    setErrorMessage("");
-  };
-
-  const handlePickWinner = (winner: IngredientItem) => {
-    const nextWinners = [...winners, winner];
-    const nextIndex = battleIndex + 2;
-
-    if (nextIndex >= roundPool.length) {
-      if (nextWinners.length === 1) {
-        setChampion(nextWinners[0]);
-        return;
-      }
-
-      setRoundPool(nextWinners);
-      setWinners([]);
-      setBattleIndex(0);
-      setCurrentRoundLabel(`${nextWinners.length}강`);
-      return;
-    }
-
-    setWinners(nextWinners);
-    setBattleIndex(nextIndex);
-  };
-
-  const handleClickFindNearbyRestaurants = () => {
-    if (!champion) return;
-    const query = encodeURIComponent(`${champion.name} 맛집`);
-    window.open(`https://map.naver.com/p/search/${query}`, "_blank");
-  };
+  const visibleIngredients = shuffledMonthlyIngredients.slice(
+    0,
+    Math.min(visibleCount, shuffledMonthlyIngredients.length),
+  );
 
   const getAbsoluteUrl = (path: string) =>
     `${DEPLOY_BASE_URL}/${path.replace(/^\/+/, "")}`;
@@ -165,297 +67,132 @@ const SeasonalFoodPage = () => {
     );
   };
 
-  const leftItem = roundPool[battleIndex];
-  const rightItem = roundPool[battleIndex + 1];
-  const currentMatch = Math.floor(battleIndex / 2) + 1;
-  const totalMatches = Math.max(1, Math.floor(roundPool.length / 2));
-  const roundTone = getRoundTone(roundPool.length);
+  const handleClickFoodTag = (food: string) => {
+    const query = encodeURIComponent(food);
+    window.open(`https://search.naver.com/search.naver?query=${query}`, "_blank");
+  };
+
+  const handleClickFindRestaurants = (name: string) => {
+    const query = encodeURIComponent(`${name} 맛집`);
+    window.open(`https://search.naver.com/search.naver?query=${query}`, "_blank");
+  };
 
   return (
     <div
       style={{
         width: "100%",
         minHeight: "60vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
         fontFamily: "GMedium",
-        padding: "24px 16px",
+        padding: "24px 16px 40px",
+        marginBottom: "60px",
       }}
     >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "480px",
-          backgroundColor: "#ffffff",
-          borderRadius: "16px",
-          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.08)",
-          padding: "28px 20px",
-        }}
-      >
+      <div style={{ width: "100%", maxWidth: "820px", margin: "0 auto" }}>
         <h1
           style={{
             margin: 0,
-            textAlign: "center",
             fontSize: "30px",
-            color: "#1f2937",
+            textAlign: "center",
+            color: "#0f172a",
+            transform: "translateY(-4px)",
           }}
         >
-          제철음식 월드컵
+          제철 사냥꾼
         </h1>
         <div
           style={{
-            marginTop: "8px",
-            marginBottom: "8px",
-            fontSize: "18px",
-            color: "#475569",
-            fontWeight: 700,
+            marginTop: "2px",
+            marginBottom: "10px",
+            fontSize: "14px",
+            color: "#64748b",
             textAlign: "center",
           }}
         >
-          {monthCopy}
+          {todayLabel}
         </div>
 
-        {roundPool.length === 0 && !champion && (
-          <>
-            <div style={{ marginTop: "28px" }}>
-              <div
-                style={{
-                  marginBottom: "8px",
-                  fontSize: "14px",
-                  color: "#4b5563",
-                }}
-              >
-                라운드 선택
-              </div>
-              <div style={{ position: "relative" }} ref={dropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsDropdownOpen((prev) => !prev)}
-                  style={{
-                    width: "100%",
-                    height: "52px",
-                    borderRadius: "12px",
-                    border: isDropdownOpen
-                      ? "1px solid #16a34a"
-                      : "1px solid #d1d5db",
-                    padding: "0 44px 0 14px",
-                    fontSize: "16px",
-                    fontFamily: "GMedium",
-                    textAlign: "left",
-                    color: "#374151",
-                    backgroundColor: "#f9fafb",
-                    cursor: "pointer",
-                    boxShadow: isDropdownOpen
-                      ? "0 0 0 4px rgba(22, 163, 74, 0.15)"
-                      : "none",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  {selectedRound}강
-                </button>
+        <button
+          type="button"
+          onClick={() => navigate("/seasonal-food-/worldcub")}
+          style={{
+            width: "100%",
+            marginTop: "16px",
+            height: "52px",
+            borderRadius: "14px",
+            border: "1px solid rgba(30, 41, 59, 0.55)",
+            background:
+              "linear-gradient(135deg, #334155 0%, #1f2937 55%, #0f172a 100%)",
+            color: "#ffffff",
+            fontSize: "16px",
+            fontWeight: 700,
+            letterSpacing: "0.2px",
+            cursor: "pointer",
+          }}
+        >
+          제철음식 월드컵
+        </button>
 
-                {isDropdownOpen && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      zIndex: 10,
-                      top: "56px",
-                      left: 0,
-                      right: 0,
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #d1d5db",
-                      borderRadius: "12px",
-                      overflow: "hidden",
-                      boxShadow: "0 12px 24px rgba(0, 0, 0, 0.12)",
-                    }}
-                  >
-                    {roundOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => {
-                          setSelectedRound(option.value);
-                          setIsDropdownOpen(false);
-                        }}
-                        onMouseEnter={() => setHoveredOption(option.value)}
-                        onMouseLeave={() => setHoveredOption(null)}
-                        style={{
-                          width: "100%",
-                          height: "44px",
-                          border: "none",
-                          borderBottom:
-                            option.value !==
-                            roundOptions[roundOptions.length - 1].value
-                              ? "1px solid #f3f4f6"
-                              : "none",
-                          textAlign: "left",
-                          padding: "0 14px",
-                          fontSize: "15px",
-                          cursor: "pointer",
-                          backgroundColor:
-                            option.value === selectedRound
-                              ? "#ecfdf3"
-                              : hoveredOption === option.value
-                                ? "#f3f4f6"
-                                : "#ffffff",
-                          color:
-                            option.value === selectedRound
-                              ? "#166534"
-                              : "#374151",
-                        }}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <span
-                  style={{
-                    position: "absolute",
-                    right: "14px",
-                    top: "50%",
-                    transform: isDropdownOpen
-                      ? "translateY(-50%) rotate(180deg)"
-                      : "translateY(-50%)",
-                    color: "#6b7280",
-                    fontSize: "13px",
-                    pointerEvents: "none",
-                    transition: "transform 0.2s ease",
-                  }}
-                >
-                  ▼
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={handleStart}
-              onMouseEnter={() => setIsStartHovered(true)}
-              onMouseLeave={() => {
-                setIsStartHovered(false);
-                setIsStartPressed(false);
-              }}
-              onMouseDown={() => setIsStartPressed(true)}
-              onMouseUp={() => setIsStartPressed(false)}
-              style={{
-                width: "100%",
-                marginTop: "14px",
-                height: "52px",
-                borderRadius: "14px",
-                border: "1px solid rgba(30, 41, 59, 0.55)",
-                background:
-                  "linear-gradient(135deg, #334155 0%, #1f2937 55%, #0f172a 100%)",
-                color: "#ffffff",
-                fontSize: "16px",
-                fontWeight: 700,
-                letterSpacing: "0.3px",
-                cursor: "pointer",
-                boxShadow: isStartHovered
-                  ? "0 12px 20px rgba(15, 23, 42, 0.30)"
-                  : "0 8px 14px rgba(15, 23, 42, 0.20)",
-                transform: isStartPressed
-                  ? "translateY(1px) scale(0.995)"
-                  : isStartHovered
-                    ? "translateY(-1px)"
-                    : "translateY(0)",
-                transition: "all 0.18s ease",
-              }}
-            >
-              시작
-            </button>
-            {!!errorMessage && (
-              <div
-                style={{
-                  marginTop: "12px",
-                  padding: "10px 12px",
-                  borderRadius: "10px",
-                  backgroundColor: "#fff1f2",
-                  color: "#9f1239",
-                  fontSize: "13px",
-                }}
-              >
-                {errorMessage}
-              </div>
-            )}
-          </>
-        )}
-
-        {roundPool.length > 0 && !champion && leftItem && rightItem && (
-          <div style={{ marginTop: "20px" }}>
+        <div
+          style={{
+            marginTop: "20px",
+            borderTop: "1px solid #e2e8f0",
+            paddingTop: "14px",
+          }}
+        >
+          <div
+            style={{
+              marginBottom: "10px",
+            }}
+          >
             <div
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: "12px",
+                fontSize: "17px",
+                fontWeight: 700,
+                color: "#0f172a",
               }}
             >
-              <span
-                style={{
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  color: roundTone.text,
-                  backgroundColor: roundTone.bg,
-                  border: `1px solid ${roundTone.border}`,
-                  borderRadius: "999px",
-                  padding: "4px 10px",
-                }}
-              >
-                {currentRoundLabel}
-              </span>
-              <span
-                style={{
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  color: roundTone.text,
-                  backgroundColor: roundTone.bg,
-                  border: `1px solid ${roundTone.border}`,
-                  borderRadius: "999px",
-                  padding: "4px 10px",
-                }}
-              >
-                {currentMatch} / {totalMatches}
-              </span>
+              {currentMonth}월의 제철 식재료
             </div>
+          </div>
 
-            <div style={{ display: "flex", gap: "12px" }}>
-              {[leftItem, rightItem].map((item) => {
-                const imageUrl = getIngredientImageUrl(item);
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => handlePickWinner(item)}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+              gap: "12px",
+            }}
+          >
+            {visibleIngredients.map((item) => {
+              const imageUrl = getIngredientImageUrl(item);
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setSelectedIngredient(item)}
+                  style={{
+                    textAlign: "left",
+                    padding: 0,
+                    width: "100%",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                    backgroundColor: "#ffffff",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div
                     style={{
-                      flex: 1,
-                      border: "1px solid #dbe2ea",
-                      backgroundColor: "#ffffff",
-                      borderRadius: "14px",
-                      padding: "0",
-                      overflow: "hidden",
-                      cursor: "pointer",
+                      height: "124px",
+                      backgroundColor: "#e2e8f0",
+                      backgroundImage: imageUrl ? `url(${imageUrl})` : "none",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
                     }}
-                  >
+                  />
+                  <div style={{ padding: "10px 10px 12px" }}>
                     <div
                       style={{
-                        height: "200px",
-                        backgroundColor: "#e2e8f0",
-                        backgroundImage: imageUrl ? `url(${imageUrl})` : "none",
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#1e293b",
-                        fontSize: "14px",
-                      }}
-                    >
-                      {!imageUrl && "imgUrl 준비중"}
-                    </div>
-                    <div
-                      style={{
-                        padding: "12px",
-                        fontSize: "20px",
+                        fontSize: "16px",
                         color: "#0f172a",
                         fontWeight: 700,
                         textAlign: "center",
@@ -463,109 +200,196 @@ const SeasonalFoodPage = () => {
                     >
                       {item.name}
                     </div>
-                  </button>
-                );
-              })}
+                    {!!item.description && (
+                      <div
+                        style={{
+                          marginTop: "6px",
+                          fontSize: "12px",
+                          color: "#64748b",
+                          textAlign: "center",
+                          lineHeight: 1.4,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {item.description}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          {visibleCount < shuffledMonthlyIngredients.length && (
+            <button
+              type="button"
+              onClick={() =>
+                setVisibleCount((prev) =>
+                  Math.min(prev + 5, shuffledMonthlyIngredients.length),
+                )
+              }
+              style={{
+                width: "100%",
+                marginTop: "12px",
+                height: "42px",
+                borderRadius: "10px",
+                border: "1px solid #dbe2ea",
+                backgroundColor: "#ffffff",
+                color: "#475569",
+                fontSize: "14px",
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "4px",
+                cursor: "pointer",
+              }}
+            >
+              더보기 <ChevronDown size={14} />
+            </button>
+          )}
+          {visibleCount >= shuffledMonthlyIngredients.length &&
+            shuffledMonthlyIngredients.length > 3 && (
+              <button
+                type="button"
+                onClick={() => setVisibleCount(3)}
+                style={{
+                  width: "100%",
+                  marginTop: "12px",
+                  height: "42px",
+                  borderRadius: "10px",
+                  border: "1px solid #dbe2ea",
+                  backgroundColor: "#ffffff",
+                  color: "#475569",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                접기 <ChevronUp size={14} />
+              </button>
+            )}
+        </div>
+      </div>
+      {selectedIngredient && (
+        <div
+          onClick={() => setSelectedIngredient(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(15, 23, 42, 0.55)",
+            zIndex: 1000,
+            padding: "16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: "520px",
+              maxHeight: "86vh",
+              overflowY: "auto",
+              backgroundColor: "#ffffff",
+              borderRadius: "16px",
+              border: "1px solid #dbe2ea",
+              boxShadow: "0 18px 38px rgba(15, 23, 42, 0.24)",
+            }}
+          >
+            <div
+              style={{
+                height: "260px",
+                backgroundColor: "#e2e8f0",
+                backgroundImage: `url(${getIngredientImageUrl(selectedIngredient)})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            />
+            <div style={{ padding: "14px" }}>
+              <div
+                style={{
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#0f172a",
+                  textAlign: "center",
+                }}
+              >
+                {selectedIngredient.name}
+              </div>
+              {!!selectedIngredient.description && (
+                <div
+                  style={{
+                    marginTop: "10px",
+                    fontSize: "14px",
+                    color: "#475569",
+                    lineHeight: 1.6,
+                    textAlign: "center",
+                  }}
+                >
+                  {selectedIngredient.description}
+                </div>
+              )}
+              {!!selectedIngredient.foods?.length && (
+                <div
+                  style={{
+                    marginTop: "12px",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    gap: "6px",
+                  }}
+                >
+                  {selectedIngredient.foods.map((food) => (
+                    <button
+                      key={food}
+                      type="button"
+                      onClick={() => handleClickFoodTag(food)}
+                      style={{
+                        border: "none",
+                        borderRadius: "999px",
+                        backgroundColor: "#e0f2fe",
+                        color: "#0c4a6e",
+                        padding: "3px 7px",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      #{food}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => handleClickFindRestaurants(selectedIngredient.name)}
+                style={{
+                  width: "100%",
+                  marginTop: "12px",
+                  height: "46px",
+                  borderRadius: "12px",
+                  border: "1px solid #bae6fd",
+                  backgroundColor: "#f0f9ff",
+                  color: "#0c4a6e",
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {selectedIngredient.name} 맛집 찾아보기
+              </button>
             </div>
           </div>
-        )}
-
-        {champion && (
-          <div style={{ marginTop: "20px" }}>
-            {(() => {
-              const championImageUrl = getIngredientImageUrl(champion);
-              return (
-                <>
-                  <div
-                    style={{
-                      textAlign: "center",
-                      fontSize: "16px",
-                      color: "#475569",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    최종 우승
-                  </div>
-                  <div
-                    style={{
-                      border: "1px solid #dbe2ea",
-                      borderRadius: "14px",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "220px",
-                        backgroundColor: "#e2e8f0",
-                        backgroundImage: championImageUrl
-                          ? `url(${championImageUrl})`
-                          : "none",
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#1e293b",
-                        fontSize: "14px",
-                      }}
-                    >
-                      {!championImageUrl && "imgUrl 준비중"}
-                    </div>
-                    <div
-                      style={{
-                        padding: "12px",
-                        fontSize: "22px",
-                        color: "#0f172a",
-                        fontWeight: 700,
-                        textAlign: "center",
-                      }}
-                    >
-                      {champion.name}
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleClickFindNearbyRestaurants}
-                    style={{
-                      width: "100%",
-                      marginTop: "10px",
-                      height: "48px",
-                      borderRadius: "12px",
-                      border: "1px solid #bae6fd",
-                      backgroundColor: "#f0f9ff",
-                      color: "#0c4a6e",
-                      fontSize: "15px",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
-                  >
-                    주변 맛집 찾아보기 👀
-                  </button>
-                  <button
-                    type="button"
-                    onClick={resetTournament}
-                    style={{
-                      width: "100%",
-                      marginTop: "12px",
-                      height: "48px",
-                      borderRadius: "12px",
-                      border: "1px solid #cbd5e1",
-                      backgroundColor: "#ffffff",
-                      color: "#0f172a",
-                      fontSize: "15px",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
-                  >
-                    다시 하기
-                  </button>
-                </>
-              );
-            })()}
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
