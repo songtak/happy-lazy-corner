@@ -42,7 +42,7 @@ const programRoutes: RouteObject[] = [
     errorElement: <ErrorPage />,
   },
   {
-    path: "/seasonal-food-/worldcub",
+    path: "/seasonal-food/worldcub",
     element: <Program.SeasonalFoodWorldcubPage />,
     errorElement: <ErrorPage />,
   },

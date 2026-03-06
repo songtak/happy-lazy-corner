@@ -16,16 +16,25 @@ type IngredientItem = {
   id: number;
   name: string;
   months: number[];
+  categoryId?: number;
   imgUrl?: string;
   description?: string;
   foods?: string[];
+  coupangUrl?: string;
 };
 
 const SeasonalFoodPage = () => {
+  const categoryOptions = [
+    { id: 0, label: "전체" },
+    { id: 1, label: "해산물" },
+    { id: 2, label: "채소" },
+    { id: 3, label: "과일" },
+    { id: 4, label: "곡물" },
+  ];
+
   const navigate = useNavigate();
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
-  const currentDay = now.getDate();
 
   const [monthlyVisibleCount, setMonthlyVisibleCount] = useState<number>(1);
   const [seasonVisibleCount, setSeasonVisibleCount] = useState<number>(5);
@@ -33,6 +42,7 @@ const SeasonalFoodPage = () => {
     number | null
   >(null);
   const [selectedSeason, setSelectedSeason] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
   const [clickedCardId, setClickedCardId] = useState<number | null>(null);
   const [isMonthlyMoreAnimating, setIsMonthlyMoreAnimating] =
     useState<boolean>(false);
@@ -41,10 +51,6 @@ const SeasonalFoodPage = () => {
   const cardClickTimerRef = useRef<number | null>(null);
   const monthlyMoreTimerRef = useRef<number | null>(null);
   const seasonMoreTimerRef = useRef<number | null>(null);
-
-  const todayLabel = `${String(currentMonth).padStart(2, "0")}월 ${String(
-    currentDay,
-  ).padStart(2, "0")}일`;
 
   const monthlyIngredients = useMemo(() => {
     return (ingredientDb as IngredientItem[])
@@ -76,9 +82,16 @@ const SeasonalFoodPage = () => {
       .sort((a, b) => a.name.localeCompare(b.name, "ko"));
   }, [selectedSeason]);
 
-  const visibleSeasonIngredients = seasonIngredients.slice(
+  const filteredSeasonIngredients = useMemo(() => {
+    if (selectedCategoryId === 0) return seasonIngredients;
+    return seasonIngredients.filter(
+      (item) => item.categoryId === selectedCategoryId,
+    );
+  }, [seasonIngredients, selectedCategoryId]);
+
+  const visibleSeasonIngredients = filteredSeasonIngredients.slice(
     0,
-    Math.min(seasonVisibleCount, seasonIngredients.length),
+    Math.min(seasonVisibleCount, filteredSeasonIngredients.length),
   );
 
   useEffect(() => {
@@ -87,7 +100,12 @@ const SeasonalFoodPage = () => {
 
   useEffect(() => {
     setSeasonVisibleCount(5);
+    setSelectedCategoryId(0);
   }, [selectedSeason]);
+
+  useEffect(() => {
+    setSeasonVisibleCount(5);
+  }, [selectedCategoryId]);
 
   useEffect(() => {
     return () => {
@@ -134,6 +152,11 @@ const SeasonalFoodPage = () => {
     );
   };
 
+  const handleClickCoupang = (coupangUrl?: string) => {
+    if (!coupangUrl) return;
+    window.open(coupangUrl, "_blank");
+  };
+
   const handleCardClick = (id: number) => {
     if (cardClickTimerRef.current)
       window.clearTimeout(cardClickTimerRef.current);
@@ -159,7 +182,7 @@ const SeasonalFoodPage = () => {
   const handleClickSeasonMore = () => {
     setIsSeasonMoreAnimating(true);
     setSeasonVisibleCount((prev) =>
-      Math.min(prev + 5, seasonIngredients.length),
+      Math.min(prev + 5, filteredSeasonIngredients.length),
     );
     if (seasonMoreTimerRef.current)
       window.clearTimeout(seasonMoreTimerRef.current);
@@ -192,18 +215,6 @@ const SeasonalFoodPage = () => {
         </h1>
         <div
           style={{
-            marginTop: "2px",
-            marginBottom: "10px",
-            fontSize: "14px",
-            color: "#64748b",
-            textAlign: "center",
-          }}
-        >
-          {todayLabel}
-        </div>
-
-        <div
-          style={{
             marginTop: "32px",
             borderTop: "1px solid #e2e8f0",
             paddingTop: "32px",
@@ -217,7 +228,7 @@ const SeasonalFoodPage = () => {
                 color: "#0f172a",
               }}
             >
-              {currentMonth}월의 제철 식재료
+              {currentMonth}월의 제철 식재료 🌱
             </div>
           </div>
 
@@ -297,6 +308,18 @@ const SeasonalFoodPage = () => {
                         {item.description}
                       </div>
                     )}
+                    {expandedIngredientId === item.id && (
+                      <div
+                        style={{
+                          marginTop: "22px",
+                          fontSize: "11px",
+                          color: "#6b7280",
+                          textAlign: "center",
+                        }}
+                      >
+                        시기 : {item.months.join(", ")}월
+                      </div>
+                    )}
                   </div>
 
                   {expandedIngredientId === item.id && (
@@ -343,6 +366,50 @@ const SeasonalFoodPage = () => {
                             ))}
                           </div>
                         )}
+                        {!item.months.includes(currentMonth) ? (
+                          <button
+                            type="button"
+                            disabled
+                            style={{
+                              width: "100%",
+                              marginTop: "10px",
+                              height: "40px",
+                              borderRadius: "10px",
+                              border: "1px solid #d1d5db",
+                              backgroundColor: "#e5e7eb",
+                              color: "#6b7280",
+                              fontSize: "13px",
+                              fontWeight: 700,
+                              cursor: "not-allowed",
+                            }}
+                          >
+                            아직 제철이 아니에요 🥲
+                          </button>
+                        ) : (
+                          !!item.coupangUrl && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleClickCoupang(item.coupangUrl);
+                              }}
+                              style={{
+                                width: "100%",
+                                marginTop: "10px",
+                                height: "40px",
+                                borderRadius: "10px",
+                                border: "1px solid #fde68a",
+                                backgroundColor: "#fef3c7",
+                                color: "#92400e",
+                                fontSize: "13px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              {item.name} 사러가기 🛒
+                            </button>
+                          )
+                        )}
                         <button
                           type="button"
                           onClick={(e) => {
@@ -362,7 +429,7 @@ const SeasonalFoodPage = () => {
                             cursor: "pointer",
                           }}
                         >
-                          {item.name} 맛집 찾아보기
+                          {item.name} 맛집 찾아보기 👀
                         </button>
                       </div>
                     </div>
@@ -513,6 +580,43 @@ const SeasonalFoodPage = () => {
             >
               <div
                 style={{
+                  marginBottom: "10px",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+                  gap: "8px",
+                }}
+              >
+                {categoryOptions.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => setSelectedCategoryId(category.id)}
+                    style={{
+                      height: "34px",
+                      borderRadius: "999px",
+                      border:
+                        selectedCategoryId === category.id
+                          ? "1px solid #1f2937"
+                          : "1px solid #dbe2ea",
+                      backgroundColor:
+                        selectedCategoryId === category.id
+                          ? "#1f2937"
+                          : "#ffffff",
+                      color:
+                        selectedCategoryId === category.id
+                          ? "#ffffff"
+                          : "#334155",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+              <div
+                style={{
                   display: "grid",
                   gridTemplateColumns: "1fr",
                   gap: "10px",
@@ -603,6 +707,17 @@ const SeasonalFoodPage = () => {
                               {item.description}
                             </div>
                           )}
+                          {expandedIngredientId === item.id && (
+                            <div
+                              style={{
+                                marginTop: "8px",
+                                fontSize: "10px",
+                                color: "#6b7280",
+                              }}
+                            >
+                              시기 : {item.months.join(", ")}월
+                            </div>
+                          )}
                         </div>
                       </div>
                       {expandedIngredientId === item.id && (
@@ -649,6 +764,50 @@ const SeasonalFoodPage = () => {
                                 ))}
                               </div>
                             )}
+                            {!item.months.includes(currentMonth) ? (
+                              <button
+                                type="button"
+                                disabled
+                                style={{
+                                  width: "100%",
+                                  marginTop: "10px",
+                                  height: "40px",
+                                  borderRadius: "10px",
+                                  border: "1px solid #d1d5db",
+                                  backgroundColor: "#e5e7eb",
+                                  color: "#6b7280",
+                                  fontSize: "13px",
+                                  fontWeight: 700,
+                                  cursor: "not-allowed",
+                                }}
+                              >
+                                아직 제철이 아니에요 🥲
+                              </button>
+                            ) : (
+                              !!item.coupangUrl && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleClickCoupang(item.coupangUrl);
+                                  }}
+                                  style={{
+                                    width: "100%",
+                                    marginTop: "10px",
+                                    height: "40px",
+                                    borderRadius: "10px",
+                                    border: "1px solid #fde68a",
+                                    backgroundColor: "#fef3c7",
+                                    color: "#92400e",
+                                    fontSize: "13px",
+                                    fontWeight: 700,
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  {item.name} 사러가기 🛒
+                                </button>
+                              )
+                            )}
                             <button
                               type="button"
                               onClick={(e) => {
@@ -668,7 +827,7 @@ const SeasonalFoodPage = () => {
                                 cursor: "pointer",
                               }}
                             >
-                              {item.name} 맛집 찾아보기
+                              {item.name} 맛집 찾아보기 👀
                             </button>
                           </div>
                         </div>
@@ -677,7 +836,7 @@ const SeasonalFoodPage = () => {
                   );
                 })}
               </div>
-              {seasonVisibleCount < seasonIngredients.length && (
+              {seasonVisibleCount < filteredSeasonIngredients.length && (
                 <button
                   type="button"
                   onClick={handleClickSeasonMore}
@@ -719,7 +878,7 @@ const SeasonalFoodPage = () => {
           >
             <button
               type="button"
-              onClick={() => navigate("/seasonal-food-/worldcub")}
+              onClick={() => navigate("/seasonal-food/worldcub")}
               style={{
                 width: "100%",
                 height: "52px",
@@ -734,7 +893,7 @@ const SeasonalFoodPage = () => {
                 cursor: "pointer",
               }}
             >
-              제철음식 월드컵
+              제철 음식 월드컵
             </button>
           </div>
         </div>

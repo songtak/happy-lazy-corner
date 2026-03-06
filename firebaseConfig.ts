@@ -29,6 +29,16 @@ const proxyFirebaseConfig = {
   measurementId: "G-RN0SJ4NBL5",
 };
 
+const seasonalFoodFirebaseConfig = {
+  apiKey: "AIzaSyDXS1lRm9EgDQ0S0iEc_umHQJftCsKHa6A",
+  authDomain: "seasonal-food-d5c2f.firebaseapp.com",
+  projectId: "seasonal-food-d5c2f",
+  storageBucket: "seasonal-food-d5c2f.firebasestorage.app",
+  messagingSenderId: "1046406753729",
+  appId: "1:1046406753729:web:a917de716041b5b8925340",
+  measurementId: "G-KLKZCRCQC6",
+};
+
 // Initialize Firebase (main project)
 export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const analytics =
@@ -42,5 +52,14 @@ export const proxyApp =
 export const proxyAnalytics =
   typeof window !== "undefined" ? getAnalytics(proxyApp) : null;
 
+// Initialize Firebase (seasonal-food project as secondary app)
+const SEASONAL_FOOD_APP_NAME = "seasonal-food-d5c2f";
+export const seasonalFoodApp =
+  getApps().find((item) => item.name === SEASONAL_FOOD_APP_NAME) ||
+  initializeApp(seasonalFoodFirebaseConfig, SEASONAL_FOOD_APP_NAME);
+export const seasonalFoodAnalytics =
+  typeof window !== "undefined" ? getAnalytics(seasonalFoodApp) : null;
+
 // Initialize Firestore
 export const db = getFirestore(app);
+export const seasonalFoodDb = getFirestore(seasonalFoodApp);
