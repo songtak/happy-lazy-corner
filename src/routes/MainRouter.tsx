@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { RouterProvider } from "react-router-dom";
 import ReactGA from "react-ga4";
 
@@ -16,6 +16,8 @@ import "../assets/styles/mobile.css";
 /** 기본 라우터 */
 const MainRouter = () => {
   const router = useDynamicRoutes();
+  const [pathname, setPathname] = useState(router.state.location.pathname);
+  const shouldHideCoupangAds = pathname.startsWith("/seasonal-food");
   // const PUBLIC_GA_ID = `${import.meta.env.VITE_PUBLIC_GA_ID}`;
   useEffect(() => {
     // ReactGA.initialize(`${PUBLIC_GA_ID}`);
@@ -40,6 +42,7 @@ const MainRouter = () => {
 
     forceScrollTop();
     const unsubscribe = router.subscribe(() => {
+      setPathname(router.state.location.pathname);
       forceScrollTop();
       window.setTimeout(forceScrollTop, 0);
       window.setTimeout(forceScrollTop, 80);
@@ -54,7 +57,7 @@ const MainRouter = () => {
 
   return (
     <>
-      {!isMobile() && (
+      {!isMobile() && !shouldHideCoupangAds && (
         <CoupangAd
           id={823795}
           trackingCode="AF3245048"
@@ -87,7 +90,7 @@ const MainRouter = () => {
           <div
             style={{
               position: "fixed",
-              bottom: "60px",
+              bottom: shouldHideCoupangAds ? 0 : "60px",
               left: 0,
               right: 0,
               zIndex: 1000,
@@ -117,7 +120,7 @@ const MainRouter = () => {
             </a>
           </div>
         )}
-        {isMobile() && (
+        {isMobile() && !shouldHideCoupangAds && (
           <div
             className="ad_wrapper"
             style={{
@@ -137,7 +140,7 @@ const MainRouter = () => {
           </div>
         )}
       </div>
-      {!isMobile() && (
+      {!isMobile() && !shouldHideCoupangAds && (
         <CoupangAd
           id={823796}
           trackingCode="AF3245048"

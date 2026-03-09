@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import ingredientDb from "@/assets/seasonalFood/ingredient_db.json";
+import { isMobile } from "@libs/helpers";
 
 const DEPLOY_BASE_URL = "https://songtak.github.io/happy-lazy-corner";
 const INGREDIENT_IMAGE_PATH = "/sfimg";
@@ -35,8 +36,11 @@ const SeasonalFoodPage = () => {
   const navigate = useNavigate();
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
+  const initialMonthlyVisibleCount = isMobile() ? 1 : 3;
 
-  const [monthlyVisibleCount, setMonthlyVisibleCount] = useState<number>(1);
+  const [monthlyVisibleCount, setMonthlyVisibleCount] = useState<number>(
+    initialMonthlyVisibleCount,
+  );
   const [seasonVisibleCount, setSeasonVisibleCount] = useState<number>(5);
   const [expandedIngredientId, setExpandedIngredientId] = useState<
     number | null
@@ -235,7 +239,7 @@ const SeasonalFoodPage = () => {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
               gap: "18px",
             }}
           >
@@ -473,7 +477,9 @@ const SeasonalFoodPage = () => {
             shuffledMonthlyIngredients.length > 1 && (
               <button
                 type="button"
-                onClick={() => setMonthlyVisibleCount(1)}
+                onClick={() =>
+                  setMonthlyVisibleCount(initialMonthlyVisibleCount)
+                }
                 style={{
                   width: "100%",
                   marginTop: "12px",
