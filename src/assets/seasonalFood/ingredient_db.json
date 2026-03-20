@@ -2,7 +2,7 @@
   {
     "id": 1,
     "name": "강낭콩",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Gmel",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Gmel",
     "months": [6, 7],
     "peakMonth": 6,
     "categoryId": 4,
@@ -16,7 +16,7 @@
   {
     "id": 2,
     "name": "검은콩",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HC7m",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HC7m",
     "months": [10],
     "peakMonth": 10,
     "categoryId": 4,
@@ -30,7 +30,7 @@
   {
     "id": 3,
     "name": "대두",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HDVp",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HDVp",
     "months": [10],
     "peakMonth": 10,
     "categoryId": 4,
@@ -44,7 +44,7 @@
   {
     "id": 4,
     "name": "땅콩",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HEAh",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HEAh",
     "months": [9, 10, 11],
     "peakMonth": 10,
     "categoryId": 4,
@@ -58,7 +58,7 @@
   {
     "id": 5,
     "name": "완두콩",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HFDM",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HFDM",
     "months": [4, 5, 6],
     "peakMonth": 5,
     "categoryId": 4,
@@ -72,7 +72,7 @@
   {
     "id": 6,
     "name": "잣",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HGh9",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HGh9",
     "months": [8, 9, 10, 11, 12, 1, 2],
     "peakMonth": 11,
     "categoryId": 4,
@@ -86,7 +86,7 @@
   {
     "id": 7,
     "name": "감",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HHht",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HHht",
     "months": [10, 11],
     "peakMonth": 10,
     "categoryId": 3,
@@ -100,7 +100,7 @@
   {
     "id": 8,
     "name": "귤",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HHRe",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HHRe",
     "months": [9, 10, 11, 12],
     "peakMonth": 10,
     "categoryId": 3,
@@ -114,7 +114,7 @@
   {
     "id": 9,
     "name": "매실",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HJAP",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HJAP",
     "months": [5, 6],
     "peakMonth": 5,
     "categoryId": 3,
@@ -128,7 +128,7 @@
   {
     "id": 10,
     "name": "모과",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HKd3",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HKd3",
     "months": [9, 10],
     "peakMonth": 9,
     "categoryId": 3,
@@ -142,7 +142,7 @@
   {
     "id": 11,
     "name": "배",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HKIi",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HKIi",
     "months": [9, 10, 11],
     "peakMonth": 10,
     "categoryId": 3,
@@ -156,7 +156,7 @@
   {
     "id": 12,
     "name": "복숭아",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HLlc",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HLlc",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 3,
@@ -170,7 +170,7 @@
   {
     "id": 13,
     "name": "사과",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HLPA",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HLPA",
     "months": [10, 11, 12],
     "peakMonth": 11,
     "categoryId": 3,
@@ -184,7 +184,7 @@
   {
     "id": 14,
     "name": "살구",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HMkw",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HMkw",
     "months": [6, 7],
     "peakMonth": 6,
     "categoryId": 3,
@@ -198,7 +198,7 @@
   {
     "id": 15,
     "name": "석류",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HPaX",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HPaX",
     "months": [9, 10, 11, 12],
     "peakMonth": 10,
     "categoryId": 3,
@@ -212,7 +212,7 @@
   {
     "id": 16,
     "name": "아로니아",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HQk1",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HQk1",
     "months": [8, 9],
     "peakMonth": 8,
     "categoryId": 3,
@@ -231,7 +231,7 @@
   {
     "id": 17,
     "name": "오렌지",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HRBE",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HRBE",
     "months": [6, 7, 8, 9, 10],
     "peakMonth": 8,
     "categoryId": 3,
@@ -250,7 +250,7 @@
   {
     "id": 18,
     "name": "자두",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HR63",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HR63",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 3,
@@ -264,7 +264,7 @@
   {
     "id": 19,
     "name": "참외",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HSEK",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HSEK",
     "months": [6, 7, 8],
     "peakMonth": 7,
     "categoryId": 3,
@@ -278,7 +278,7 @@
   {
     "id": 20,
     "name": "포도",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HTHN",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HTHN",
     "months": [8, 9, 10],
     "peakMonth": 9,
     "categoryId": 3,
@@ -292,7 +292,7 @@
   {
     "id": 21,
     "name": "한라봉",
-    "Unnamed: 2": "https://link.coupang.com/a/d0HXld",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0HXld",
     "months": [12, 1, 2, 3],
     "peakMonth": 1,
     "categoryId": 3,
@@ -311,7 +311,7 @@
   {
     "id": 22,
     "name": "가자미",
-    "Unnamed: 2": "https://link.coupang.com/a/d0H8J8",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0H8J8",
     "months": [10, 11, 12],
     "peakMonth": 11,
     "categoryId": 1,
@@ -331,7 +331,7 @@
   {
     "id": 23,
     "name": "갈치",
-    "Unnamed: 2": "https://link.coupang.com/a/d0H9hn",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0H9hn",
     "months": [7, 8, 9, 10],
     "peakMonth": 8,
     "categoryId": 1,
@@ -345,7 +345,7 @@
   {
     "id": 24,
     "name": "감성돔",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Iadq",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Iadq",
     "months": [10, 11, 12],
     "peakMonth": 11,
     "categoryId": 1,
@@ -359,7 +359,7 @@
   {
     "id": 25,
     "name": "고등어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Iaxt",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Iaxt",
     "months": [9, 10, 11],
     "peakMonth": 10,
     "categoryId": 1,
@@ -379,7 +379,7 @@
   {
     "id": 26,
     "name": "광어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IaRY",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IaRY",
     "months": [9, 10, 11, 12],
     "peakMonth": 10,
     "categoryId": 1,
@@ -393,7 +393,7 @@
   {
     "id": 27,
     "name": "까나리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ib2T",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ib2T",
     "months": [11, 12],
     "peakMonth": 11,
     "categoryId": 1,
@@ -407,7 +407,7 @@
   {
     "id": 28,
     "name": "꽁치",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Icpu",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Icpu",
     "months": [10, 11],
     "peakMonth": 10,
     "categoryId": 1,
@@ -421,7 +421,7 @@
   {
     "id": 29,
     "name": "놀래미",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IcGD",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IcGD",
     "months": [6, 7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -435,7 +435,7 @@
   {
     "id": 30,
     "name": "농어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ic08",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ic08",
     "months": [6, 7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -449,7 +449,7 @@
   {
     "id": 31,
     "name": "능성어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IdlI",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IdlI",
     "months": [5, 6, 7],
     "peakMonth": 6,
     "categoryId": 1,
@@ -463,7 +463,7 @@
   {
     "id": 32,
     "name": "다금바리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IdHC",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IdHC",
     "months": [11, 12, 1, 2],
     "peakMonth": 12,
     "categoryId": 1,
@@ -477,7 +477,7 @@
   {
     "id": 33,
     "name": "도다리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IdYl",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IdYl",
     "months": [3, 4, 5],
     "peakMonth": 4,
     "categoryId": 1,
@@ -491,7 +491,7 @@
   {
     "id": 34,
     "name": "도미",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ieua",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ieua",
     "months": [11, 12, 1, 2, 3],
     "peakMonth": 1,
     "categoryId": 1,
@@ -505,7 +505,7 @@
   {
     "id": 35,
     "name": "돌돔",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IeQe",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IeQe",
     "months": [10, 11, 12, 1, 2, 3],
     "peakMonth": 12,
     "categoryId": 1,
@@ -519,7 +519,7 @@
   {
     "id": 36,
     "name": "메기",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ifb7",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ifb7",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -533,7 +533,7 @@
   {
     "id": 37,
     "name": "메로",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IfBK",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IfBK",
     "months": [5, 6],
     "peakMonth": 5,
     "categoryId": 1,
@@ -547,7 +547,7 @@
   {
     "id": 38,
     "name": "멸치",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IfYe",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IfYe",
     "months": [11, 12, 1, 2, 3],
     "peakMonth": 1,
     "categoryId": 1,
@@ -561,7 +561,7 @@
   {
     "id": 39,
     "name": "명태",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Igjh",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Igjh",
     "months": [12, 1],
     "peakMonth": 12,
     "categoryId": 1,
@@ -575,7 +575,7 @@
   {
     "id": 40,
     "name": "미꾸라지",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IgAH",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IgAH",
     "months": [9, 10, 11],
     "peakMonth": 10,
     "categoryId": 1,
@@ -589,7 +589,7 @@
   {
     "id": 41,
     "name": "민어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ig0c",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ig0c",
     "months": [8],
     "peakMonth": 8,
     "categoryId": 1,
@@ -603,7 +603,7 @@
   {
     "id": 42,
     "name": "방어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IhjS",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IhjS",
     "months": [11, 12, 1, 2],
     "peakMonth": 12,
     "categoryId": 1,
@@ -617,7 +617,7 @@
   {
     "id": 43,
     "name": "벵에돔",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IhEV",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IhEV",
     "months": [11, 12, 1, 2, 3],
     "peakMonth": 1,
     "categoryId": 1,
@@ -631,7 +631,7 @@
   {
     "id": 44,
     "name": "병어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IhXC",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IhXC",
     "months": [5, 6, 7, 8],
     "peakMonth": 6,
     "categoryId": 1,
@@ -645,7 +645,7 @@
   {
     "id": 45,
     "name": "복어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IihS",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IihS",
     "months": [11, 12, 1, 2, 3],
     "peakMonth": 1,
     "categoryId": 1,
@@ -659,7 +659,7 @@
   {
     "id": 46,
     "name": "볼락",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IizB",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IizB",
     "months": [3, 4],
     "peakMonth": 3,
     "categoryId": 1,
@@ -673,7 +673,7 @@
   {
     "id": 47,
     "name": "부세",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IiX4",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IiX4",
     "months": [4, 5],
     "peakMonth": 4,
     "categoryId": 1,
@@ -687,7 +687,7 @@
   {
     "id": 48,
     "name": "붕어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IjeY",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IjeY",
     "months": [4, 5, 6, 7],
     "peakMonth": 5,
     "categoryId": 1,
@@ -701,7 +701,7 @@
   {
     "id": 49,
     "name": "붕장어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ijuo",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ijuo",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -715,7 +715,7 @@
   {
     "id": 50,
     "name": "빙어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IjOM",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IjOM",
     "months": [11, 12, 1, 2],
     "peakMonth": 12,
     "categoryId": 1,
@@ -729,7 +729,7 @@
   {
     "id": 51,
     "name": "산천어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ij8M",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ij8M",
     "months": [1, 2],
     "peakMonth": 1,
     "categoryId": 1,
@@ -743,7 +743,7 @@
   {
     "id": 52,
     "name": "삼치",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ikt4",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ikt4",
     "months": [10, 11, 12, 1, 2],
     "peakMonth": 12,
     "categoryId": 1,
@@ -757,7 +757,7 @@
   {
     "id": 53,
     "name": "송어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IkMf",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IkMf",
     "months": [10, 11],
     "peakMonth": 10,
     "categoryId": 1,
@@ -771,7 +771,7 @@
   {
     "id": 54,
     "name": "숭어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ik4E",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ik4E",
     "months": [2, 3, 4],
     "peakMonth": 3,
     "categoryId": 1,
@@ -785,7 +785,7 @@
   {
     "id": 55,
     "name": "쏘가리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IlAG",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IlAG",
     "months": [5, 6],
     "peakMonth": 5,
     "categoryId": 1,
@@ -799,7 +799,7 @@
   {
     "id": 56,
     "name": "아귀",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IlS5",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IlS5",
     "months": [12, 1, 2],
     "peakMonth": 1,
     "categoryId": 1,
@@ -813,7 +813,7 @@
   {
     "id": 57,
     "name": "양미리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0ImcJ",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0ImcJ",
     "months": [11, 12],
     "peakMonth": 11,
     "categoryId": 1,
@@ -827,7 +827,7 @@
   {
     "id": 58,
     "name": "연어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Imyu",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Imyu",
     "months": [9, 10],
     "peakMonth": 9,
     "categoryId": 1,
@@ -841,7 +841,7 @@
   {
     "id": 59,
     "name": "우럭",
-    "Unnamed: 2": "https://link.coupang.com/a/d0ImOB",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0ImOB",
     "months": [4, 5],
     "peakMonth": 4,
     "categoryId": 1,
@@ -855,7 +855,7 @@
   {
     "id": 60,
     "name": "장어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Im32",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Im32",
     "months": [5, 6],
     "peakMonth": 5,
     "categoryId": 1,
@@ -869,7 +869,7 @@
   {
     "id": 61,
     "name": "전갱이",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Inq6",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Inq6",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -883,7 +883,7 @@
   {
     "id": 62,
     "name": "전어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0InNJ",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0InNJ",
     "months": [10, 11],
     "peakMonth": 10,
     "categoryId": 1,
@@ -897,7 +897,7 @@
   {
     "id": 63,
     "name": "조기",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IxF8",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IxF8",
     "months": [9, 10, 11, 12, 1, 2],
     "peakMonth": 11,
     "categoryId": 1,
@@ -911,7 +911,7 @@
   {
     "id": 64,
     "name": "참다랑어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ix3S",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ix3S",
     "months": [4, 5, 6],
     "peakMonth": 5,
     "categoryId": 1,
@@ -925,7 +925,7 @@
   {
     "id": 65,
     "name": "참돔",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IzNE",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IzNE",
     "months": [4, 5, 6, 7, 8],
     "peakMonth": 6,
     "categoryId": 1,
@@ -939,7 +939,7 @@
   {
     "id": 66,
     "name": "참조기",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IAx6",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IAx6",
     "months": [9, 10, 11, 12, 1, 2],
     "peakMonth": 11,
     "categoryId": 1,
@@ -953,7 +953,7 @@
   {
     "id": 67,
     "name": "홍어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IAQp",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IAQp",
     "months": [11, 12, 1, 2, 3, 4],
     "peakMonth": 1,
     "categoryId": 1,
@@ -967,7 +967,7 @@
   {
     "id": 68,
     "name": "가리비",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IA9V",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IA9V",
     "months": [11, 12],
     "peakMonth": 11,
     "categoryId": 1,
@@ -981,7 +981,7 @@
   {
     "id": 69,
     "name": "개불",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IBx2",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IBx2",
     "months": [1, 2],
     "peakMonth": 1,
     "categoryId": 1,
@@ -995,7 +995,7 @@
   {
     "id": 70,
     "name": "과메기",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IBOZ",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IBOZ",
     "months": [11, 12, 1],
     "peakMonth": 12,
     "categoryId": 1,
@@ -1009,7 +1009,7 @@
   {
     "id": 71,
     "name": "군소",
-    "Unnamed: 2": "https://link.coupang.com/a/d0IB5R",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0IB5R",
     "months": [5, 6, 7],
     "peakMonth": 6,
     "categoryId": 1,
@@ -1023,7 +1023,7 @@
   {
     "id": 72,
     "name": "굴",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LclC",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LclC",
     "months": [9, 10, 11, 12],
     "peakMonth": 10,
     "categoryId": 1,
@@ -1037,7 +1037,7 @@
   {
     "id": 73,
     "name": "꼬막",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LcLD",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LcLD",
     "months": [11, 12, 1, 2, 3],
     "peakMonth": 1,
     "categoryId": 1,
@@ -1051,7 +1051,7 @@
   {
     "id": 74,
     "name": "수꽃게",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lc3d",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lc3d",
     "months": [9, 10, 11],
     "peakMonth": 10,
     "categoryId": 1,
@@ -1065,7 +1065,7 @@
   {
     "id": 75,
     "name": "암꽃게",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ldoa",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ldoa",
     "months": [4, 5, 6],
     "peakMonth": 5,
     "categoryId": 1,
@@ -1079,7 +1079,7 @@
   {
     "id": 76,
     "name": "낙지",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LdEJ",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LdEJ",
     "months": [9, 10, 11, 12, 1, 2],
     "peakMonth": 11,
     "categoryId": 1,
@@ -1093,7 +1093,7 @@
   {
     "id": 77,
     "name": "다슬기",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LdVM",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LdVM",
     "months": [5, 6],
     "peakMonth": 5,
     "categoryId": 1,
@@ -1107,7 +1107,7 @@
   {
     "id": 78,
     "name": "다시마",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LeaG",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LeaG",
     "months": [5, 6, 7],
     "peakMonth": 6,
     "categoryId": 1,
@@ -1121,7 +1121,7 @@
   {
     "id": 79,
     "name": "대게",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lepo",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lepo",
     "months": [11, 12, 1, 2, 3, 4, 5],
     "peakMonth": 2,
     "categoryId": 1,
@@ -1135,7 +1135,7 @@
   {
     "id": 80,
     "name": "대하",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LeDX",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LeDX",
     "months": [9, 10, 11, 12],
     "peakMonth": 10,
     "categoryId": 1,
@@ -1149,7 +1149,7 @@
   {
     "id": 81,
     "name": "매생이",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LeS5",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LeS5",
     "months": [11, 12, 1, 2, 3, 4, 5],
     "peakMonth": 2,
     "categoryId": 1,
@@ -1163,7 +1163,7 @@
   {
     "id": 82,
     "name": "멍게",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Le7w",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Le7w",
     "months": [5],
     "peakMonth": 5,
     "categoryId": 1,
@@ -1177,7 +1177,7 @@
   {
     "id": 83,
     "name": "문어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LfnN",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LfnN",
     "months": [11, 12, 1, 2, 3, 4],
     "peakMonth": 1,
     "categoryId": 1,
@@ -1191,7 +1191,7 @@
   {
     "id": 84,
     "name": "미더덕",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LfDc",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LfDc",
     "months": [4],
     "peakMonth": 4,
     "categoryId": 1,
@@ -1205,7 +1205,7 @@
   {
     "id": 85,
     "name": "미역",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LfQq",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LfQq",
     "months": [12, 1],
     "peakMonth": 12,
     "categoryId": 1,
@@ -1219,7 +1219,7 @@
   {
     "id": 86,
     "name": "바지락",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LgcB",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LgcB",
     "months": [2, 3, 4],
     "peakMonth": 3,
     "categoryId": 1,
@@ -1233,7 +1233,7 @@
   {
     "id": 87,
     "name": "보리새우",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lgs0",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lgs0",
     "months": [9, 10, 11, 12],
     "peakMonth": 10,
     "categoryId": 1,
@@ -1247,7 +1247,7 @@
   {
     "id": 88,
     "name": "새우",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LgFo",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LgFo",
     "months": [9, 10, 11, 12],
     "peakMonth": 10,
     "categoryId": 1,
@@ -1261,7 +1261,7 @@
   {
     "id": 89,
     "name": "성게",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LgSJ",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LgSJ",
     "months": [3, 4, 5, 6, 7, 8],
     "peakMonth": 5,
     "categoryId": 1,
@@ -1275,7 +1275,7 @@
   {
     "id": 90,
     "name": "소라",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lg7C",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lg7C",
     "months": [3, 4, 5, 6, 7],
     "peakMonth": 5,
     "categoryId": 1,
@@ -1289,7 +1289,7 @@
   {
     "id": 91,
     "name": "오징어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LhlT",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LhlT",
     "months": [7, 8, 9, 10, 11],
     "peakMonth": 9,
     "categoryId": 1,
@@ -1303,7 +1303,7 @@
   {
     "id": 92,
     "name": "재첩",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LhBw",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LhBw",
     "months": [5, 6],
     "peakMonth": 5,
     "categoryId": 1,
@@ -1317,7 +1317,7 @@
   {
     "id": 93,
     "name": "전복",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LhQa",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LhQa",
     "months": [8, 9, 10],
     "peakMonth": 9,
     "categoryId": 1,
@@ -1331,7 +1331,7 @@
   {
     "id": 94,
     "name": "쭈꾸미",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lh15",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lh15",
     "months": [3, 4, 5],
     "peakMonth": 4,
     "categoryId": 1,
@@ -1345,7 +1345,7 @@
   {
     "id": 95,
     "name": "청각",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lilo",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lilo",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -1359,7 +1359,7 @@
   {
     "id": 96,
     "name": "키조개",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LiAa",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LiAa",
     "months": [4, 5],
     "peakMonth": 4,
     "categoryId": 1,
@@ -1373,7 +1373,7 @@
   {
     "id": 97,
     "name": "톳",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LiNu",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LiNu",
     "months": [3, 4, 5],
     "peakMonth": 4,
     "categoryId": 1,
@@ -1387,7 +1387,7 @@
   {
     "id": 98,
     "name": "파래",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Li1M",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Li1M",
     "months": [12, 1, 2],
     "peakMonth": 1,
     "categoryId": 1,
@@ -1401,7 +1401,7 @@
   {
     "id": 99,
     "name": "피조개",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ljew",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ljew",
     "months": [12, 1, 2, 3],
     "peakMonth": 1,
     "categoryId": 1,
@@ -1415,7 +1415,7 @@
   {
     "id": 100,
     "name": "한치",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ljtb",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ljtb",
     "months": [6, 7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -1429,7 +1429,7 @@
   {
     "id": 101,
     "name": "해삼",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LjHo",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LjHo",
     "months": [10, 11],
     "peakMonth": 10,
     "categoryId": 1,
@@ -1443,7 +1443,7 @@
   {
     "id": 102,
     "name": "홍게",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LjWP",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LjWP",
     "months": [9, 10, 11, 12, 1, 2, 3, 4, 5, 6],
     "peakMonth": 1,
     "categoryId": 1,
@@ -1457,7 +1457,7 @@
   {
     "id": 103,
     "name": "홍합",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lkap",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lkap",
     "months": [10, 11, 12],
     "peakMonth": 11,
     "categoryId": 1,
@@ -1471,7 +1471,7 @@
   {
     "id": 104,
     "name": "가지",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lksf",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lksf",
     "months": [4, 5, 6, 7, 8],
     "peakMonth": 6,
     "categoryId": 2,
@@ -1485,7 +1485,7 @@
   {
     "id": 105,
     "name": "감자",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LkDZ",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LkDZ",
     "months": [6, 7, 8, 9],
     "peakMonth": 7,
     "categoryId": 2,
@@ -1499,7 +1499,7 @@
   {
     "id": 106,
     "name": "갓",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LkTZ",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LkTZ",
     "months": [9, 10, 11, 12],
     "peakMonth": 10,
     "categoryId": 2,
@@ -1513,7 +1513,7 @@
   {
     "id": 107,
     "name": "고구마",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lk8p",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lk8p",
     "months": [8, 9, 10],
     "peakMonth": 9,
     "categoryId": 2,
@@ -1527,7 +1527,7 @@
   {
     "id": 108,
     "name": "고사리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Llkg",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Llkg",
     "months": [4, 5],
     "peakMonth": 4,
     "categoryId": 2,
@@ -1541,7 +1541,7 @@
   {
     "id": 109,
     "name": "고수",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Llx1",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Llx1",
     "months": [6, 7],
     "peakMonth": 6,
     "categoryId": 2,
@@ -1555,7 +1555,7 @@
   {
     "id": 110,
     "name": "고추",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LlI8",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LlI8",
     "months": [6, 7, 8, 9, 10, 11],
     "peakMonth": 8,
     "categoryId": 2,
@@ -1569,7 +1569,7 @@
   {
     "id": 111,
     "name": "근대",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ll4p",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ll4p",
     "months": [6, 7, 8],
     "peakMonth": 7,
     "categoryId": 2,
@@ -1583,7 +1583,7 @@
   {
     "id": 112,
     "name": "냉이",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LmD1",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LmD1",
     "months": [3, 4],
     "peakMonth": 3,
     "categoryId": 2,
@@ -1597,7 +1597,7 @@
   {
     "id": 113,
     "name": "늙은호박",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LmUX",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LmUX",
     "months": [10, 11, 12],
     "peakMonth": 11,
     "categoryId": 2,
@@ -1611,7 +1611,7 @@
   {
     "id": 114,
     "name": "달래",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lncc",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lncc",
     "months": [3, 4],
     "peakMonth": 3,
     "categoryId": 2,
@@ -1625,7 +1625,7 @@
   {
     "id": 115,
     "name": "당근",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LnpQ",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LnpQ",
     "months": [9, 10, 11],
     "peakMonth": 10,
     "categoryId": 2,
@@ -1639,7 +1639,7 @@
   {
     "id": 116,
     "name": "대파",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LnC0",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LnC0",
     "months": [9, 10, 11, 12],
     "peakMonth": 10,
     "categoryId": 2,
@@ -1653,7 +1653,7 @@
   {
     "id": 117,
     "name": "더덕",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LnQN",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LnQN",
     "months": [1, 2, 3, 4],
     "peakMonth": 2,
     "categoryId": 2,
@@ -1667,7 +1667,7 @@
   {
     "id": 118,
     "name": "도라지",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lojy",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lojy",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 2,
@@ -1681,7 +1681,7 @@
   {
     "id": 119,
     "name": "돌나물",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lozv",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lozv",
     "months": [3, 4, 5],
     "peakMonth": 4,
     "categoryId": 2,
@@ -1695,7 +1695,7 @@
   {
     "id": 120,
     "name": "두릅",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LoMr",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LoMr",
     "months": [4, 5],
     "peakMonth": 4,
     "categoryId": 2,
@@ -1709,7 +1709,7 @@
   {
     "id": 121,
     "name": "딸기",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LoYZ",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LoYZ",
     "months": [1, 2, 3, 4, 5],
     "peakMonth": 3,
     "categoryId": 3,
@@ -1723,7 +1723,7 @@
   {
     "id": 122,
     "name": "마",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lo9O",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lo9O",
     "months": [10, 11],
     "peakMonth": 10,
     "categoryId": 2,
@@ -1737,7 +1737,7 @@
   {
     "id": 123,
     "name": "마늘",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lpm7",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lpm7",
     "months": [3, 4, 5],
     "peakMonth": 4,
     "categoryId": 2,
@@ -1751,7 +1751,7 @@
   {
     "id": 124,
     "name": "머위",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LpAT",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LpAT",
     "months": [4, 5],
     "peakMonth": 4,
     "categoryId": 2,
@@ -1765,7 +1765,7 @@
   {
     "id": 125,
     "name": "멜론",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LpSB",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LpSB",
     "months": [7, 8, 9, 10],
     "peakMonth": 8,
     "categoryId": 3,
@@ -1779,7 +1779,7 @@
   {
     "id": 126,
     "name": "무",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lp5A",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lp5A",
     "months": [10, 11, 12],
     "peakMonth": 11,
     "categoryId": 2,
@@ -1793,7 +1793,7 @@
   {
     "id": 127,
     "name": "미나리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lqnq",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lqnq",
     "months": [3, 4],
     "peakMonth": 3,
     "categoryId": 2,
@@ -1807,7 +1807,7 @@
   {
     "id": 128,
     "name": "방아잎",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LqDl",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LqDl",
     "months": [8, 9, 10, 11],
     "peakMonth": 9,
     "categoryId": 2,
@@ -1821,7 +1821,7 @@
   {
     "id": 129,
     "name": "배추",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LqVg",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LqVg",
     "months": [11, 12],
     "peakMonth": 11,
     "categoryId": 2,
@@ -1835,7 +1835,7 @@
   {
     "id": 130,
     "name": "복분자",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lrbh",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lrbh",
     "months": [6, 7, 8],
     "peakMonth": 7,
     "categoryId": 3,
@@ -1849,7 +1849,7 @@
   {
     "id": 131,
     "name": "부추",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LroV",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LroV",
     "months": [3, 4, 5, 6, 7, 8, 9],
     "peakMonth": 6,
     "categoryId": 2,
@@ -1863,7 +1863,7 @@
   {
     "id": 132,
     "name": "브로콜리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LrJr",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LrJr",
     "months": [10, 11, 12],
     "peakMonth": 11,
     "categoryId": 2,
@@ -1877,7 +1877,7 @@
   {
     "id": 133,
     "name": "블루베리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lr0W",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lr0W",
     "months": [7, 8, 9],
     "peakMonth": 8,
     "categoryId": 3,
@@ -1896,7 +1896,7 @@
   {
     "id": 134,
     "name": "비트",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lsfo",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lsfo",
     "months": [3, 4, 5, 6],
     "peakMonth": 4,
     "categoryId": 2,
@@ -1910,7 +1910,7 @@
   {
     "id": 135,
     "name": "삼채",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lsxt",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lsxt",
     "months": [3, 4],
     "peakMonth": 3,
     "categoryId": 2,
@@ -1924,7 +1924,7 @@
   {
     "id": 136,
     "name": "샐러리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LsLt",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LsLt",
     "months": [6, 7, 8, 9, 10, 11],
     "peakMonth": 8,
     "categoryId": 2,
@@ -1938,7 +1938,7 @@
   {
     "id": 137,
     "name": "생강",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ls0P",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ls0P",
     "months": [8, 9, 10, 11],
     "peakMonth": 9,
     "categoryId": 2,
@@ -1952,7 +1952,7 @@
   {
     "id": 138,
     "name": "송이버섯",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ltg8",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ltg8",
     "months": [9, 10],
     "peakMonth": 9,
     "categoryId": 2,
@@ -1966,7 +1966,7 @@
   {
     "id": 139,
     "name": "수박",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LtCt",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LtCt",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 3,
@@ -1980,7 +1980,7 @@
   {
     "id": 140,
     "name": "시금치",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LtXC",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LtXC",
     "months": [11, 12, 1, 2],
     "peakMonth": 12,
     "categoryId": 2,
@@ -1994,7 +1994,7 @@
   {
     "id": 141,
     "name": "시래기",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LudP",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LudP",
     "months": [10, 11, 12],
     "peakMonth": 11,
     "categoryId": 2,
@@ -2008,7 +2008,7 @@
   {
     "id": 142,
     "name": "쑥",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Luqy",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Luqy",
     "months": [3, 4],
     "peakMonth": 3,
     "categoryId": 2,
@@ -2022,7 +2022,7 @@
   {
     "id": 143,
     "name": "씀바귀",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LuR1",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LuR1",
     "months": [3, 4],
     "peakMonth": 3,
     "categoryId": 2,
@@ -2036,7 +2036,7 @@
   {
     "id": 144,
     "name": "아욱",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lvn3",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lvn3",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 2,
@@ -2050,7 +2050,7 @@
   {
     "id": 145,
     "name": "애호박",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LvDL",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LvDL",
     "months": [3, 4, 5, 6, 7, 8, 9, 10],
     "peakMonth": 6,
     "categoryId": 2,
@@ -2064,7 +2064,7 @@
   {
     "id": 146,
     "name": "야콘",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LvVr",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LvVr",
     "months": [9, 10],
     "peakMonth": 9,
     "categoryId": 2,
@@ -2078,7 +2078,7 @@
   {
     "id": 147,
     "name": "양배추",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lv9a",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lv9a",
     "months": [3, 4, 5, 6],
     "peakMonth": 4,
     "categoryId": 2,
@@ -2092,7 +2092,7 @@
   {
     "id": 148,
     "name": "양상추",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LwoO",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LwoO",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 2,
@@ -2106,7 +2106,7 @@
   {
     "id": 149,
     "name": "양파",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LwD5",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LwD5",
     "months": [4, 5, 6, 7],
     "peakMonth": 5,
     "categoryId": 2,
@@ -2120,7 +2120,7 @@
   {
     "id": 150,
     "name": "여주",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LwQj",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LwQj",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 2,
@@ -2134,7 +2134,7 @@
   {
     "id": 151,
     "name": "연근",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lw3u",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lw3u",
     "months": [10, 11, 12, 1, 2, 3],
     "peakMonth": 12,
     "categoryId": 2,
@@ -2148,7 +2148,7 @@
   {
     "id": 152,
     "name": "오이",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LxgI",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LxgI",
     "months": [4, 5, 6, 7],
     "peakMonth": 5,
     "categoryId": 2,
@@ -2162,7 +2162,7 @@
   {
     "id": 153,
     "name": "옥수수",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LxAv",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LxAv",
     "months": [7, 8, 9],
     "peakMonth": 8,
     "categoryId": 2,
@@ -2176,7 +2176,7 @@
   {
     "id": 154,
     "name": "우엉",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LxTw",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LxTw",
     "months": [1, 2, 3],
     "peakMonth": 2,
     "categoryId": 2,
@@ -2190,7 +2190,7 @@
   {
     "id": 155,
     "name": "유자",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LyaX",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LyaX",
     "months": [11, 12],
     "peakMonth": 11,
     "categoryId": 3,
@@ -2204,7 +2204,7 @@
   {
     "id": 156,
     "name": "은행",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LypX",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LypX",
     "months": [9],
     "peakMonth": 9,
     "categoryId": 4,
@@ -2218,7 +2218,7 @@
   {
     "id": 157,
     "name": "죽순",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LyDX",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LyDX",
     "months": [5],
     "peakMonth": 5,
     "categoryId": 2,
@@ -2232,7 +2232,7 @@
   {
     "id": 158,
     "name": "쪽파",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LyS3",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LyS3",
     "months": [9, 10, 11, 12],
     "peakMonth": 10,
     "categoryId": 2,
@@ -2246,7 +2246,7 @@
   {
     "id": 159,
     "name": "참나물",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Ly6s",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Ly6s",
     "months": [8, 9],
     "peakMonth": 8,
     "categoryId": 2,
@@ -2260,7 +2260,7 @@
   {
     "id": 160,
     "name": "취나물",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LzoY",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LzoY",
     "months": [3, 4, 5],
     "peakMonth": 4,
     "categoryId": 2,
@@ -2274,7 +2274,7 @@
   {
     "id": 161,
     "name": "치커리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LzDW",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LzDW",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 2,
@@ -2288,7 +2288,7 @@
   {
     "id": 162,
     "name": "케일",
-    "Unnamed: 2": "https://link.coupang.com/a/d0Lz1t",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0Lz1t",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 2,
@@ -2302,7 +2302,7 @@
   {
     "id": 163,
     "name": "콜라비",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LAfE",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LAfE",
     "months": [11, 12],
     "peakMonth": 11,
     "categoryId": 2,
@@ -2316,7 +2316,7 @@
   {
     "id": 164,
     "name": "토마토",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LAvN",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LAvN",
     "months": [7, 8, 9],
     "peakMonth": 8,
     "categoryId": 2,
@@ -2330,7 +2330,7 @@
   {
     "id": 165,
     "name": "파프리카",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LAKq",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LAKq",
     "months": [5, 6, 7],
     "peakMonth": 6,
     "categoryId": 2,
@@ -2344,7 +2344,7 @@
   {
     "id": 166,
     "name": "표고버섯",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LA3n",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LA3n",
     "months": [3, 4, 5, 6, 7, 8, 9],
     "peakMonth": 6,
     "categoryId": 2,
@@ -2358,7 +2358,7 @@
   {
     "id": 167,
     "name": "피망",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LBk0",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LBk0",
     "months": [5, 6, 7],
     "peakMonth": 6,
     "categoryId": 2,
@@ -2372,7 +2372,7 @@
   {
     "id": 168,
     "name": "왕우럭조개",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LBKD",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LBKD",
     "months": [2, 3, 4, 5],
     "peakMonth": 3,
     "categoryId": 1,
@@ -2386,7 +2386,7 @@
   {
     "id": 169,
     "name": "코끼리조개",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LCdb",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LCdb",
     "months": [4, 5, 6],
     "peakMonth": 2,
     "categoryId": 1,
@@ -2400,7 +2400,7 @@
   {
     "id": 170,
     "name": "줄무늬전갱이",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LCPn",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LCPn",
     "months": [6, 7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -2414,7 +2414,7 @@
   {
     "id": 171,
     "name": "무늬오징어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LDdf",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LDdf",
     "months": [5, 6, 7, 8],
     "peakMonth": 6,
     "categoryId": 1,
@@ -2428,7 +2428,7 @@
   {
     "id": 172,
     "name": "실치",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LFkQ",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LFkQ",
     "months": [3, 4, 5],
     "peakMonth": 4,
     "categoryId": 1,
@@ -2442,7 +2442,7 @@
   {
     "id": 173,
     "name": "새조개",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LFOD",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LFOD",
     "months": [1, 2, 3],
     "peakMonth": 2,
     "categoryId": 1,
@@ -2456,7 +2456,7 @@
   {
     "id": 174,
     "name": "샤인머스켓",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LGfe",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LGfe",
     "months": [8, 9, 10],
     "peakMonth": 9,
     "categoryId": 3,
@@ -2470,7 +2470,7 @@
   {
     "id": 175,
     "name": "봄동",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LJsR",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LJsR",
     "months": [1, 2, 3],
     "peakMonth": 2,
     "categoryId": 2,
@@ -2484,7 +2484,7 @@
   {
     "id": 176,
     "name": "아스파라거스",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LJOM",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LJOM",
     "months": [4, 5, 6],
     "peakMonth": 5,
     "categoryId": 2,
@@ -2498,7 +2498,7 @@
   {
     "id": 177,
     "name": "밀치",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LJ7I",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LJ7I",
     "months": [11, 12, 1, 2],
     "peakMonth": 1,
     "categoryId": 1,
@@ -2512,7 +2512,7 @@
   {
     "id": 178,
     "name": "으름",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LKq0",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LKq0",
     "months": [9, 10],
     "peakMonth": 9,
     "categoryId": 3,
@@ -2526,7 +2526,7 @@
   {
     "id": 179,
     "name": "다래",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LK7Y",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LK7Y",
     "months": [9, 10],
     "peakMonth": 9,
     "categoryId": 3,
@@ -2540,7 +2540,7 @@
   {
     "id": 180,
     "name": "오디",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LMC7",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LMC7",
     "months": [5, 6],
     "peakMonth": 6,
     "categoryId": 3,
@@ -2554,7 +2554,7 @@
   {
     "id": 181,
     "name": "장뇌삼",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LNem",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LNem",
     "months": [5, 6, 7, 8, 9],
     "peakMonth": 5,
     "categoryId": 2,
@@ -2568,7 +2568,7 @@
   {
     "id": 182,
     "name": "은어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LNC0",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LNC0",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -2582,7 +2582,7 @@
   {
     "id": 183,
     "name": "부채새우",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LN0V",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LN0V",
     "months": [10, 11, 12, 1, 2],
     "peakMonth": 12,
     "categoryId": 1,
@@ -2596,7 +2596,7 @@
   {
     "id": 184,
     "name": "딱새우",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LOoI",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LOoI",
     "months": [10, 11, 12, 1, 2],
     "peakMonth": 11,
     "categoryId": 1,
@@ -2610,7 +2610,7 @@
   {
     "id": 185,
     "name": "오만둥이",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LO9M",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LO9M",
     "months": [3, 4, 5],
     "peakMonth": 4,
     "categoryId": 1,
@@ -2624,7 +2624,7 @@
   {
     "id": 186,
     "name": "참게",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LPrP",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LPrP",
     "months": [9, 10, 11],
     "peakMonth": 10,
     "categoryId": 1,
@@ -2638,7 +2638,7 @@
   {
     "id": 187,
     "name": "자리돔",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LPGl",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LPGl",
     "months": [5, 6, 7],
     "peakMonth": 6,
     "categoryId": 1,
@@ -2652,7 +2652,7 @@
   {
     "id": 188,
     "name": "맛조개",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LPZL",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LPZL",
     "months": [3, 4, 5, 6],
     "peakMonth": 4,
     "categoryId": 1,
@@ -2666,7 +2666,7 @@
   {
     "id": 189,
     "name": "동죽",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LQja",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LQja",
     "months": [3, 4, 5],
     "peakMonth": 4,
     "categoryId": 1,
@@ -2680,7 +2680,7 @@
   {
     "id": 190,
     "name": "비단조개",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LQyB",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LQyB",
     "months": [5, 6],
     "peakMonth": 11,
     "categoryId": 1,
@@ -2694,7 +2694,7 @@
   {
     "id": 191,
     "name": "개조개",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LQOG",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LQOG",
     "months": [3, 4, 5],
     "peakMonth": 4,
     "categoryId": 1,
@@ -2708,7 +2708,7 @@
   {
     "id": 192,
     "name": "모자반",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LQ7V",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LQ7V",
     "months": [1, 2, 3],
     "peakMonth": 1,
     "categoryId": 1,
@@ -2722,7 +2722,7 @@
   {
     "id": 193,
     "name": "물메기",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LRp0",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LRp0",
     "months": [12, 1, 2],
     "peakMonth": 1,
     "categoryId": 1,
@@ -2736,7 +2736,7 @@
   {
     "id": 194,
     "name": "꼴뚜기",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LRIS",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LRIS",
     "months": [5, 6],
     "peakMonth": 5,
     "categoryId": 1,
@@ -2750,7 +2750,7 @@
   {
     "id": 195,
     "name": "짱뚱어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LR42",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LR42",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -2764,7 +2764,7 @@
   {
     "id": 196,
     "name": "오분자기",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LSob",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LSob",
     "months": [7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -2778,7 +2778,7 @@
   {
     "id": 197,
     "name": "거북손",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LS3I",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LS3I",
     "months": [5, 6, 7, 8],
     "peakMonth": 7,
     "categoryId": 1,
@@ -2792,7 +2792,7 @@
   {
     "id": 198,
     "name": "홍해삼",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LTqT",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LTqT",
     "months": [12, 1, 2, 3],
     "peakMonth": 1,
     "categoryId": 1,
@@ -2806,7 +2806,7 @@
   {
     "id": 199,
     "name": "돌문어",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LTKd",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LTKd",
     "months": [8, 9, 10],
     "peakMonth": 9,
     "categoryId": 1,
@@ -2820,7 +2820,7 @@
   {
     "id": 200,
     "name": "능이버섯",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LT86",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LT86",
     "months": [9, 10],
     "peakMonth": 9,
     "categoryId": 2,
@@ -2834,7 +2834,7 @@
   {
     "id": 201,
     "name": "골뱅이",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LUqG",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LUqG",
     "months": [3, 4, 5],
     "peakMonth": 4,
     "categoryId": 1,
@@ -2848,7 +2848,7 @@
   {
     "id": 202,
     "name": "녹두",
-    "Unnamed: 2": "https://link.coupang.com/a/d0LUKL",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0LUKL",
     "months": [9, 10],
     "peakMonth": 9,
     "categoryId": 4,
@@ -2862,7 +2862,7 @@
   {
     "id": 203,
     "name": "현미",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L0WL",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L0WL",
     "months": [9, 10, 11],
     "peakMonth": 10,
     "categoryId": 4,
@@ -2876,7 +2876,7 @@
   {
     "id": 204,
     "name": "보리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L1i5",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L1i5",
     "months": [5, 6],
     "peakMonth": 6,
     "categoryId": 4,
@@ -2890,7 +2890,7 @@
   {
     "id": 205,
     "name": "귀리",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L1RA",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L1RA",
     "months": [9, 10],
     "peakMonth": 9,
     "categoryId": 4,
@@ -2904,7 +2904,7 @@
   {
     "id": 206,
     "name": "조",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L2dd",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L2dd",
     "months": [9, 10],
     "peakMonth": 10,
     "categoryId": 4,
@@ -2918,7 +2918,7 @@
   {
     "id": 207,
     "name": "수수",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L2t6",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L2t6",
     "months": [9, 10],
     "peakMonth": 10,
     "categoryId": 4,
@@ -2932,7 +2932,7 @@
   {
     "id": 208,
     "name": "기장",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L2RP",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L2RP",
     "months": [8, 9, 10],
     "peakMonth": 9,
     "categoryId": 4,
@@ -2946,7 +2946,7 @@
   {
     "id": 209,
     "name": "메밀",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L29b",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L29b",
     "months": [7, 8, 9, 10],
     "peakMonth": 9,
     "categoryId": 4,
@@ -2960,7 +2960,7 @@
   {
     "id": 210,
     "name": "율무",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L3uK",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L3uK",
     "months": [9, 10, 11],
     "peakMonth": 10,
     "categoryId": 4,
@@ -2974,7 +2974,7 @@
   {
     "id": 211,
     "name": "들깨",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L3RA",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L3RA",
     "months": [9, 10],
     "peakMonth": 10,
     "categoryId": 4,
@@ -2988,7 +2988,7 @@
   {
     "id": 212,
     "name": "참깨",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L4fa",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L4fa",
     "months": [8, 9],
     "peakMonth": 9,
     "categoryId": 4,
@@ -3002,7 +3002,7 @@
   {
     "id": 213,
     "name": "호두",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L4zP",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L4zP",
     "months": [9, 10],
     "peakMonth": 10,
     "categoryId": 4,
@@ -3016,7 +3016,7 @@
   {
     "id": 214,
     "name": "해바라기씨",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L5s6",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L5s6",
     "months": [9, 10],
     "peakMonth": 10,
     "categoryId": 4,
@@ -3030,7 +3030,7 @@
   {
     "id": 215,
     "name": "호박씨",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L5ay",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L5ay",
     "months": [9, 10, 11],
     "peakMonth": 10,
     "categoryId": 4,
@@ -3044,7 +3044,7 @@
   {
     "id": 216,
     "name": "호박잎",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L5QQ",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L5QQ",
     "months": [6, 7, 8, 9],
     "peakMonth": 7,
     "categoryId": 2,
@@ -3058,7 +3058,7 @@
   {
     "id": 217,
     "name": "작두콩",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L57V",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L57V",
     "months": [9, 10],
     "peakMonth": 10,
     "categoryId": 4,
@@ -3072,7 +3072,7 @@
   {
     "id": 218,
     "name": "팥",
-    "Unnamed: 2": "https://link.coupang.com/a/d0L6su",
+    "coupangUrl: 2": "https://link.coupang.com/a/d0L6su",
     "months": [10, 11],
     "peakMonth": 11,
     "categoryId": 4,

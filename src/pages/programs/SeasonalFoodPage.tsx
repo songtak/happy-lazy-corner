@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, CircleAlert } from "lucide-react";
 import ingredientDb from "@/assets/seasonalFood/ingredient_db.json";
+import menuAndTipsDb from "@/assets/seasonalFood/menu_and_tips.json";
 import { isMobile } from "@libs/helpers";
 
 const DEPLOY_BASE_URL = "https://songtak.github.io/happy-lazy-corner";
@@ -16,6 +17,7 @@ const SEASON_MONTH_MAP: Record<string, number[]> = {
 type IngredientItem = {
   id: number;
   name: string;
+  alias?: string | string[];
   months: number[];
   categoryId?: number;
   imgUrl?: string;
@@ -23,6 +25,106 @@ type IngredientItem = {
   foods?: string[];
   coupangUrl?: string;
 };
+
+type SuggestionFieldKey = "month" | "description" | "add" | "typo" | "etc";
+type StyleTag = "hearty" | "light" | "warm" | "spicy" | "fresh";
+type WeatherTag = "rainy" | "cold" | "warm" | "hot";
+type SituationTag = "solo" | "home" | "eatout" | "special";
+type MealTypeTag = "meal" | "lightMeal" | "anju" | "dessert";
+type IngredientTypeTag =
+  | "seafood"
+  | "vegetable"
+  | "meat"
+  | "fruit"
+  | "grain";
+type MenuFinderAnswers = {
+  style: StyleTag | null;
+  weather: WeatherTag | "any" | null;
+  situation: SituationTag | null;
+  mealType: MealTypeTag | null;
+};
+type MenuTipItem = {
+  name: string;
+  description: string;
+  seasonality: string;
+  benefit: string;
+  tip: string;
+  tags: string;
+  ingredient: string;
+};
+type ParsedMenuTipItem = MenuTipItem & {
+  parsedTags: string[];
+  ingredientType: IngredientTypeTag | null;
+};
+
+const MENU_TAG_LABELS: Record<string, string> = {
+  hearty: "든든한",
+  light: "가벼운",
+  warm: "따뜻한",
+  spicy: "자극적인",
+  fresh: "상큼한",
+  rainy: "비 오거나 흐린 날",
+  cold: "쌀쌀한 날",
+  hot: "더운 날",
+  solo: "혼밥",
+  home: "집밥",
+  eatout: "외식",
+  special: "특별한 한 끼",
+  meal: "든든한 식사",
+  lightMeal: "가볍게 먹기",
+  anju: "술안주",
+  dessert: "디저트",
+  seafood: "해산물",
+  vegetable: "채소",
+  meat: "고기",
+  fruit: "과일",
+  grain: "곡물",
+};
+
+const MENU_FINDER_QUESTIONS = [
+  {
+    key: "style" as const,
+    title: "오늘 어떤 음식이 끌려?",
+    options: [
+      { label: "든든한 게 먹고 싶어", value: "hearty" as const },
+      { label: "가볍게 먹고 싶어", value: "light" as const },
+      { label: "따뜻한 게 당겨", value: "warm" as const },
+      { label: "자극적인 게 먹고 싶어", value: "spicy" as const },
+      { label: "상큼한 게 당겨", value: "fresh" as const },
+    ],
+  },
+  {
+    key: "weather" as const,
+    title: "지금 날씨나 분위기는 어때?",
+    options: [
+      { label: "비 오거나 흐려", value: "rainy" as const },
+      { label: "쌀쌀해", value: "cold" as const },
+      { label: "따뜻하고 산뜻해", value: "warm" as const },
+      { label: "더워", value: "hot" as const },
+      { label: "상관없어", value: "any" as const },
+    ],
+  },
+  {
+    key: "situation" as const,
+    title: "어떤 상황이야?",
+    options: [
+      { label: "혼밥", value: "solo" as const },
+      { label: "집밥", value: "home" as const },
+      { label: "외식", value: "eatout" as const },
+      { label: "특별한 한 끼", value: "special" as const },
+    ],
+  },
+  {
+    key: "mealType" as const,
+    title: "지금 식사 목적은?",
+    options: [
+      { label: "든든한 식사", value: "meal" as const },
+      { label: "가볍게 먹기", value: "lightMeal" as const },
+      { label: "술안주", value: "anju" as const },
+      { label: "디저트", value: "dessert" as const },
+    ],
+  },
+];
 
 const SeasonalFoodPage = () => {
   const categoryOptions = [
@@ -37,6 +139,7 @@ const SeasonalFoodPage = () => {
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const initialMonthlyVisibleCount = isMobile() ? 1 : 3;
+  const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth);
 
   const [monthlyVisibleCount, setMonthlyVisibleCount] = useState<number>(
     initialMonthlyVisibleCount,
@@ -52,15 +155,41 @@ const SeasonalFoodPage = () => {
     useState<boolean>(false);
   const [isSeasonMoreAnimating, setIsSeasonMoreAnimating] =
     useState<boolean>(false);
+  const [isMonthDropdownOpen, setIsMonthDropdownOpen] =
+    useState<boolean>(false);
+  const [isSuggestionModalOpen, setIsSuggestionModalOpen] =
+    useState<boolean>(false);
+  const [suggestionTarget, setSuggestionTarget] =
+    useState<IngredientItem | null>(null);
+  const [selectedSuggestionField, setSelectedSuggestionField] =
+    useState<SuggestionFieldKey | null>(null);
+  const [suggestionTexts, setSuggestionTexts] = useState<
+    Record<SuggestionFieldKey, string>
+  >({
+    month: "",
+    description: "",
+    add: "",
+    typo: "",
+    etc: "",
+  });
+  const [menuFinderAnswers, setMenuFinderAnswers] = useState<MenuFinderAnswers>({
+    style: null,
+    weather: null,
+    situation: null,
+    mealType: null,
+  });
+  const [hasSubmittedMenuFinder, setHasSubmittedMenuFinder] =
+    useState<boolean>(false);
   const cardClickTimerRef = useRef<number | null>(null);
   const monthlyMoreTimerRef = useRef<number | null>(null);
   const seasonMoreTimerRef = useRef<number | null>(null);
+  const monthDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const monthlyIngredients = useMemo(() => {
     return (ingredientDb as IngredientItem[])
-      .filter((item) => item.months.includes(currentMonth))
+      .filter((item) => item.months.includes(selectedMonth))
       .sort((a, b) => a.name.localeCompare(b.name, "ko"));
-  }, [currentMonth]);
+  }, [selectedMonth]);
 
   const shuffledMonthlyIngredients = useMemo(() => {
     const shuffled = [...monthlyIngredients];
@@ -98,6 +227,91 @@ const SeasonalFoodPage = () => {
     Math.min(seasonVisibleCount, filteredSeasonIngredients.length),
   );
 
+  const currentMonthIngredientNames = useMemo(() => {
+    return new Set(
+      (ingredientDb as IngredientItem[])
+        .filter((item) => item.months.includes(currentMonth))
+        .map((item) => item.name),
+    );
+  }, [currentMonth]);
+
+  const currentMonthMenus = useMemo(() => {
+    return (menuAndTipsDb as MenuTipItem[])
+      .filter((item) => currentMonthIngredientNames.has(item.ingredient))
+      .map((item) => {
+        const parsedTags = item.tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean);
+        const ingredientType =
+          (parsedTags.find((tag) =>
+            ["seafood", "vegetable", "meat", "fruit", "grain"].includes(tag),
+          ) as IngredientTypeTag | undefined) ?? null;
+
+        return {
+          ...item,
+          parsedTags,
+          ingredientType,
+        };
+      });
+  }, [currentMonthIngredientNames]);
+
+  const selectedMenuTags = useMemo(() => {
+    const tags = [
+      menuFinderAnswers.style,
+      menuFinderAnswers.situation,
+      menuFinderAnswers.mealType,
+    ].filter(Boolean) as string[];
+
+    if (menuFinderAnswers.weather && menuFinderAnswers.weather !== "any") {
+      tags.splice(1, 0, menuFinderAnswers.weather);
+    }
+
+    return tags;
+  }, [menuFinderAnswers]);
+
+  const recommendedMenus = useMemo(() => {
+    if (!hasSubmittedMenuFinder || selectedMenuTags.length < 3) return [];
+
+    const scoredMenus = currentMonthMenus
+      .map((menu) => {
+        const matchedTags = selectedMenuTags.filter((tag) =>
+          menu.parsedTags.includes(tag),
+        );
+        return {
+          ...menu,
+          matchedTags,
+          matchScore: matchedTags.length,
+        };
+      })
+      .filter((menu) => menu.matchScore > 0)
+      .sort((a, b) => {
+        if (b.matchScore !== a.matchScore) return b.matchScore - a.matchScore;
+        return a.name.localeCompare(b.name, "ko");
+      });
+
+    if (scoredMenus.length === 0) return [];
+
+    const exactMatches = scoredMenus.filter(
+      (menu) => menu.matchScore === selectedMenuTags.length,
+    );
+    if (exactMatches.length > 0) {
+      return exactMatches.slice(0, 6);
+    }
+
+    const bestScore = scoredMenus[0].matchScore;
+    return scoredMenus.filter((menu) => menu.matchScore === bestScore).slice(0, 6);
+  }, [currentMonthMenus, hasSubmittedMenuFinder, selectedMenuTags]);
+
+  const isMenuFinderComplete = useMemo(() => {
+    return (
+      !!menuFinderAnswers.style &&
+      !!menuFinderAnswers.weather &&
+      !!menuFinderAnswers.situation &&
+      !!menuFinderAnswers.mealType
+    );
+  }, [menuFinderAnswers]);
+
   useEffect(() => {
     setExpandedIngredientId(null);
   }, [selectedSeason]);
@@ -110,6 +324,27 @@ const SeasonalFoodPage = () => {
   useEffect(() => {
     setSeasonVisibleCount(5);
   }, [selectedCategoryId]);
+
+  useEffect(() => {
+    setExpandedIngredientId(null);
+    setMonthlyVisibleCount(initialMonthlyVisibleCount);
+  }, [selectedMonth, initialMonthlyVisibleCount]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        monthDropdownRef.current &&
+        !monthDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsMonthDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -156,8 +391,24 @@ const SeasonalFoodPage = () => {
     );
   };
 
-  const handleClickCoupang = (coupangUrl?: string) => {
-    if (!coupangUrl) return;
+  const getCoupangUrl = (item: IngredientItem) => {
+    if (item.coupangUrl) return item.coupangUrl;
+    const query = encodeURIComponent(item.name);
+    return `https://www.coupang.com/np/search?component=&q=${query}&channel=user`;
+  };
+
+  const getAliasList = (item: IngredientItem): string[] => {
+    if (!item.alias) return [];
+    if (Array.isArray(item.alias)) {
+      return item.alias.map((alias) => alias.trim()).filter(Boolean);
+    }
+    return item.alias
+      .split(",")
+      .map((alias) => alias.trim())
+      .filter(Boolean);
+  };
+
+  const handleClickCoupang = (coupangUrl: string) => {
     window.open(coupangUrl, "_blank");
   };
 
@@ -195,6 +446,58 @@ const SeasonalFoodPage = () => {
     }, 180);
   };
 
+  const handleOpenSuggestionModal = (
+    item: IngredientItem,
+    e: React.MouseEvent<HTMLElement>,
+  ) => {
+    e.stopPropagation();
+    setSuggestionTarget(item);
+    setSelectedSuggestionField(null);
+    setSuggestionTexts({
+      month: "",
+      description: "",
+      add: "",
+      typo: "",
+      etc: "",
+    });
+    setIsSuggestionModalOpen(true);
+  };
+
+  const handleSelectSuggestionField = (key: SuggestionFieldKey) => {
+    setSelectedSuggestionField(key);
+  };
+
+  const handleSubmitSuggestion = () => {
+    alert("제안 보내기 기능은 곧 연결됩니다.");
+    setIsSuggestionModalOpen(false);
+  };
+
+  const canSubmitSuggestion =
+    !!selectedSuggestionField &&
+    suggestionTexts[selectedSuggestionField].trim().length > 0;
+
+  const handleSelectMonth = (month: number) => {
+    setSelectedMonth(month);
+    setIsMonthDropdownOpen(false);
+  };
+
+  const handleSelectMenuFinderAnswer = <
+    K extends keyof MenuFinderAnswers,
+    V extends NonNullable<MenuFinderAnswers[K]>,
+  >(
+    key: K,
+    value: V,
+  ) => {
+    setMenuFinderAnswers((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const handleSubmitMenuFinder = () => {
+    setHasSubmittedMenuFinder(true);
+  };
+
   return (
     <div
       style={{
@@ -216,7 +519,7 @@ const SeasonalFoodPage = () => {
             transform: "translateY(-4px)",
           }}
         >
-          제철 음식 사냥꾼
+          제철 사냥꾼
         </h1>
         <div
           style={{
@@ -224,7 +527,15 @@ const SeasonalFoodPage = () => {
             paddingTop: "20px",
           }}
         >
-          <div style={{ marginBottom: "10px" }}>
+          <div
+            style={{
+              marginBottom: "10px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
+            }}
+          >
             <div
               style={{
                 fontSize: "24px",
@@ -232,7 +543,87 @@ const SeasonalFoodPage = () => {
                 color: "#0f172a",
               }}
             >
-              {currentMonth}월의 제철 식재료 🌱
+              {selectedMonth}월의 제철
+            </div>
+            <div ref={monthDropdownRef} style={{ position: "relative" }}>
+              <button
+                type="button"
+                onClick={() => setIsMonthDropdownOpen((prev) => !prev)}
+                style={{
+                  height: "36px",
+                  minWidth: "92px",
+                  borderRadius: "10px",
+                  border: isMonthDropdownOpen
+                    ? "1px solid #64748b"
+                    : "1px solid #cbd5e1",
+                  backgroundColor: "#ffffff",
+                  color: "#0f172a",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  padding: "0 10px 0 12px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "8px",
+                  boxShadow: isMonthDropdownOpen
+                    ? "0 8px 16px rgba(15, 23, 42, 0.12)"
+                    : "none",
+                }}
+              >
+                {selectedMonth}월
+                <ChevronDown
+                  size={14}
+                  style={{
+                    transform: isMonthDropdownOpen
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
+                    transition: "transform 0.16s ease",
+                  }}
+                />
+              </button>
+              {isMonthDropdownOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "40px",
+                    right: 0,
+                    width: "100%",
+                    maxHeight: "220px",
+                    overflowY: "auto",
+                    borderRadius: "10px",
+                    border: "1px solid #cbd5e1",
+                    backgroundColor: "#ffffff",
+                    boxShadow: "0 14px 28px rgba(15, 23, 42, 0.16)",
+                    zIndex: 20,
+                    padding: "4px",
+                  }}
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                    <button
+                      key={month}
+                      type="button"
+                      onClick={() => handleSelectMonth(month)}
+                      style={{
+                        width: "100%",
+                        height: "32px",
+                        border: "none",
+                        borderRadius: "8px",
+                        backgroundColor:
+                          selectedMonth === month ? "#e2e8f0" : "transparent",
+                        color: "#0f172a",
+                        fontSize: "13px",
+                        fontWeight: selectedMonth === month ? 700 : 500,
+                        textAlign: "left",
+                        padding: "0 10px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {month}월
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -245,6 +636,7 @@ const SeasonalFoodPage = () => {
           >
             {visibleMonthlyIngredients.map((item) => {
               const imageUrl = getIngredientImageUrl(item);
+              const aliasList = getAliasList(item);
               return (
                 <button
                   key={item.id}
@@ -270,13 +662,39 @@ const SeasonalFoodPage = () => {
                 >
                   <div
                     style={{
-                      height: "124px",
+                      position: "relative",
+                      height: "164px",
                       backgroundColor: "#e2e8f0",
                       backgroundImage: imageUrl ? `url(${imageUrl})` : "none",
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                     }}
-                  />
+                  >
+                    {expandedIngredientId === item.id && (
+                      <div
+                        title="정보 수정 제안"
+                        onClick={(e) => handleOpenSuggestionModal(item, e)}
+                        style={{
+                          position: "absolute",
+                          top: "8px",
+                          right: "8px",
+                          zIndex: 2,
+                          width: "28px",
+                          height: "28px",
+                          borderRadius: "999px",
+                          border: "1px solid rgba(15, 23, 42, 0.3)",
+                          backgroundColor: "rgba(255, 255, 255, 0.96)",
+                          color: "#0f172a",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <CircleAlert size={16} strokeWidth={2.2} />
+                      </div>
+                    )}
+                  </div>
                   <div style={{ padding: "10px 10px 12px" }}>
                     <div
                       style={{
@@ -288,6 +706,20 @@ const SeasonalFoodPage = () => {
                     >
                       {item.name}
                     </div>
+                    {expandedIngredientId === item.id &&
+                      aliasList.length > 0 && (
+                        <div
+                          style={{
+                            marginTop: "3px",
+                            fontSize: "11px",
+                            fontWeight: 400,
+                            color: "#94a3b8",
+                            textAlign: "center",
+                          }}
+                        >
+                          ({aliasList.join(", ")})
+                        </div>
+                      )}
                     {!!item.description && (
                       <div
                         style={{
@@ -390,29 +822,27 @@ const SeasonalFoodPage = () => {
                             아직 제철이 아니에요 🥲
                           </button>
                         ) : (
-                          !!item.coupangUrl && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleClickCoupang(item.coupangUrl);
-                              }}
-                              style={{
-                                width: "100%",
-                                marginTop: "10px",
-                                height: "40px",
-                                borderRadius: "10px",
-                                border: "1px solid #fde68a",
-                                backgroundColor: "#fef3c7",
-                                color: "#92400e",
-                                fontSize: "13px",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                              }}
-                            >
-                              {item.name} 사러가기 🛒
-                            </button>
-                          )
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleClickCoupang(getCoupangUrl(item));
+                            }}
+                            style={{
+                              width: "100%",
+                              marginTop: "10px",
+                              height: "40px",
+                              borderRadius: "10px",
+                              border: "1px solid #fde68a",
+                              backgroundColor: "#fef3c7",
+                              color: "#92400e",
+                              fontSize: "13px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {item.name} 사러가기 🛒
+                          </button>
                         )}
                         <button
                           type="button"
@@ -516,7 +946,7 @@ const SeasonalFoodPage = () => {
                 fontWeight: 400,
               }}
             >
-              계절별 제철 식재료
+              계절별
             </div>
             <div
               style={{
@@ -630,6 +1060,7 @@ const SeasonalFoodPage = () => {
               >
                 {visibleSeasonIngredients.map((item) => {
                   const imageUrl = getIngredientImageUrl(item);
+                  const aliasList = getAliasList(item);
                   return (
                     <button
                       key={`season-${item.id}`}
@@ -681,13 +1112,52 @@ const SeasonalFoodPage = () => {
                         <div style={{ minWidth: 0, width: "100%" }}>
                           <div
                             style={{
-                              fontSize: "17px",
-                              color: "#0f172a",
-                              fontWeight: 700,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: "8px",
                             }}
                           >
-                            {item.name}
+                            <span
+                              style={{
+                                fontSize: "17px",
+                                color: "#0f172a",
+                                fontWeight: 700,
+                              }}
+                            >
+                              {item.name}
+                            </span>
+                            {expandedIngredientId === item.id && (
+                              <span
+                                title="정보 수정 제안"
+                                onClick={(e) =>
+                                  handleOpenSuggestionModal(item, e)
+                                }
+                                style={{
+                                  color: "#334155",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  cursor: "pointer",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                <CircleAlert size={15} />
+                              </span>
+                            )}
                           </div>
+                          {expandedIngredientId === item.id &&
+                            aliasList.length > 0 && (
+                              <div
+                                style={{
+                                  marginTop: "2px",
+                                  fontSize: "10px",
+                                  fontWeight: 400,
+                                  color: "#94a3b8",
+                                }}
+                              >
+                                ({aliasList.join(", ")})
+                              </div>
+                            )}
                           {!!item.description && (
                             <div
                               style={{
@@ -790,29 +1260,27 @@ const SeasonalFoodPage = () => {
                                 아직 제철이 아니에요 🥲
                               </button>
                             ) : (
-                              !!item.coupangUrl && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleClickCoupang(item.coupangUrl);
-                                  }}
-                                  style={{
-                                    width: "100%",
-                                    marginTop: "10px",
-                                    height: "40px",
-                                    borderRadius: "10px",
-                                    border: "1px solid #fde68a",
-                                    backgroundColor: "#fef3c7",
-                                    color: "#92400e",
-                                    fontSize: "13px",
-                                    fontWeight: 700,
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  {item.name} 사러가기 🛒
-                                </button>
-                              )
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleClickCoupang(getCoupangUrl(item));
+                                }}
+                                style={{
+                                  width: "100%",
+                                  marginTop: "10px",
+                                  height: "40px",
+                                  borderRadius: "10px",
+                                  border: "1px solid #fde68a",
+                                  backgroundColor: "#fef3c7",
+                                  color: "#92400e",
+                                  fontSize: "13px",
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                {item.name} 사러가기 🛒
+                              </button>
                             )}
                             <button
                               type="button"
@@ -882,6 +1350,341 @@ const SeasonalFoodPage = () => {
               paddingTop: "20px",
             }}
           >
+            <div
+              style={{
+                fontSize: "24px",
+                color: "#0f172a",
+                fontWeight: 400,
+              }}
+            >
+              오늘 뭐먹지?
+            </div>
+            <div
+              style={{
+                marginTop: "6px",
+                fontSize: "13px",
+                lineHeight: 1.6,
+                color: "#64748b",
+              }}
+            >
+              지금은 {currentMonth}월. 이번 달 제철 재료로 만든 메뉴만 골라서
+              추천해드릴게요.
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: "14px",
+                marginTop: "16px",
+              }}
+            >
+              {MENU_FINDER_QUESTIONS.map((question, index) => (
+                <div
+                  key={question.key}
+                  style={{
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "14px",
+                    backgroundColor: "#ffffff",
+                    padding: "14px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "#94a3b8",
+                      fontWeight: 700,
+                    }}
+                  >
+                    질문 {index + 1}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: "4px",
+                      fontSize: "16px",
+                      color: "#0f172a",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {question.title}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "8px",
+                      marginTop: "12px",
+                    }}
+                  >
+                    {question.options.map((option) => {
+                      const isSelected =
+                        menuFinderAnswers[question.key] === option.value;
+
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() =>
+                            handleSelectMenuFinderAnswer(
+                              question.key,
+                              option.value,
+                            )
+                          }
+                          style={{
+                            minHeight: "38px",
+                            borderRadius: "999px",
+                            border: isSelected
+                              ? "1px solid #0f172a"
+                              : "1px solid #dbe2ea",
+                            backgroundColor: isSelected ? "#0f172a" : "#ffffff",
+                            color: isSelected ? "#ffffff" : "#334155",
+                            fontSize: "13px",
+                            fontWeight: 700,
+                            padding: "0 12px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSubmitMenuFinder}
+              disabled={!isMenuFinderComplete}
+              style={{
+                width: "100%",
+                marginTop: "16px",
+                height: "48px",
+                borderRadius: "12px",
+                border: isMenuFinderComplete
+                  ? "1px solid #0f172a"
+                  : "1px solid #cbd5e1",
+                backgroundColor: isMenuFinderComplete ? "#0f172a" : "#e2e8f0",
+                color: isMenuFinderComplete ? "#ffffff" : "#64748b",
+                fontSize: "15px",
+                fontWeight: 700,
+                cursor: isMenuFinderComplete ? "pointer" : "not-allowed",
+              }}
+            >
+              결과 보기
+            </button>
+
+            {hasSubmittedMenuFinder && (
+              <div
+                style={{
+                  marginTop: "16px",
+                  borderRadius: "16px",
+                  backgroundColor: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  padding: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "18px",
+                    color: "#0f172a",
+                    fontWeight: 700,
+                  }}
+                >
+                  추천 결과
+                </div>
+                <div
+                  style={{
+                    marginTop: "6px",
+                    fontSize: "12px",
+                    lineHeight: 1.6,
+                    color: "#64748b",
+                  }}
+                >
+                  {recommendedMenus.length > 0 &&
+                  recommendedMenus[0].matchScore === selectedMenuTags.length
+                    ? "선택한 조건과 맞는 제철 메뉴를 찾았어요."
+                    : "완전히 일치하는 메뉴가 적어서, 지금 조건과 가장 가까운 제철 메뉴를 골랐어요."}
+                </div>
+
+                {recommendedMenus.length > 0 ? (
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: "12px",
+                      marginTop: "14px",
+                    }}
+                  >
+                    {recommendedMenus.map((menu) => (
+                      <div
+                        key={`${menu.ingredient}-${menu.name}`}
+                        style={{
+                          borderRadius: "14px",
+                          border: "1px solid #dbe2ea",
+                          backgroundColor: "#ffffff",
+                          padding: "14px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            justifyContent: "space-between",
+                            gap: "12px",
+                          }}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                fontSize: "18px",
+                                color: "#0f172a",
+                                fontWeight: 700,
+                              }}
+                            >
+                              {menu.name}
+                            </div>
+                            <div
+                              style={{
+                                marginTop: "4px",
+                                fontSize: "12px",
+                                color: "#475569",
+                              }}
+                            >
+                              제철 재료: {menu.ingredient}
+                              {menu.ingredientType
+                                ? ` · ${MENU_TAG_LABELS[menu.ingredientType]}`
+                                : ""}
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              flexShrink: 0,
+                              borderRadius: "999px",
+                              backgroundColor: "#e2e8f0",
+                              color: "#0f172a",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              padding: "5px 8px",
+                            }}
+                          >
+                            {menu.matchScore}/{selectedMenuTags.length} 매치
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: "10px",
+                            fontSize: "13px",
+                            color: "#334155",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          {menu.description}
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: "10px",
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "6px",
+                          }}
+                        >
+                          {menu.matchedTags.map((tag) => (
+                            <span
+                              key={`${menu.name}-${tag}`}
+                              style={{
+                                borderRadius: "999px",
+                                backgroundColor: "#e0f2fe",
+                                color: "#0c4a6e",
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                padding: "4px 8px",
+                              }}
+                            >
+                              #{MENU_TAG_LABELS[tag] ?? tag}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: "10px",
+                            fontSize: "12px",
+                            color: "#475569",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          팁: {menu.tip}
+                        </div>
+
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "8px",
+                            marginTop: "12px",
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => handleClickFoodTag(menu.name)}
+                            style={{
+                              height: "38px",
+                              borderRadius: "10px",
+                              border: "1px solid #bae6fd",
+                              backgroundColor: "#f0f9ff",
+                              color: "#0c4a6e",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            메뉴 검색
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleClickFindRestaurants(menu.name)}
+                            style={{
+                              height: "38px",
+                              borderRadius: "10px",
+                              border: "1px solid #dbe2ea",
+                              backgroundColor: "#ffffff",
+                              color: "#334155",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            맛집 찾아보기
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      marginTop: "14px",
+                      fontSize: "13px",
+                      color: "#475569",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    이번 달 제철 메뉴 중에서는 조건과 맞는 결과를 찾지 못했어요.
+                    다른 답변으로 다시 골라보세요.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div
+            style={{
+              marginTop: "20px",
+              borderTop: "1px solid #e2e8f0",
+              paddingTop: "20px",
+            }}
+          >
             <button
               type="button"
               onClick={() => navigate("/seasonal-food/worldcub")}
@@ -903,6 +1706,197 @@ const SeasonalFoodPage = () => {
             </button>
           </div>
         </div>
+
+        {isSuggestionModalOpen && suggestionTarget && (
+          <div
+            onClick={() => setIsSuggestionModalOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(15, 23, 42, 0.45)",
+              zIndex: 2000,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "16px",
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "100%",
+                maxWidth: "460px",
+                borderRadius: "14px",
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 16px 32px rgba(15, 23, 42, 0.24)",
+                padding: "18px 16px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 700,
+                  color: "#0f172a",
+                  marginBottom: "10px",
+                }}
+              >
+                정보 수정 또는 제안
+              </div>
+
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "#475569",
+                  marginBottom: "12px",
+                  lineHeight: 1.5,
+                  fontWeight: 300,
+                }}
+              >
+                <span style={{ fontWeight: 700, color: "#0f172a" }}>
+                  {suggestionTarget.name}
+                </span>
+                의 정보가 잘못되었거나 추가할 내용이 있다면 알려주세요.
+              </div>
+
+              <div
+                style={{ display: "grid", gap: "8px", marginBottom: "18px" }}
+              >
+                {[
+                  {
+                    key: "month" as const,
+                    label: "제철 시기 수정",
+                  },
+                  {
+                    key: "description" as const,
+                    label: "설명 오류",
+                  },
+                  {
+                    key: "add" as const,
+                    label: "추가하면 좋은 정보",
+                  },
+                  {
+                    key: "typo" as const,
+                    label: "오타 / 표현 수정",
+                  },
+                  {
+                    key: "etc" as const,
+                    label: "기타",
+                  },
+                ].map((field) => (
+                  <label
+                    key={field.key}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "14px",
+                      fontWeight: 300,
+                      color: "#0f172a",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="suggestion-field"
+                      checked={selectedSuggestionField === field.key}
+                      onChange={() => handleSelectSuggestionField(field.key)}
+                    />
+                    {field.label}
+                  </label>
+                ))}
+              </div>
+
+              <textarea
+                value={
+                  selectedSuggestionField
+                    ? suggestionTexts[selectedSuggestionField]
+                    : ""
+                }
+                onChange={(e) => {
+                  if (!selectedSuggestionField) return;
+                  setSuggestionTexts((prev) => ({
+                    ...prev,
+                    [selectedSuggestionField]: e.target.value,
+                  }));
+                }}
+                placeholder={
+                  selectedSuggestionField
+                    ? {
+                        month:
+                          "제철이라고 생각하는 월을 알려주세요. 예) 11, 12, 1, 2",
+                        description:
+                          "설명 중 잘못된 내용이나 어색한 부분을 알려주세요. 가능하면 어떤 점이 틀렸는지도 함께 적어주세요.",
+                        add: "추가되면 좋을 정보를 알려주세요. 예) 주요 산지, 영양 정보, 추천 요리, 보관 방법, 맛집",
+                        typo: "오타가 있거나 어색한 표현이 있다면 수정 내용을 적어주세요.",
+                        etc: "위 항목에 해당하지 않는 의견이 있다면 자유롭게 적어주세요.",
+                      }[selectedSuggestionField]
+                    : "항목을 먼저 선택해주세요."
+                }
+                disabled={!selectedSuggestionField}
+                style={{
+                  width: "100%",
+                  minHeight: "110px",
+                  borderRadius: "10px",
+                  border: "1px solid #e2e8f0",
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  resize: "vertical",
+                  backgroundColor: selectedSuggestionField
+                    ? "#f8fafc"
+                    : "#f1f5f9",
+                  marginBottom: "16px",
+                }}
+              />
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "10px",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsSuggestionModalOpen(false)}
+                  style={{
+                    height: "42px",
+                    borderRadius: "10px",
+                    border: "1px solid #cbd5e1",
+                    backgroundColor: "#ffffff",
+                    color: "#334155",
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmitSuggestion}
+                  disabled={!canSubmitSuggestion}
+                  style={{
+                    height: "42px",
+                    borderRadius: "10px",
+                    border: canSubmitSuggestion
+                      ? "1px solid #1f2937"
+                      : "1px solid #cbd5e1",
+                    backgroundColor: canSubmitSuggestion
+                      ? "#1f2937"
+                      : "#e2e8f0",
+                    color: canSubmitSuggestion ? "#ffffff" : "#94a3b8",
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    cursor: canSubmitSuggestion ? "pointer" : "not-allowed",
+                  }}
+                >
+                  제안 보내기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
