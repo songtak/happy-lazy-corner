@@ -31,12 +31,7 @@ type StyleTag = "hearty" | "light" | "warm" | "spicy" | "fresh";
 type WeatherTag = "rainy" | "cold" | "warm" | "hot";
 type SituationTag = "solo" | "home" | "eatout" | "special";
 type MealTypeTag = "meal" | "lightMeal" | "anju" | "dessert";
-type IngredientTypeTag =
-  | "seafood"
-  | "vegetable"
-  | "meat"
-  | "fruit"
-  | "grain";
+type IngredientTypeTag = "seafood" | "vegetable" | "meat" | "fruit" | "grain";
 type MenuFinderAnswers = {
   style: StyleTag | null;
   weather: WeatherTag | "any" | null;
@@ -172,12 +167,14 @@ const SeasonalFoodPage = () => {
     typo: "",
     etc: "",
   });
-  const [menuFinderAnswers, setMenuFinderAnswers] = useState<MenuFinderAnswers>({
-    style: null,
-    weather: null,
-    situation: null,
-    mealType: null,
-  });
+  const [menuFinderAnswers, setMenuFinderAnswers] = useState<MenuFinderAnswers>(
+    {
+      style: null,
+      weather: null,
+      situation: null,
+      mealType: null,
+    },
+  );
   const [hasSubmittedMenuFinder, setHasSubmittedMenuFinder] =
     useState<boolean>(false);
   const cardClickTimerRef = useRef<number | null>(null);
@@ -300,7 +297,9 @@ const SeasonalFoodPage = () => {
     }
 
     const bestScore = scoredMenus[0].matchScore;
-    return scoredMenus.filter((menu) => menu.matchScore === bestScore).slice(0, 6);
+    return scoredMenus
+      .filter((menu) => menu.matchScore === bestScore)
+      .slice(0, 6);
   }, [currentMonthMenus, hasSubmittedMenuFinder, selectedMenuTags]);
 
   const isMenuFinderComplete = useMemo(() => {
@@ -311,6 +310,18 @@ const SeasonalFoodPage = () => {
       !!menuFinderAnswers.mealType
     );
   }, [menuFinderAnswers]);
+
+  const visibleMenuFinderQuestionCount = useMemo(() => {
+    if (!menuFinderAnswers.style) return 1;
+    if (!menuFinderAnswers.weather) return 2;
+    if (!menuFinderAnswers.situation) return 3;
+    if (!menuFinderAnswers.mealType) return 4;
+    return 4;
+  }, [menuFinderAnswers]);
+
+  const currentMenuFinderQuestionIndex = useMemo(() => {
+    return Math.max(0, visibleMenuFinderQuestionCount - 1);
+  }, [visibleMenuFinderQuestionCount]);
 
   useEffect(() => {
     setExpandedIngredientId(null);
@@ -488,14 +499,29 @@ const SeasonalFoodPage = () => {
     key: K,
     value: V,
   ) => {
-    setMenuFinderAnswers((prev) => ({
-      ...prev,
+    const nextAnswers = {
+      ...menuFinderAnswers,
       [key]: value,
-    }));
+    };
+    setMenuFinderAnswers(nextAnswers);
+
+    const isComplete =
+      !!nextAnswers.style &&
+      !!nextAnswers.weather &&
+      !!nextAnswers.situation &&
+      !!nextAnswers.mealType;
+
+    setHasSubmittedMenuFinder(isComplete);
   };
 
-  const handleSubmitMenuFinder = () => {
-    setHasSubmittedMenuFinder(true);
+  const handleResetMenuFinder = () => {
+    setMenuFinderAnswers({
+      style: null,
+      weather: null,
+      situation: null,
+      mealType: null,
+    });
+    setHasSubmittedMenuFinder(false);
   };
 
   return (
@@ -529,6 +555,373 @@ const SeasonalFoodPage = () => {
         >
           <div
             style={{
+              borderTop: "1px solid #e2e8f0",
+              paddingTop: "20px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "24px",
+                color: "#0f172a",
+                fontWeight: 400,
+              }}
+            >
+              오늘의 제철 메뉴 찾기
+            </div>
+            {/* <div
+              style={{
+                marginTop: "6px",
+                fontSize: "13px",
+                lineHeight: 1.6,
+                color: "#64748b",
+              }}
+            >
+              지금은 {currentMonth}월. 이번 달 제철 재료로 만든 메뉴만 골라서
+              추천해드릴게요.
+            </div> */}
+
+            {!hasSubmittedMenuFinder && (
+              <div
+                style={{
+                  display: "grid",
+                  gap: "14px",
+                  marginTop: "16px",
+                }}
+              >
+                <div
+                  key={
+                    MENU_FINDER_QUESTIONS[currentMenuFinderQuestionIndex].key
+                  }
+                  style={{
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "14px",
+                    backgroundColor: "#ffffff",
+                    padding: "14px",
+                    minHeight: "360px",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "16px",
+                        color: "#0f172a",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {
+                        MENU_FINDER_QUESTIONS[currentMenuFinderQuestionIndex]
+                          .title
+                      }
+                    </div>
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        fontSize: "12px",
+                        color: "#94a3b8",
+                        fontWeight: 700,
+                        textAlign: "right",
+                      }}
+                    >
+                      {currentMenuFinderQuestionIndex + 1}/
+                      {MENU_FINDER_QUESTIONS.length}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "8px",
+                      flex: 1,
+                      justifyContent: "flex-start",
+                    }}
+                  >
+                    {MENU_FINDER_QUESTIONS[
+                      currentMenuFinderQuestionIndex
+                    ].options.map((option) => {
+                      const questionKey =
+                        MENU_FINDER_QUESTIONS[currentMenuFinderQuestionIndex]
+                          .key;
+                      const isSelected =
+                        menuFinderAnswers[questionKey] === option.value;
+
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() =>
+                            handleSelectMenuFinderAnswer(
+                              questionKey,
+                              option.value,
+                            )
+                          }
+                          style={{
+                            width: "100%",
+                            maxWidth: "320px",
+                            height: "48px",
+                            borderRadius: "999px",
+                            border: isSelected
+                              ? "1px solid #0f172a"
+                              : "1px solid #dbe2ea",
+                            backgroundColor: isSelected ? "#0f172a" : "#ffffff",
+                            color: isSelected ? "#ffffff" : "#334155",
+                            fontSize: "13px",
+                            fontWeight: 700,
+                            padding: "0 12px",
+                            cursor: "pointer",
+                            textAlign: "center",
+                          }}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {hasSubmittedMenuFinder && (
+              <div
+                style={{
+                  marginTop: "16px",
+                  borderRadius: "16px",
+                  backgroundColor: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  padding: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "18px",
+                    color: "#0f172a",
+                    fontWeight: 700,
+                  }}
+                >
+                  추천 결과
+                </div>
+                <div
+                  style={{
+                    marginTop: "6px",
+                    fontSize: "12px",
+                    lineHeight: 1.6,
+                    color: "#64748b",
+                  }}
+                >
+                  {recommendedMenus.length > 0 &&
+                  recommendedMenus[0].matchScore === selectedMenuTags.length
+                    ? "선택한 조건과 맞는 제철 메뉴를 찾았어요."
+                    : "완전히 일치하는 메뉴가 적어서, 지금 조건과 가장 가까운 제철 메뉴를 골랐어요."}
+                </div>
+
+                {recommendedMenus.length > 0 ? (
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: "12px",
+                      marginTop: "14px",
+                    }}
+                  >
+                    {recommendedMenus.map((menu) => (
+                      <div
+                        key={`${menu.ingredient}-${menu.name}`}
+                        style={{
+                          borderRadius: "14px",
+                          border: "1px solid #dbe2ea",
+                          backgroundColor: "#ffffff",
+                          padding: "14px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            justifyContent: "space-between",
+                            gap: "12px",
+                          }}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                fontSize: "18px",
+                                color: "#0f172a",
+                                fontWeight: 700,
+                              }}
+                            >
+                              {menu.name}
+                            </div>
+                            <div
+                              style={{
+                                marginTop: "4px",
+                                fontSize: "12px",
+                                color: "#475569",
+                              }}
+                            >
+                              제철 재료: {menu.ingredient}
+                              {menu.ingredientType
+                                ? ` · ${MENU_TAG_LABELS[menu.ingredientType]}`
+                                : ""}
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              flexShrink: 0,
+                              borderRadius: "999px",
+                              backgroundColor: "#e2e8f0",
+                              color: "#0f172a",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              padding: "5px 8px",
+                            }}
+                          >
+                            {menu.matchScore}/{selectedMenuTags.length} 매치
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: "10px",
+                            fontSize: "13px",
+                            color: "#334155",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          {menu.description}
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: "10px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          {menu.matchedTags.map((tag) => (
+                            <span
+                              key={`${menu.name}-${tag}`}
+                              style={{
+                                borderRadius: "999px",
+                                backgroundColor: "#e0f2fe",
+                                color: "#0c4a6e",
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                padding: "4px 8px",
+                                textAlign: "center",
+                              }}
+                            >
+                              #{MENU_TAG_LABELS[tag] ?? tag}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: "10px",
+                            fontSize: "12px",
+                            color: "#475569",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          팁: {menu.tip}
+                        </div>
+
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "8px",
+                            marginTop: "12px",
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => handleClickFoodTag(menu.name)}
+                            style={{
+                              height: "38px",
+                              borderRadius: "10px",
+                              border: "1px solid #bae6fd",
+                              backgroundColor: "#f0f9ff",
+                              color: "#0c4a6e",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            메뉴 검색
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleClickFindRestaurants(menu.name)
+                            }
+                            style={{
+                              height: "38px",
+                              borderRadius: "10px",
+                              border: "1px solid #dbe2ea",
+                              backgroundColor: "#ffffff",
+                              color: "#334155",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            맛집 찾아보기
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      marginTop: "14px",
+                      fontSize: "13px",
+                      color: "#475569",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    이번 달 제철 메뉴 중에서는 조건과 맞는 결과를 찾지 못했어요.
+                    다른 답변으로 다시 골라보세요.
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleResetMenuFinder}
+                  style={{
+                    width: "100%",
+                    marginTop: "14px",
+                    height: "48px",
+                    borderRadius: "12px",
+                    border: "1px solid #0f172a",
+                    backgroundColor: "#ffffff",
+                    color: "#0f172a",
+                    fontSize: "15px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  다시하기
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div
+            style={{
+              marginTop: "20px",
               marginBottom: "10px",
               display: "flex",
               alignItems: "center",
@@ -1350,341 +1743,6 @@ const SeasonalFoodPage = () => {
               paddingTop: "20px",
             }}
           >
-            <div
-              style={{
-                fontSize: "24px",
-                color: "#0f172a",
-                fontWeight: 400,
-              }}
-            >
-              오늘 뭐먹지?
-            </div>
-            <div
-              style={{
-                marginTop: "6px",
-                fontSize: "13px",
-                lineHeight: 1.6,
-                color: "#64748b",
-              }}
-            >
-              지금은 {currentMonth}월. 이번 달 제철 재료로 만든 메뉴만 골라서
-              추천해드릴게요.
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gap: "14px",
-                marginTop: "16px",
-              }}
-            >
-              {MENU_FINDER_QUESTIONS.map((question, index) => (
-                <div
-                  key={question.key}
-                  style={{
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "14px",
-                    backgroundColor: "#ffffff",
-                    padding: "14px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      color: "#94a3b8",
-                      fontWeight: 700,
-                    }}
-                  >
-                    질문 {index + 1}
-                  </div>
-                  <div
-                    style={{
-                      marginTop: "4px",
-                      fontSize: "16px",
-                      color: "#0f172a",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {question.title}
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "8px",
-                      marginTop: "12px",
-                    }}
-                  >
-                    {question.options.map((option) => {
-                      const isSelected =
-                        menuFinderAnswers[question.key] === option.value;
-
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() =>
-                            handleSelectMenuFinderAnswer(
-                              question.key,
-                              option.value,
-                            )
-                          }
-                          style={{
-                            minHeight: "38px",
-                            borderRadius: "999px",
-                            border: isSelected
-                              ? "1px solid #0f172a"
-                              : "1px solid #dbe2ea",
-                            backgroundColor: isSelected ? "#0f172a" : "#ffffff",
-                            color: isSelected ? "#ffffff" : "#334155",
-                            fontSize: "13px",
-                            fontWeight: 700,
-                            padding: "0 12px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          {option.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleSubmitMenuFinder}
-              disabled={!isMenuFinderComplete}
-              style={{
-                width: "100%",
-                marginTop: "16px",
-                height: "48px",
-                borderRadius: "12px",
-                border: isMenuFinderComplete
-                  ? "1px solid #0f172a"
-                  : "1px solid #cbd5e1",
-                backgroundColor: isMenuFinderComplete ? "#0f172a" : "#e2e8f0",
-                color: isMenuFinderComplete ? "#ffffff" : "#64748b",
-                fontSize: "15px",
-                fontWeight: 700,
-                cursor: isMenuFinderComplete ? "pointer" : "not-allowed",
-              }}
-            >
-              결과 보기
-            </button>
-
-            {hasSubmittedMenuFinder && (
-              <div
-                style={{
-                  marginTop: "16px",
-                  borderRadius: "16px",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  padding: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "18px",
-                    color: "#0f172a",
-                    fontWeight: 700,
-                  }}
-                >
-                  추천 결과
-                </div>
-                <div
-                  style={{
-                    marginTop: "6px",
-                    fontSize: "12px",
-                    lineHeight: 1.6,
-                    color: "#64748b",
-                  }}
-                >
-                  {recommendedMenus.length > 0 &&
-                  recommendedMenus[0].matchScore === selectedMenuTags.length
-                    ? "선택한 조건과 맞는 제철 메뉴를 찾았어요."
-                    : "완전히 일치하는 메뉴가 적어서, 지금 조건과 가장 가까운 제철 메뉴를 골랐어요."}
-                </div>
-
-                {recommendedMenus.length > 0 ? (
-                  <div
-                    style={{
-                      display: "grid",
-                      gap: "12px",
-                      marginTop: "14px",
-                    }}
-                  >
-                    {recommendedMenus.map((menu) => (
-                      <div
-                        key={`${menu.ingredient}-${menu.name}`}
-                        style={{
-                          borderRadius: "14px",
-                          border: "1px solid #dbe2ea",
-                          backgroundColor: "#ffffff",
-                          padding: "14px",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "flex-start",
-                            justifyContent: "space-between",
-                            gap: "12px",
-                          }}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                fontSize: "18px",
-                                color: "#0f172a",
-                                fontWeight: 700,
-                              }}
-                            >
-                              {menu.name}
-                            </div>
-                            <div
-                              style={{
-                                marginTop: "4px",
-                                fontSize: "12px",
-                                color: "#475569",
-                              }}
-                            >
-                              제철 재료: {menu.ingredient}
-                              {menu.ingredientType
-                                ? ` · ${MENU_TAG_LABELS[menu.ingredientType]}`
-                                : ""}
-                            </div>
-                          </div>
-                          <div
-                            style={{
-                              flexShrink: 0,
-                              borderRadius: "999px",
-                              backgroundColor: "#e2e8f0",
-                              color: "#0f172a",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              padding: "5px 8px",
-                            }}
-                          >
-                            {menu.matchScore}/{selectedMenuTags.length} 매치
-                          </div>
-                        </div>
-
-                        <div
-                          style={{
-                            marginTop: "10px",
-                            fontSize: "13px",
-                            color: "#334155",
-                            lineHeight: 1.6,
-                          }}
-                        >
-                          {menu.description}
-                        </div>
-
-                        <div
-                          style={{
-                            marginTop: "10px",
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: "6px",
-                          }}
-                        >
-                          {menu.matchedTags.map((tag) => (
-                            <span
-                              key={`${menu.name}-${tag}`}
-                              style={{
-                                borderRadius: "999px",
-                                backgroundColor: "#e0f2fe",
-                                color: "#0c4a6e",
-                                fontSize: "11px",
-                                fontWeight: 700,
-                                padding: "4px 8px",
-                              }}
-                            >
-                              #{MENU_TAG_LABELS[tag] ?? tag}
-                            </span>
-                          ))}
-                        </div>
-
-                        <div
-                          style={{
-                            marginTop: "10px",
-                            fontSize: "12px",
-                            color: "#475569",
-                            lineHeight: 1.6,
-                          }}
-                        >
-                          팁: {menu.tip}
-                        </div>
-
-                        <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "1fr 1fr",
-                            gap: "8px",
-                            marginTop: "12px",
-                          }}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => handleClickFoodTag(menu.name)}
-                            style={{
-                              height: "38px",
-                              borderRadius: "10px",
-                              border: "1px solid #bae6fd",
-                              backgroundColor: "#f0f9ff",
-                              color: "#0c4a6e",
-                              fontSize: "12px",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                            }}
-                          >
-                            메뉴 검색
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleClickFindRestaurants(menu.name)}
-                            style={{
-                              height: "38px",
-                              borderRadius: "10px",
-                              border: "1px solid #dbe2ea",
-                              backgroundColor: "#ffffff",
-                              color: "#334155",
-                              fontSize: "12px",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                            }}
-                          >
-                            맛집 찾아보기
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      marginTop: "14px",
-                      fontSize: "13px",
-                      color: "#475569",
-                      lineHeight: 1.6,
-                    }}
-                  >
-                    이번 달 제철 메뉴 중에서는 조건과 맞는 결과를 찾지 못했어요.
-                    다른 답변으로 다시 골라보세요.
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          <div
-            style={{
-              marginTop: "20px",
-              borderTop: "1px solid #e2e8f0",
-              paddingTop: "20px",
-            }}
-          >
             <button
               type="button"
               onClick={() => navigate("/seasonal-food/worldcub")}
@@ -1704,6 +1762,100 @@ const SeasonalFoodPage = () => {
             >
               제철 음식 월드컵
             </button>
+          </div>
+          <div
+            style={{
+              marginTop: "20px",
+              borderTop: "1px solid #e2e8f0",
+              paddingTop: "20px",
+            }}
+          >
+            <div
+              style={{
+                border: "1px solid #e2e8f0",
+                borderRadius: "18px",
+                backgroundColor: "#ffffff",
+                padding: "18px 16px",
+                boxShadow: "0 6px 16px rgba(15, 23, 42, 0.05)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "22px",
+                  color: "#0f172a",
+                  fontWeight: 700,
+                }}
+              >
+                💡 제철음식을 먹어야 하는 이유
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gap: "12px",
+                  marginTop: "16px",
+                }}
+              >
+                {[
+                  {
+                    emoji: "🥗",
+                    title: "영양이 풍부해요",
+                    description:
+                      "제철에 수확한 식재료는 영양소가 가장 풍부하고, 맛도 가장 좋습니다.",
+                  },
+                  {
+                    emoji: "💰",
+                    title: "가격이 저렴해요",
+                    description:
+                      "제철 식재료는 공급이 풍부하여 합리적인 가격에 구매할 수 있습니다.",
+                  },
+                  {
+                    emoji: "🌍",
+                    title: "환경에 좋아요",
+                    description:
+                      "제철 식재료는 운송 거리가 짧고, 에너지 소비가 적어 친환경적입니다.",
+                  },
+                ].map((reason) => (
+                  <div
+                    key={reason.title}
+                    style={{
+                      borderRadius: "14px",
+                      backgroundColor: "#f8fafc",
+                      border: "1px solid #e2e8f0",
+                      padding: "14px 12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "24px",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {reason.emoji}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: "8px",
+                        fontSize: "17px",
+                        color: "#0f172a",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {reason.title}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: "6px",
+                        fontSize: "13px",
+                        lineHeight: 1.6,
+                        color: "#475569",
+                      }}
+                    >
+                      {reason.description}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
