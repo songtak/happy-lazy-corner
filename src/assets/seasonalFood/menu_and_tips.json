@@ -3858,7 +3858,14 @@
     "benefit": "타우린과 필수 아미노산이 풍부해 스트레스를 완화하고 간 보호에 도움을 주는 효과가 있습니다.",
     "tip": "차돌박이를 몇 점 넣어 함께 끓이면 냉이의 향긋함에 고소한 기름맛이 더해져 더욱 풍성해집니다.",
     "tags": "warm, rainy, cold, solo, home, eatout, meal, anju, vegetable, stew",
-    "ingredient": "냉이"
+    "ingredient": "냉이",
+    "matzipList": [
+      {
+        "name": "또순이네",
+        "url": "https://naver.me/G4WVuxy2",
+        "location": "서울 강서구 마곡중앙로 59-21 에이스타워2차 109호"
+      }
+    ]
   },
   {
     "name": "호박죽",
@@ -3866,16 +3873,7 @@
     "seasonality": "맷돌호박이 잘 익어 당도가 절정에 달하는 가을부터 겨울 사이, 정성껏 끓인 호박죽은 보약과 같은 맛입니다. 제철 호박 특유의 진한 단맛과 부드러운 질감이 옹심이와 어우러져 입안 가득 든든하고 따뜻한 풍미를 선사하며, 기력이 떨어지기 쉬운 계절에 몸을 따뜻하게 보호해주고 지친 속을 편안하게 달래주는 정성 어린 보양식입니다.",
     "benefit": "베타카로틴이 풍부해 항암 효과가 뛰어나며 비타민 A가 많아 시력 보호와 면역력 강화에 좋습니다.",
     "tip": "팥이나 콩을 함께 넣어 끓이면 씹는 식감과 함께 단백질 영양까지 챙길 수 있습니다.",
-    "tags": "hearty, warm, rainy, cold, solo, home, meal, vegetable, boiled",
-    "ingredient": "늙은호박"
-  },
-  {
-    "name": "호박전",
-    "description": "노릇하고 달큰하게 부쳐낸 여름의 황금빛 선물",
-    "seasonality": "애호박이 한창인 6월에서 9월 사이, 살이 연하고 수분이 가득한 호박으로 부쳐낸 전은 입안 가득 시원하고 달콤한 즙을 뿜어냅니다. 제철 호박의 부드러운 식감이 고소한 기름 향과 만나 입맛을 돋우며, 자극 없이 담백한 맛은 여름철 지친 감각을 부드럽게 일깨워주는 건강하고 화사한 제철 밑반찬입니다.",
-    "benefit": "당질과 비타민이 풍부해 소화 흡수가 빠르며 위장 질환 예방과 다이어트에 도움을 줍니다.",
-    "tip": "애호박을 얇게 썰어 소금에 살짝 절인 뒤 부쳐야 호박 본연의 단맛이 훨씬 선명하게 살아납니다.",
-    "tags": "hearty, rainy, warm, home, meal, vegetable, pancake",
+    "tags": "hearty, warm, rainy, cold, solo, home, meal, vegetable, boiled, pancake",
     "ingredient": "늙은호박"
   },
   {

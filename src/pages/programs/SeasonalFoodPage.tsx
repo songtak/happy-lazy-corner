@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp, CircleAlert } from "lucide-react";
 import ingredientDb from "@/assets/seasonalFood/ingredient_db.json";
 import menuAndTipsDb from "@/assets/seasonalFood/menu_and_tips.json";
+import { dailyIngredients } from "@/models/dailyIngredient";
 import { isMobile } from "@libs/helpers";
 
 const DEPLOY_BASE_URL = "https://songtak.github.io/happy-lazy-corner";
@@ -46,10 +47,17 @@ type MenuTipItem = {
   tip: string;
   tags: string;
   ingredient: string;
+  matzipList?: unknown[];
 };
 type ParsedMenuTipItem = MenuTipItem & {
   parsedTags: string[];
   ingredientType: IngredientTypeTag | null;
+};
+type DailyIngredientItem = {
+  id: number;
+  date: string;
+  season: string;
+  ingredient: string;
 };
 
 const MENU_TAG_LABELS: Record<string, string> = {
@@ -133,6 +141,7 @@ const SeasonalFoodPage = () => {
   const navigate = useNavigate();
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
+  const todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const initialMonthlyVisibleCount = isMobile() ? 1 : 3;
   const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth);
 
@@ -252,6 +261,22 @@ const SeasonalFoodPage = () => {
         };
       });
   }, [currentMonthIngredientNames]);
+
+  const todayIngredient = useMemo(() => {
+    return (dailyIngredients as DailyIngredientItem[]).find(
+      (item) => item.date === todayDate,
+    );
+  }, [todayDate]);
+
+  const todayIngredientMenus = useMemo(() => {
+    if (!todayIngredient) return [];
+    return (menuAndTipsDb as MenuTipItem[]).filter(
+      (item) =>
+        item.ingredient === todayIngredient.ingredient &&
+        Array.isArray(item.matzipList) &&
+        item.matzipList.length > 0,
+    );
+  }, [todayIngredient]);
 
   const selectedMenuTags = useMemo(() => {
     const tags = [
@@ -547,7 +572,7 @@ const SeasonalFoodPage = () => {
             style={{
               display: "block",
               width: "100%",
-              maxWidth: "320px",
+              maxWidth: "120px",
               height: "auto",
             }}
           />
@@ -558,6 +583,65 @@ const SeasonalFoodPage = () => {
             paddingTop: "20px",
           }}
         >
+          {todayIngredient && (
+            <div
+              style={{
+                borderTop: "1px solid #e2e8f0",
+                paddingTop: "20px",
+                marginBottom: "20px",
+              }}
+            >
+              {/* <div
+                style={{
+                  fontSize: "24px",
+                  color: "#0f172a",
+                  fontWeight: 400,
+                }}
+              >
+                오늘의 제철 음식
+              </div> */}
+
+              <div
+                style={{
+                  display: "grid",
+                  gap: "12px",
+                  marginTop: "14px",
+                }}
+              >
+                {todayIngredientMenus.map((menu) => (
+                  <div
+                    key={`today-${menu.ingredient}-${menu.name}`}
+                    style={{
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "14px",
+                      backgroundColor: "#ffffff",
+                      padding: "14px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "17px",
+                        color: "#0f172a",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {menu.name}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: "6px",
+                        fontSize: "13px",
+                        lineHeight: 1.6,
+                        color: "#475569",
+                      }}
+                    >
+                      {menu.description}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div
             style={{
               borderTop: "1px solid #e2e8f0",
