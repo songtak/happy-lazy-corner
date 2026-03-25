@@ -535,18 +535,23 @@ const SeasonalFoodPage = () => {
       }}
     >
       <div style={{ width: "100%", maxWidth: "820px", margin: "0 auto" }}>
-        <h1
+        <div
           style={{
-            margin: 0,
-            fontSize: "30px",
-            fontWeight: 300,
-            textAlign: "center",
-            color: "#0f172a",
-            transform: "translateY(-4px)",
+            display: "flex",
+            justifyContent: "center",
           }}
         >
-          제철 사냥꾼
-        </h1>
+          <img
+            src="https://songtak.github.io/happy-lazy-corner/sfimg/title.png"
+            alt="마침 제철"
+            style={{
+              display: "block",
+              width: "100%",
+              maxWidth: "320px",
+              height: "auto",
+            }}
+          />
+        </div>
         <div
           style={{
             marginTop: "20px",
