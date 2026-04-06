@@ -36,8 +36,20 @@ type PaceOption = {
   secondsPerKm: number;
 };
 
+type Checkpoint = {
+  distanceKm?: number;
+  label: string;
+  color: string;
+  useHalfDistance?: boolean;
+  useTurnaround?: boolean;
+};
+
 const NAVER_MAP_CLIENT_ID = "uqms5x0d6b";
 const NAVER_MAP_SCRIPT_ID = "naver-map-sdk";
+const CHECKPOINTS: Checkpoint[] = [
+  { distanceKm: 12, label: "CP1 / CP3", color: "#2563eb" },
+  { label: "CP2", color: "#7c3aed", useTurnaround: true },
+];
 
 declare global {
   interface Window {
@@ -107,6 +119,35 @@ const calculateDistanceInMeters = (
   );
 };
 
+const calculateBearingInRadians = (
+  firstLat: number,
+  firstLon: number,
+  secondLat: number,
+  secondLon: number,
+) => {
+  const toRadian = (value: number) => (value * Math.PI) / 180;
+  const firstLatInRadian = toRadian(firstLat);
+  const secondLatInRadian = toRadian(secondLat);
+  const deltaLonInRadian = toRadian(secondLon - firstLon);
+
+  const y = Math.sin(deltaLonInRadian) * Math.cos(secondLatInRadian);
+  const x =
+    Math.cos(firstLatInRadian) * Math.sin(secondLatInRadian) -
+    Math.sin(firstLatInRadian) *
+      Math.cos(secondLatInRadian) *
+      Math.cos(deltaLonInRadian);
+
+  return Math.atan2(y, x);
+};
+
+const calculateTurnAngleInRadians = (
+  previousBearing: number,
+  nextBearing: number,
+) => {
+  const rawDifference = Math.abs(nextBearing - previousBearing);
+  return rawDifference > Math.PI ? 2 * Math.PI - rawDifference : rawDifference;
+};
+
 const findNearestPointIndex = (
   points: GpxPoint[],
   targetLat: number,
@@ -157,6 +198,50 @@ const findNearestPointIndexByDistance = (
     const closestGap = Math.abs(points[closestIndex].distance - targetDistance);
     return currentGap < closestGap ? index : closestIndex;
   }, -1);
+};
+
+const findTurnaroundPointIndex = (points: GpxPoint[]) => {
+  if (points.length < 11) {
+    return findNearestPointIndexByDistance(
+      points,
+      points[points.length - 1]?.distance ? points[points.length - 1].distance / 2 : 0,
+    );
+  }
+
+  const searchStartIndex = Math.floor(points.length * 0.35);
+  const searchEndIndex = Math.floor(points.length * 0.7);
+  let bestIndex = -1;
+  let largestTurnAngle = -1;
+
+  for (let index = searchStartIndex; index <= searchEndIndex; index += 1) {
+    if (!points[index - 5] || !points[index + 5]) {
+      continue;
+    }
+
+    const incomingBearing = calculateBearingInRadians(
+      points[index - 5].lat,
+      points[index - 5].lon,
+      points[index].lat,
+      points[index].lon,
+    );
+    const outgoingBearing = calculateBearingInRadians(
+      points[index].lat,
+      points[index].lon,
+      points[index + 5].lat,
+      points[index + 5].lon,
+    );
+    const turnAngle = calculateTurnAngleInRadians(
+      incomingBearing,
+      outgoingBearing,
+    );
+
+    if (turnAngle > largestTurnAngle) {
+      largestTurnAngle = turnAngle;
+      bestIndex = index;
+    }
+  }
+
+  return bestIndex;
 };
 
 const parseNumber = (rawValue: string | null) => {
@@ -364,6 +449,59 @@ const createMarkerHtml = (label: string, backgroundColor: string) => {
       border:1.5px solid rgba(255,255,255,0.88);
     ">
       ${label}
+    </div>
+  `;
+};
+
+const createCheckpointMarkerHtml = (
+  label: string,
+  backgroundColor: string,
+  offsetX: number,
+) => {
+  return `
+    <div style="
+      width:84px;
+      height:54px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-end;
+      transform:translateX(${offsetX}px);
+      display:flex;
+      pointer-events:none;
+    ">
+      <div style="
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        min-width:34px;
+        height:22px;
+        padding:0 8px;
+        border-radius:999px;
+        background:${backgroundColor};
+        color:#fff;
+        font-size:10px;
+        font-weight:700;
+        border:1.5px solid rgba(255,255,255,0.92);
+        box-shadow:0 6px 14px rgba(15, 23, 42, 0.18);
+        white-space:nowrap;
+      ">
+        ${label}
+      </div>
+      <div style="
+        width:2px;
+        height:12px;
+        background:${backgroundColor};
+        opacity:0.9;
+      "></div>
+      <div style="
+        width:8px;
+        height:8px;
+        border-radius:999px;
+        background:${backgroundColor};
+        border:2px solid #ffffff;
+        box-shadow:0 2px 6px rgba(15, 23, 42, 0.16);
+      "></div>
     </div>
   `;
 };
@@ -789,6 +927,68 @@ const JejuTrail2026Page = () => {
 
     const startPoint = track.points[0];
     const endPoint = track.points[track.points.length - 1];
+    const checkpointMarkers = CHECKPOINTS.map((checkpoint, index) => {
+      if (checkpoint.useTurnaround) {
+        const turnaroundPointIndex = findTurnaroundPointIndex(track.points);
+
+        if (turnaroundPointIndex < 0 || !track.points[turnaroundPointIndex]) {
+          return null;
+        }
+
+        const turnaroundPoint = track.points[turnaroundPointIndex];
+
+        return new window.naver.maps.Marker({
+          map,
+          position: new window.naver.maps.LatLng(
+            turnaroundPoint.lat,
+            turnaroundPoint.lon,
+          ),
+          icon: {
+            content: createCheckpointMarkerHtml(
+              checkpoint.label,
+              checkpoint.color,
+              [0, 0][index] ?? 0,
+            ),
+            anchor: new window.naver.maps.Point(42, 54),
+          },
+        });
+      }
+
+      const checkpointDistanceKm = checkpoint.useHalfDistance
+        ? track.totalDistanceKm / 2
+        : checkpoint.distanceKm;
+
+      if (typeof checkpointDistanceKm !== "number") {
+        return null;
+      }
+
+      const pointIndex = findNearestPointIndexByDistance(
+        track.points,
+        checkpointDistanceKm,
+      );
+
+      if (pointIndex < 0 || !track.points[pointIndex]) {
+        return null;
+      }
+
+      const checkpointPoint = track.points[pointIndex];
+
+      return new window.naver.maps.Marker({
+        map,
+        position: new window.naver.maps.LatLng(
+          checkpointPoint.lat,
+          checkpointPoint.lon,
+        ),
+        icon: {
+          content: createCheckpointMarkerHtml(
+            checkpoint.label,
+            checkpoint.color,
+            [0, 0][index] ?? 0,
+          ),
+          anchor: new window.naver.maps.Point(42, 54),
+        },
+      });
+    }).filter(Boolean);
 
     markerRefs.current = [
       new window.naver.maps.Marker({
@@ -807,6 +1007,7 @@ const JejuTrail2026Page = () => {
           anchor: new window.naver.maps.Point(10, 10),
         },
       }),
+      ...checkpointMarkers,
     ];
 
     const bounds = path.reduce(
