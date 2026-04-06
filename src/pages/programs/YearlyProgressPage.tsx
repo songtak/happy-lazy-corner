@@ -76,7 +76,8 @@ const YearlyProgressPage = () => {
       boxShadow: isActive ? "0 6px 14px rgba(0, 0, 0, 0.16)" : "none",
       zIndex: isActive ? 1 : 0,
       position: "relative" as const,
-      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+      transition:
+        "width 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease",
     };
   };
 
@@ -198,7 +199,6 @@ const YearlyProgressPage = () => {
                 style={{
                   width: `${yearDetails?.progressPercentage ?? 0}%`,
                   backgroundColor: "#f4a3a3",
-                  transition: "width 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease",
                   ...getSegmentStyle("elapsed"),
                 }}
                 onMouseEnter={() => setActiveSegment("elapsed")}
@@ -212,7 +212,6 @@ const YearlyProgressPage = () => {
                 style={{
                   width: `${yearDetails?.remainingPercentage ?? 0}%`,
                   backgroundColor: "#9fc5f8",
-                  transition: "width 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease",
                   ...getSegmentStyle("remaining"),
                 }}
                 onMouseEnter={() => setActiveSegment("remaining")}

@@ -46,6 +46,11 @@ const programRoutes: RouteObject[] = [
     element: <Program.SeasonalFoodWorldcubPage />,
     errorElement: <ErrorPage />,
   },
+  {
+    path: "/gpx-viewer",
+    element: <Program.GpxViewerPage />,
+    errorElement: <ErrorPage />,
+  },
 ];
 
 // const programRoutes: RouteObject[] = [
@@ -67,6 +72,7 @@ const projectList = [
   { id: 1, path: "/yearly-progress", title: "올해 남아 있는 날들 💪" },
   { id: 2, path: "/lost-and-found", title: "경찰청 분실물 센터 👮" },
   { id: 3, path: "/seasonal-food", title: "제철 음식 추천기 🍎" },
+  { id: 4, path: "/gpx-viewer", title: "GPX 경로 뷰어 🗺️" },
 ];
 
 export { defaultRoutes, programRoutes, projectList };
