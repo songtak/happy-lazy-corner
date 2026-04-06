@@ -51,6 +51,11 @@ const programRoutes: RouteObject[] = [
     element: <Program.GpxViewerPage />,
     errorElement: <ErrorPage />,
   },
+  {
+    path: "/gpx-maker",
+    element: <Program.GpxMakerPage />,
+    errorElement: <ErrorPage />,
+  },
 ];
 
 // const programRoutes: RouteObject[] = [
@@ -73,6 +78,7 @@ const projectList = [
   { id: 2, path: "/lost-and-found", title: "경찰청 분실물 센터 👮" },
   { id: 3, path: "/seasonal-food", title: "제철 음식 추천기 🍎" },
   { id: 4, path: "/gpx-viewer", title: "GPX 경로 뷰어 🗺️" },
+  { id: 5, path: "/gpx-maker", title: "GPX 메이커 ✍️" },
 ];
 
 export { defaultRoutes, programRoutes, projectList };

@@ -17,7 +17,8 @@ import "../assets/styles/mobile.css";
 const MainRouter = () => {
   const router = useDynamicRoutes();
   const [pathname, setPathname] = useState(router.state.location.pathname);
-  const shouldHideCoupangAds = pathname.startsWith("/seasonal-food");
+  const shouldHideCoupangAds =
+    pathname.startsWith("/seasonal-food") || pathname.startsWith("/gpx");
   // const PUBLIC_GA_ID = `${import.meta.env.VITE_PUBLIC_GA_ID}`;
   useEffect(() => {
     // ReactGA.initialize(`${PUBLIC_GA_ID}`);

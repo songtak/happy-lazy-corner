@@ -48,6 +48,12 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/seoul/, ""),
       },
+      "/api/opentopo": {
+        target: "https://api.opentopodata.org",
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api\/opentopo/, ""),
+      },
     },
   },
 });

@@ -6,6 +6,7 @@ import LostAndFoundPageJW from "./LostAndFoundPageJW";
 import SeasonalFoodPage from "./SeasonalFoodPage";
 import SeasonalFoodWorldcubPage from "./SeasonalFoodWorldcubPage";
 import GpxViewerPage from "./GpxViewerPage";
+import GpxMakerPage from "./GpxMakerPage";
 
 export {
   YearlyProgressPage,
@@ -16,4 +17,5 @@ export {
   SeasonalFoodPage,
   SeasonalFoodWorldcubPage,
   GpxViewerPage,
+  GpxMakerPage,
 };
