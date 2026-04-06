@@ -56,6 +56,11 @@ const programRoutes: RouteObject[] = [
     element: <Program.GpxMakerPage />,
     errorElement: <ErrorPage />,
   },
+  {
+    path: "/jeju-trail-2026",
+    element: <Program.JejuTrail2026Page />,
+    errorElement: <ErrorPage />,
+  },
 ];
 
 // const programRoutes: RouteObject[] = [
@@ -79,6 +84,7 @@ const projectList = [
   { id: 3, path: "/seasonal-food", title: "제철 음식 추천기 🍎" },
   { id: 4, path: "/gpx-viewer", title: "GPX 경로 뷰어 🗺️" },
   { id: 5, path: "/gpx-maker", title: "GPX 메이커 ✍️" },
+  { id: 6, path: "/jeju-trail-2026", title: "제주 트레일 2026 🥾" },
 ];
 
 export { defaultRoutes, programRoutes, projectList };

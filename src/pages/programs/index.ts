@@ -7,6 +7,7 @@ import SeasonalFoodPage from "./SeasonalFoodPage";
 import SeasonalFoodWorldcubPage from "./SeasonalFoodWorldcubPage";
 import GpxViewerPage from "./GpxViewerPage";
 import GpxMakerPage from "./GpxMakerPage";
+import JejuTrail2026Page from "./JejuTrail2026Page";
 
 export {
   YearlyProgressPage,
@@ -18,4 +19,5 @@ export {
   SeasonalFoodWorldcubPage,
   GpxViewerPage,
   GpxMakerPage,
+  JejuTrail2026Page,
 };
