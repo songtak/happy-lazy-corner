@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronUp, CircleAlert } from "lucide-react";
+import { ChevronDown, ChevronUp, CircleAlert, MapPinned } from "lucide-react";
 import ingredientDb from "@/assets/seasonalFood/ingredient_db.json";
 import menuAndTipsDb from "@/assets/seasonalFood/menu_and_tips.json";
 import { dailyIngredients } from "@/models/dailyIngredient";
@@ -47,7 +47,11 @@ type MenuTipItem = {
   tip: string;
   tags: string;
   ingredient: string;
-  matzipList?: unknown[];
+  matzipList?: {
+    name: string;
+    url: string;
+    location: string;
+  }[];
 };
 type ParsedMenuTipItem = MenuTipItem & {
   parsedTags: string[];
@@ -163,6 +167,9 @@ const SeasonalFoodPage = () => {
     useState<boolean>(false);
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] =
     useState<boolean>(false);
+  const [expandedTodayMenuName, setExpandedTodayMenuName] = useState<
+    string | null
+  >(null);
   const [suggestionTarget, setSuggestionTarget] =
     useState<IngredientItem | null>(null);
   const [selectedSuggestionField, setSelectedSuggestionField] =
@@ -411,6 +418,15 @@ const SeasonalFoodPage = () => {
     );
   };
 
+  const getTodayMenuImageUrl = (menuName: string) => {
+    return getAbsoluteUrl(`/sfFoodImg/${encodeURIComponent(menuName)}.png`);
+  };
+
+  const truncateLocation = (location: string, maxLength = 15) => {
+    if (location.length <= maxLength) return location;
+    return `${location.slice(0, maxLength)}...`;
+  };
+
   const handleClickFoodTag = (food: string) => {
     const query = encodeURIComponent(food);
     window.open(
@@ -425,6 +441,10 @@ const SeasonalFoodPage = () => {
       `https://search.naver.com/search.naver?query=${query}`,
       "_blank",
     );
+  };
+
+  const handleOpenExternalUrl = (url: string) => {
+    window.open(url, "_blank");
   };
 
   const getCoupangUrl = (item: IngredientItem) => {
@@ -609,17 +629,40 @@ const SeasonalFoodPage = () => {
                 }}
               >
                 {todayIngredientMenus.map((menu) => (
-                  <div
+                  <button
                     key={`today-${menu.ingredient}-${menu.name}`}
+                    type="button"
+                    onClick={() =>
+                      setExpandedTodayMenuName((prev) =>
+                        prev === menu.name ? null : menu.name,
+                      )
+                    }
                     style={{
+                      width: "100%",
+                      boxSizing: "border-box",
+                      textAlign: "left",
                       border: "1px solid #e2e8f0",
                       borderRadius: "14px",
                       backgroundColor: "#ffffff",
                       padding: "14px",
+                      cursor: "pointer",
+                      overflow: "hidden",
                     }}
                   >
                     <div
                       style={{
+                        width: "100%",
+                        height: "180px",
+                        borderRadius: "12px",
+                        backgroundColor: "#e2e8f0",
+                        backgroundImage: `url(${getTodayMenuImageUrl(menu.name)})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    />
+                    <div
+                      style={{
+                        marginTop: "12px",
                         fontSize: "17px",
                         color: "#0f172a",
                         fontWeight: 700,
@@ -637,7 +680,149 @@ const SeasonalFoodPage = () => {
                     >
                       {menu.description}
                     </div>
-                  </div>
+
+                    {expandedTodayMenuName === menu.name && (
+                      <div
+                        style={{
+                          marginTop: "14px",
+                          paddingTop: "14px",
+                          borderTop: "1px solid #e2e8f0",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            color: "#64748b",
+                          }}
+                        >
+                          제철 포인트
+                        </div>
+                        <div
+                          style={{
+                            marginTop: "6px",
+                            fontSize: "11px",
+                            lineHeight: 1.6,
+                            color: "#334155",
+                          }}
+                        >
+                          {menu.seasonality}
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: "14px",
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            color: "#64748b",
+                          }}
+                        >
+                          효능
+                        </div>
+                        <div
+                          style={{
+                            marginTop: "6px",
+                            fontSize: "11px",
+                            lineHeight: 1.6,
+                            color: "#334155",
+                          }}
+                        >
+                          {menu.benefit}
+                        </div>
+
+                        {!!menu.matzipList?.length && (
+                          <div
+                            style={{
+                              marginTop: "14px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: "12px",
+                                fontWeight: 700,
+                                color: "#64748b",
+                              }}
+                            >
+                              맛집
+                            </div>
+                            <div
+                              style={{
+                                display: "grid",
+                                gap: "8px",
+                                marginTop: "8px",
+                              }}
+                            >
+                              {menu.matzipList.map((place) => (
+                                <div
+                                  key={`${menu.name}-${place.name}-${place.url}`}
+                                  style={{
+                                    width: "100%",
+                                    boxSizing: "border-box",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                    borderRadius: "10px",
+                                    backgroundColor: "#f1f8f1",
+                                    border: "1px solid #e2e8f0",
+                                    padding: "10px 12px",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      minWidth: 0,
+                                      flex: 1,
+                                      fontSize: "12px",
+                                      color: "#334155",
+                                      lineHeight: 1.5,
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        fontWeight: 700,
+                                        color: "#0f172a",
+                                      }}
+                                    >
+                                      {place.name}
+                                    </span>{" "}
+                                    |{" "}
+                                    <span
+                                      style={{
+                                        verticalAlign: "bottom",
+                                      }}
+                                    >
+                                      {truncateLocation(place.location)}
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenExternalUrl(place.url);
+                                    }}
+                                    style={{
+                                      width: "34px",
+                                      height: "34px",
+                                      flexShrink: 0,
+                                      borderRadius: "999px",
+                                      border: "1px solid #cbd5e1",
+                                      backgroundColor: "#ffffff",
+                                      color: "#0f172a",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    <MapPinned size={16} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </button>
                 ))}
               </div>
             </div>

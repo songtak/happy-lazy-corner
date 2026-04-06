@@ -6322,7 +6322,29 @@
     "benefit": "아연과 철분이 풍부해 기력 보충에 좋으며 저칼로리 단백질원으로 다이어트에도 좋습니다.",
     "tip": "갓 버무린 배추 겉절이를 곁들여 드시면 시원한 국물과 매콤한 김치가 환상적인 조화를 이룹니다.",
     "tags": "hearty, warm, rainy, cold, solo, home, meal, seafood, soup, boiled",
-    "ingredient": "동죽"
+    "ingredient": "동죽",
+    "matzipList": [
+      {
+        "name": "조조칼국수 시청점",
+        "url": "https://naver.me/xs3GFNuL",
+        "location": "서울 중구 세종대로11길 27 조조칼국수"
+      },
+      {
+        "name": "조조칼국수 본점",
+        "url": "https://naver.me/G4WVuxy2",
+        "location": "대구 수성구 국채보상로 912 1층"
+      },
+      {
+        "name": "해밀칼국수&김밥",
+        "url": "https://naver.me/5OQyyZNW",
+        "location": "서울 성동구 연무장5가길 25 성수역SKV1타워 1층 110호"
+      },
+      {
+        "name": "강남물총칼국수",
+        "url": "https://naver.me/55P1NkFz",
+        "location": "서울 강남구 언주로134길 29 1층 물총칼국수"
+      }
+    ]
   },
   {
     "name": "동죽 탕",

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import ECharts from "echarts-for-react";
 
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
@@ -7,14 +6,15 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
-import _ from "lodash";
 /** 일년이 얼마 지났고 남았는지 알 수 있는 페이지 */
 
 const COUPANG_URL = "https://link.coupang.com/a/dSMJFK";
+type ProgressSegment = "elapsed" | "remaining" | null;
 
 const YearlyProgressPage = () => {
   const [selectedDate, setSelectedDate] = useState<any>(new Date());
   const [yearDetails, setYearDetails] = useState<any>(new Date());
+  const [activeSegment, setActiveSegment] = useState<ProgressSegment>(null);
 
   const today = dayjs();
 
@@ -64,18 +64,21 @@ const YearlyProgressPage = () => {
     };
   };
 
-  const getTodayDate = (): string => {
-    const today = selectedDate;
-    const year = today.getFullYear();
-    const month = (today.getMonth() + 1).toString().padStart(2, "0");
-    const day = today.getDate().toString().padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-  };
-
   useEffect(() => {
     setYearDetails(getYearDetails(selectedDate));
   }, [selectedDate]);
+
+  const getSegmentStyle = (segment: Exclude<ProgressSegment, null>) => {
+    const isActive = activeSegment === segment;
+
+    return {
+      transform: isActive ? "scaleY(1.18)" : "scaleY(1)",
+      boxShadow: isActive ? "0 6px 14px rgba(0, 0, 0, 0.16)" : "none",
+      zIndex: isActive ? 1 : 0,
+      position: "relative" as const,
+      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+    };
+  };
 
   return (
     <div
@@ -172,58 +175,56 @@ const YearlyProgressPage = () => {
           </div>
         </div>
 
-        <ECharts
-          option={{
-            tooltip: {
-              trigger: "item",
-            },
-            legend: {
-              top: "5%",
-              left: "center",
-            },
-            series: [
-              {
-                // name: `${selectedDate}`,
-                type: "pie",
-                radius: ["40%", "70%"],
-                avoidLabelOverlap: false,
-                label: {
-                  show: false,
-                  position: "center",
-                },
-                emphasis: {
-                  label: {
-                    show: true,
-                    fontSize: 40,
-                    fontWeight: "bold",
-                  },
-                },
-                labelLine: {
-                  show: false,
-                },
-                data: [
-                  {
-                    value: yearDetails?.elapsedDays,
-                    // value: yearDetails?.progressPercentage,
-                    name: `지난 날`,
-                    itemStyle: {
-                      color: "#f4a3a3",
-                    },
-                  },
-                  {
-                    value: yearDetails?.remainingDays,
-                    // value: yearDetails?.remainingPercentage,
-                    name: `남은 날`,
-                    itemStyle: {
-                      color: "#9fc5f8",
-                    },
-                  },
-                ],
-              },
-            ],
+        <div
+          className="pb24"
+          style={{
+            padding: "0 16px",
+            display: "flex",
+            justifyContent: "center",
           }}
-          opts={{ renderer: "svg", width: "auto", height: "auto" }}
-        />
+        >
+          <div style={{ width: "100%", maxWidth: "720px" }}>
+            <div
+              style={{
+                width: "100%",
+                height: "20px",
+                backgroundColor: "#e5e7eb",
+                borderRadius: "999px",
+                overflow: "hidden",
+                display: "flex",
+              }}
+            >
+              <div
+                style={{
+                  width: `${yearDetails?.progressPercentage ?? 0}%`,
+                  backgroundColor: "#f4a3a3",
+                  transition: "width 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease",
+                  ...getSegmentStyle("elapsed"),
+                }}
+                onMouseEnter={() => setActiveSegment("elapsed")}
+                onMouseLeave={() => setActiveSegment(null)}
+                onTouchStart={() => setActiveSegment("elapsed")}
+                onTouchEnd={() => setActiveSegment(null)}
+                onTouchCancel={() => setActiveSegment(null)}
+                onClick={() => setActiveSegment("elapsed")}
+              />
+              <div
+                style={{
+                  width: `${yearDetails?.remainingPercentage ?? 0}%`,
+                  backgroundColor: "#9fc5f8",
+                  transition: "width 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease",
+                  ...getSegmentStyle("remaining"),
+                }}
+                onMouseEnter={() => setActiveSegment("remaining")}
+                onMouseLeave={() => setActiveSegment(null)}
+                onTouchStart={() => setActiveSegment("remaining")}
+                onTouchEnd={() => setActiveSegment(null)}
+                onTouchCancel={() => setActiveSegment(null)}
+                onClick={() => setActiveSegment("remaining")}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
