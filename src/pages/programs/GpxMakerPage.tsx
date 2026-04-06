@@ -8,7 +8,11 @@ type RoutePoint = {
 
 const NAVER_MAP_CLIENT_ID = "uqms5x0d6b";
 const NAVER_MAP_SCRIPT_ID = "naver-map-sdk";
-const OPENTOPO_BASE_URL = "/api/opentopo/v1/aster30m,srtm90m";
+const ELEVATION_PROXY_URL =
+  `${import.meta.env.VITE_ELEVATION_PROXY_URL || ""}`.trim();
+const OPENTOPO_BASE_URL = import.meta.env.DEV
+  ? "/api/opentopo/v1/aster30m,srtm90m"
+  : ELEVATION_PROXY_URL || "https://api.opentopodata.org/v1/aster30m,srtm90m";
 
 declare global {
   interface Window {
@@ -492,12 +496,15 @@ const GpxMakerPage = () => {
 
     const trimmedRouteName = routeName.trim() || "my-route";
     setErrorMessage("");
+
     downloadTextFile(
       `${trimmedRouteName.replace(/\s+/g, "-")}.gpx`,
       buildGpxContent(points, trimmedRouteName),
     );
 
-    window.open("https://link.coupang.com/a/ei7Vvo", "_blank");
+    setTimeout(() => {
+      window.location.href = "https://link.coupang.com/a/ei7Vvo";
+    }, 500);
   };
 
   return (
@@ -650,7 +657,7 @@ const GpxMakerPage = () => {
           </button>
         </div>
 
-        {isFetchingElevation ? (
+        {/* {isFetchingElevation ? (
           <div
             style={{
               marginBottom: "12px",
@@ -660,7 +667,7 @@ const GpxMakerPage = () => {
           >
             OpenTopoData에서 고도 정보를 불러오는 중이에요...
           </div>
-        ) : null}
+        ) : null} */}
 
         {errorMessage ? (
           <div

@@ -255,41 +255,16 @@ const parseGpxText = (xmlText: string, fileName: string): GpxTrack => {
 
 const loadNaverMapScript = () =>
   new Promise<void>((resolve, reject) => {
-    if (window.naver?.maps?.Service) {
+    if (window.naver?.maps) {
       resolve();
       return;
     }
-
-    const appendScript = () => {
-      const script = document.createElement("script");
-      script.id = NAVER_MAP_SCRIPT_ID;
-      script.async = true;
-      script.defer = true;
-      script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_MAP_CLIENT_ID}&submodules=geocoder`;
-      script.onload = () => {
-        if (window.naver?.maps?.Service) {
-          resolve();
-          return;
-        }
-
-        reject(new Error("네이버 지도 검색 모듈을 불러오지 못했어요."));
-      };
-      script.onerror = () =>
-        reject(new Error("네이버 지도 스크립트를 불러오지 못했어요."));
-      document.head.appendChild(script);
-    };
 
     const existingScript = document.getElementById(
       NAVER_MAP_SCRIPT_ID,
     ) as HTMLScriptElement | null;
 
     if (existingScript) {
-      if (window.naver?.maps && !window.naver?.maps?.Service) {
-        existingScript.remove();
-        appendScript();
-        return;
-      }
-
       existingScript.addEventListener("load", () => resolve(), { once: true });
       existingScript.addEventListener(
         "error",
@@ -299,7 +274,15 @@ const loadNaverMapScript = () =>
       return;
     }
 
-    appendScript();
+    const script = document.createElement("script");
+    script.id = NAVER_MAP_SCRIPT_ID;
+    script.async = true;
+    script.defer = true;
+    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_MAP_CLIENT_ID}`;
+    script.onload = () => resolve();
+    script.onerror = () =>
+      reject(new Error("네이버 지도 스크립트를 불러오지 못했어요."));
+    document.head.appendChild(script);
   });
 
 const interpolateHexColor = (
