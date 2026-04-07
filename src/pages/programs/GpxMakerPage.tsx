@@ -86,6 +86,9 @@ const createMarkerHtml = (
   backgroundColor: string,
   size = 24,
   fontSize = 10,
+  options?: {
+    isDragging?: boolean;
+  },
 ) => `
   <div style="
     display:flex;
@@ -98,8 +101,17 @@ const createMarkerHtml = (
     color:#fff;
     font-size:${fontSize}px;
     font-weight:700;
-    box-shadow:0 6px 16px rgba(15, 23, 42, 0.18);
-    border:2px solid rgba(255,255,255,0.92);
+    box-shadow:${
+      options?.isDragging
+        ? "0 0 0 8px rgba(59, 130, 246, 0.18), 0 12px 24px rgba(15, 23, 42, 0.28)"
+        : "0 6px 16px rgba(15, 23, 42, 0.18)"
+    };
+    border:${options?.isDragging ? 3 : 2}px solid rgba(255,255,255,0.92);
+    opacity:${options?.isDragging ? 0.92 : 1};
+    transition:box-shadow 120ms ease, opacity 120ms ease, border-width 120ms ease;
+    user-select:none;
+    -webkit-user-select:none;
+    -webkit-user-drag:none;
   ">
     ${label}
   </div>
@@ -133,16 +145,37 @@ ${trackPoints}
 </gpx>`;
 };
 
-const downloadTextFile = (fileName: string, content: string) => {
-  const blob = new Blob([content], {
-    type: "application/gpx+xml;charset=utf-8",
-  });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  URL.revokeObjectURL(url);
+const downloadViaWorker = async (
+  fileName: string,
+  content: string,
+  onSuccess?: () => void,
+  onError?: () => void,
+) => {
+  try {
+    const res = await fetch(`${ELEVATION_PROXY_URL}download-gpx`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ fileName, content }),
+    });
+
+    if (!res.ok) throw new Error("download failed");
+
+    const blob = await res.blob();
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+
+    onSuccess?.();
+  } catch (e) {
+    onError?.();
+  }
 };
 
 const fetchElevation = async (lat: number, lon: number) => {
@@ -168,14 +201,15 @@ const GpxMakerPage = () => {
   const [isMapReady, setIsMapReady] = useState(false);
   const [isFetchingElevation, setIsFetchingElevation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
   const mapElementRef = useRef<HTMLDivElement | null>(null);
+  const routeNameInputRef = useRef<HTMLInputElement | null>(null);
   const mapRef = useRef<any>(null);
   const clickListenerRef = useRef<any>(null);
   const polylineRef = useRef<any>(null);
   const markerRefs = useRef<any[]>([]);
   const markerListenerRefs = useRef<any[]>([]);
-  const longPressTimerRef = useRef<number | null>(null);
-  const activeDragPointIndexRef = useRef<number | null>(null);
+  const isDraggingMarkerRef = useRef(false);
   const lastDragEndedAtRef = useRef(0);
 
   const totalDistanceKm = useMemo(() => {
@@ -215,7 +249,22 @@ const GpxMakerPage = () => {
       return delta > 0 ? accumulator + delta : accumulator;
     }, 0);
   }, [points]);
+
   const canDownload = routeName.trim().length > 0 && points.length >= 2;
+
+  const dismissMobileKeyboard = (target: EventTarget | null) => {
+    const inputElement = routeNameInputRef.current;
+
+    if (!inputElement || document.activeElement !== inputElement) {
+      return;
+    }
+
+    if (target instanceof HTMLElement && target.closest("input, textarea")) {
+      return;
+    }
+
+    inputElement.blur();
+  };
 
   const addPointWithElevation = async (lat: number, lon: number) => {
     setIsFetchingElevation(true);
@@ -325,6 +374,10 @@ const GpxMakerPage = () => {
       map,
       "click",
       (event: any) => {
+        if (isDraggingMarkerRef.current) {
+          return;
+        }
+
         if (Date.now() - lastDragEndedAtRef.current < 300) {
           return;
         }
@@ -374,6 +427,7 @@ const GpxMakerPage = () => {
       window.naver.maps.Event.removeListener(listener);
     });
     markerListenerRefs.current = [];
+
     markerRefs.current.forEach((marker) => marker.setMap(null));
     markerRefs.current = [];
 
@@ -407,56 +461,46 @@ const GpxMakerPage = () => {
       const size = isStart || isEnd ? 24 : 20;
       const fontSize = isStart || isEnd ? 10 : 9;
 
+      const updateMarkerAppearance = (options?: { isDragging?: boolean }) => {
+        marker.setIcon({
+          content: createMarkerHtml(
+            label,
+            backgroundColor,
+            size,
+            fontSize,
+            options,
+          ),
+          anchor: new window.naver.maps.Point(size / 2, size / 2),
+        });
+      };
+
       const marker = new window.naver.maps.Marker({
         map,
         position: new window.naver.maps.LatLng(point.lat, point.lon),
-        draggable: false,
+        draggable: true,
         icon: {
           content: createMarkerHtml(label, backgroundColor, size, fontSize),
           anchor: new window.naver.maps.Point(size / 2, size / 2),
         },
       });
 
-      const clearLongPressTimer = () => {
-        if (longPressTimerRef.current !== null) {
-          window.clearTimeout(longPressTimerRef.current);
-          longPressTimerRef.current = null;
-        }
-      };
+      markerListenerRefs.current.push(
+        window.naver.maps.Event.addListener(marker, "dragstart", () => {
+          isDraggingMarkerRef.current = true;
+          updateMarkerAppearance({ isDragging: true });
+        }),
+      );
 
-      const enableDragMode = () => {
-        clearLongPressTimer();
-        activeDragPointIndexRef.current = index;
-        marker.setDraggable(true);
-      };
-
-      markerListenerRefs.current.push(
-        window.naver.maps.Event.addListener(marker, "mousedown", () => {
-          clearLongPressTimer();
-          longPressTimerRef.current = window.setTimeout(enableDragMode, 450);
-        }),
-      );
-      markerListenerRefs.current.push(
-        window.naver.maps.Event.addListener(marker, "mouseup", () => {
-          clearLongPressTimer();
-        }),
-      );
-      markerListenerRefs.current.push(
-        window.naver.maps.Event.addListener(marker, "mouseout", () => {
-          clearLongPressTimer();
-        }),
-      );
       markerListenerRefs.current.push(
         window.naver.maps.Event.addListener(marker, "dragend", () => {
-          clearLongPressTimer();
           const position = marker.getPosition();
           const lat =
             typeof position?.lat === "function" ? position.lat() : position?.y;
           const lon =
             typeof position?.lng === "function" ? position.lng() : position?.x;
 
-          marker.setDraggable(false);
-          activeDragPointIndexRef.current = null;
+          isDraggingMarkerRef.current = false;
+          updateMarkerAppearance();
           lastDragEndedAtRef.current = Date.now();
 
           if (typeof lat !== "number" || typeof lon !== "number") {
@@ -481,10 +525,7 @@ const GpxMakerPage = () => {
   };
 
   const handleReset = () => {
-    if (longPressTimerRef.current !== null) {
-      window.clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
+    isDraggingMarkerRef.current = false;
     setPoints([]);
   };
 
@@ -497,18 +538,28 @@ const GpxMakerPage = () => {
     const trimmedRouteName = routeName.trim() || "my-route";
     setErrorMessage("");
 
-    downloadTextFile(
-      `${trimmedRouteName.replace(/\s+/g, "-")}.gpx`,
-      buildGpxContent(points, trimmedRouteName),
-    );
-
-    setTimeout(() => {
-      window.location.href = "https://link.coupang.com/a/ei7Vvo";
-    }, 500);
+    try {
+      downloadViaWorker(
+        `${trimmedRouteName.replace(/\s+/g, "-")}.gpx`,
+        buildGpxContent(points, trimmedRouteName),
+        () => {
+          //   alert("GPX 파일이 다운로드되었어요!");
+          //   window.open("https://link.coupang.com/a/ei7Vvo", "_blank");
+          // GA 이벤트 / 토스트 / 상태 변경 가능
+        },
+        () => {
+          console.log("다운로드 실패");
+        },
+      );
+    } catch (_error) {
+      setErrorMessage("GPX 파일 다운로드에 실패했어요.");
+    }
   };
 
   return (
     <div
+      onTouchStartCapture={(event) => dismissMobileKeyboard(event.target)}
+      onMouseDownCapture={(event) => dismissMobileKeyboard(event.target)}
       style={{
         width: "100%",
         padding: "24px 16px 48px",
@@ -519,13 +570,25 @@ const GpxMakerPage = () => {
     >
       <div style={{ maxWidth: "1040px", margin: "0 auto" }}>
         <div className="fs28" style={{ marginBottom: "8px" }}>
-          내 지도 만들기 🗺️
+          나만의 지도 만들기 🗺️
         </div>
+
+        <div style={{ color: "#6b7280", lineHeight: 1.7, marginBottom: "4px" }}>
+          지도에서 원하는 경로를 직접 터치해 지점을 추가하고,
+          <br />
+          드래그해서 위치를 수정할 수 있어요.
+          <br />
+        </div>
+
         <div
-          style={{ color: "#6b7280", lineHeight: 1.7, marginBottom: "20px" }}
+          style={{
+            color: "#b6b9bf",
+            lineHeight: 1.3,
+            marginBottom: "20px",
+            fontSize: "9px",
+          }}
         >
-          지도에서 원하는 경로를 직접 클릭해 포인트를 추가하고,
-          <br />그 경로를 GPX 파일로 내려받을 수 있어요.
+          (* 일부 앱 내 브라우저에서는 다운로드가 제한될 수 있습니다.)
         </div>
 
         <div
@@ -553,7 +616,9 @@ const GpxMakerPage = () => {
             >
               파일 이름
             </div>
+
             <input
+              ref={routeNameInputRef}
               value={routeName}
               onChange={(event) => setRouteName(event.target.value)}
               placeholder="my-route"
@@ -586,14 +651,16 @@ const GpxMakerPage = () => {
             >
               경로 정보
             </div>
-            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-              <div>
-                <div style={{ color: "#94a3b8", fontSize: "12px" }}>포인트</div>
+
+            <div style={{ display: "flex", gap: "16px" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ color: "#94a3b8", fontSize: "12px" }}>지점</div>
                 <div style={{ fontSize: "22px", color: "#0f172a" }}>
                   {points.length}
                 </div>
               </div>
-              <div>
+
+              <div style={{ flex: 3, minWidth: 0 }}>
                 <div style={{ color: "#94a3b8", fontSize: "12px" }}>
                   총 거리
                 </div>
@@ -601,7 +668,8 @@ const GpxMakerPage = () => {
                   {formatDistance(totalDistanceKm)}
                 </div>
               </div>
-              <div>
+
+              <div style={{ flex: 3, minWidth: 0 }}>
                 <div style={{ color: "#94a3b8", fontSize: "12px" }}>
                   상승 고도
                 </div>
@@ -639,6 +707,7 @@ const GpxMakerPage = () => {
           >
             마지막 점 삭제
           </button>
+
           <button
             type="button"
             onClick={handleReset}
@@ -656,18 +725,6 @@ const GpxMakerPage = () => {
             전체 초기화
           </button>
         </div>
-
-        {/* {isFetchingElevation ? (
-          <div
-            style={{
-              marginBottom: "12px",
-              color: "#475569",
-              fontSize: "14px",
-            }}
-          >
-            OpenTopoData에서 고도 정보를 불러오는 중이에요...
-          </div>
-        ) : null} */}
 
         {errorMessage ? (
           <div
