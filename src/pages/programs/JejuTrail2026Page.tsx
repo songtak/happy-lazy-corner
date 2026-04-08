@@ -204,7 +204,9 @@ const findTurnaroundPointIndex = (points: GpxPoint[]) => {
   if (points.length < 11) {
     return findNearestPointIndexByDistance(
       points,
-      points[points.length - 1]?.distance ? points[points.length - 1].distance / 2 : 0,
+      points[points.length - 1]?.distance
+        ? points[points.length - 1].distance / 2
+        : 0,
     );
   }
 
@@ -1297,7 +1299,7 @@ const JejuTrail2026Page = () => {
     >
       <div style={{ maxWidth: "1040px", margin: "0 auto" }}>
         <div className="fs28" style={{ marginBottom: "8px" }}>
-          제주 트레일 2026
+          제주 국제 트레일러닝 2026
         </div>
         <div
           style={{
@@ -1361,6 +1363,20 @@ const JejuTrail2026Page = () => {
               </div>
               <div style={{ color: "#64748b" }}>
                 좌표 {track.points.length.toLocaleString()}개를 읽었어요.
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "18px",
+                  flexWrap: "wrap",
+                  marginTop: "8px",
+                  color: "#7c838e",
+                  fontSize: "12px",
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>출발 시간 AM 6:30</div>
+                <div style={{ flex: 1, minWidth: 0 }}>종료 시간 PM 2:30</div>
+                <div style={{ flex: 1, minWidth: 0 }}>컷오프 8 시간</div>
               </div>
 
               <div

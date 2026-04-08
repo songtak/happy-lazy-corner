@@ -6,6 +6,13 @@ type RoutePoint = {
   ele: number | null;
 };
 
+type CurrentLocation = {
+  lat: number;
+  lon: number;
+};
+
+type MakerView = "menu" | "create";
+
 const NAVER_MAP_CLIENT_ID = "uqms5x0d6b";
 const NAVER_MAP_SCRIPT_ID = "naver-map-sdk";
 const ELEVATION_PROXY_URL =
@@ -20,7 +27,20 @@ declare global {
   }
 }
 
-const formatDistance = (distanceKm: number) => `${distanceKm.toFixed(2)} km`;
+const formatDistance = (distanceKm: number) =>
+  distanceKm === 0 ? "0km" : `${distanceKm.toFixed(2)} km`;
+
+const getSourcePointIndex = (
+  displayIndex: number,
+  manualPointCount: number,
+) => {
+  if (displayIndex < manualPointCount) {
+    return displayIndex;
+  }
+
+  const mirroredIndex = displayIndex - manualPointCount;
+  return manualPointCount - 2 - mirroredIndex;
+};
 
 const calculateDistanceInMeters = (
   firstLat: number,
@@ -117,6 +137,26 @@ const createMarkerHtml = (
   </div>
 `;
 
+const createCurrentLocationMarkerHtml = () => `
+  <div style="
+    position:relative;
+    width:18px;
+    height:18px;
+    border-radius:999px;
+    background:#2563eb;
+    border:3px solid rgba(255,255,255,0.96);
+    box-shadow:0 0 0 10px rgba(37, 99, 235, 0.18), 0 8px 18px rgba(15, 23, 42, 0.18);
+  ">
+    <div style="
+      position:absolute;
+      inset:3px;
+      border-radius:999px;
+      background:#93c5fd;
+      opacity:0.9;
+    "></div>
+  </div>
+`;
+
 const buildGpxContent = (points: RoutePoint[], fileName: string) => {
   const escapedName = fileName
     .replace(/&/g, "&amp;")
@@ -196,21 +236,55 @@ const fetchElevation = async (lat: number, lon: number) => {
 };
 
 const GpxMakerPage = () => {
+  const [view, setView] = useState<MakerView>("menu");
   const [routeName, setRouteName] = useState("");
-  const [points, setPoints] = useState<RoutePoint[]>([]);
+  const [manualPoints, setManualPoints] = useState<RoutePoint[]>([]);
   const [isMapReady, setIsMapReady] = useState(false);
   const [isFetchingElevation, setIsFetchingElevation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [currentLocation, setCurrentLocation] =
+    useState<CurrentLocation | null>(null);
+  const [isReturnRouteEnabled, setIsReturnRouteEnabled] = useState(false);
+  const [returnTrimCount, setReturnTrimCount] = useState(0);
 
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const routeNameInputRef = useRef<HTMLInputElement | null>(null);
   const mapRef = useRef<any>(null);
+  const currentLocationMarkerRef = useRef<any>(null);
   const clickListenerRef = useRef<any>(null);
   const polylineRef = useRef<any>(null);
   const markerRefs = useRef<any[]>([]);
   const markerListenerRefs = useRef<any[]>([]);
   const isDraggingMarkerRef = useRef(false);
   const lastDragEndedAtRef = useRef(0);
+  const points = useMemo(() => {
+    if (!isReturnRouteEnabled || manualPoints.length < 2) {
+      return manualPoints;
+    }
+
+    const returnPoints = manualPoints.slice(0, -1).reverse();
+    const visibleReturnPoints = returnPoints.slice(
+      0,
+      Math.max(0, returnPoints.length - returnTrimCount),
+    );
+
+    return [
+      ...manualPoints,
+      ...visibleReturnPoints.map((point) => ({ ...point })),
+    ];
+  }, [isReturnRouteEnabled, manualPoints, returnTrimCount]);
+  const displayPointSourceIndices = useMemo(() => {
+    if (!isReturnRouteEnabled || manualPoints.length < 2) {
+      return manualPoints.map((_, index) => index);
+    }
+
+    const returnSourceIndices = Array.from(
+      { length: Math.max(0, manualPoints.length - 1) },
+      (_, index) => manualPoints.length - 2 - index,
+    ).slice(0, Math.max(0, manualPoints.length - 1 - returnTrimCount));
+
+    return [...manualPoints.map((_, index) => index), ...returnSourceIndices];
+  }, [isReturnRouteEnabled, manualPoints, returnTrimCount]);
 
   const totalDistanceKm = useMemo(() => {
     if (points.length < 2) {
@@ -272,12 +346,15 @@ const GpxMakerPage = () => {
 
     try {
       const elevation = await fetchElevation(lat, lon);
-      setPoints((currentPoints) => [
+      setManualPoints((currentPoints) => [
         ...currentPoints,
         { lat, lon, ele: elevation },
       ]);
     } catch (error) {
-      setPoints((currentPoints) => [...currentPoints, { lat, lon, ele: null }]);
+      setManualPoints((currentPoints) => [
+        ...currentPoints,
+        { lat, lon, ele: null },
+      ]);
       setErrorMessage(
         error instanceof Error
           ? error.message
@@ -293,20 +370,28 @@ const GpxMakerPage = () => {
     lat: number,
     lon: number,
   ) => {
+    const sourceIndex = displayPointSourceIndices[index] ?? -1;
+
+    if (sourceIndex < 0) {
+      return;
+    }
+
     setIsFetchingElevation(true);
     setErrorMessage("");
 
     try {
       const elevation = await fetchElevation(lat, lon);
-      setPoints((currentPoints) =>
+      setManualPoints((currentPoints) =>
         currentPoints.map((currentPoint, currentIndex) =>
-          currentIndex === index ? { lat, lon, ele: elevation } : currentPoint,
+          currentIndex === sourceIndex
+            ? { lat, lon, ele: elevation }
+            : currentPoint,
         ),
       );
     } catch (error) {
-      setPoints((currentPoints) =>
+      setManualPoints((currentPoints) =>
         currentPoints.map((currentPoint, currentIndex) =>
-          currentIndex === index ? { lat, lon, ele: null } : currentPoint,
+          currentIndex === sourceIndex ? { lat, lon, ele: null } : currentPoint,
         ),
       );
       setErrorMessage(
@@ -318,6 +403,23 @@ const GpxMakerPage = () => {
       setIsFetchingElevation(false);
     }
   };
+
+  useEffect(() => {
+    setReturnTrimCount((currentTrimCount) =>
+      Math.min(currentTrimCount, Math.max(0, manualPoints.length - 1)),
+    );
+  }, [manualPoints.length]);
+
+  useEffect(() => {
+    if (!isReturnRouteEnabled) {
+      return;
+    }
+
+    if (returnTrimCount >= Math.max(0, manualPoints.length - 1)) {
+      setIsReturnRouteEnabled(false);
+      setReturnTrimCount(0);
+    }
+  }, [isReturnRouteEnabled, manualPoints.length, returnTrimCount]);
 
   useEffect(() => {
     let isMounted = true;
@@ -344,7 +446,39 @@ const GpxMakerPage = () => {
   }, []);
 
   useEffect(() => {
-    if (!isMapReady || !mapElementRef.current || !window.naver?.maps) {
+    if (!navigator.geolocation) {
+      return;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        setCurrentLocation({
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        });
+      },
+      () => {
+        // Ignore location permission errors and keep the page usable.
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 10000,
+        timeout: 10000,
+      },
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (
+      view !== "create" ||
+      !isMapReady ||
+      !mapElementRef.current ||
+      !window.naver?.maps
+    ) {
       return;
     }
 
@@ -411,7 +545,7 @@ const GpxMakerPage = () => {
         clickListenerRef.current = null;
       }
     };
-  }, [isMapReady]);
+  }, [isMapReady, view]);
 
   useEffect(() => {
     if (!mapRef.current || !window.naver?.maps) {
@@ -520,13 +654,68 @@ const GpxMakerPage = () => {
     }
   }, [points]);
 
+  useEffect(() => {
+    if (!mapRef.current || !window.naver?.maps || !currentLocation) {
+      return;
+    }
+
+    const position = new window.naver.maps.LatLng(
+      currentLocation.lat,
+      currentLocation.lon,
+    );
+
+    if (!currentLocationMarkerRef.current) {
+      currentLocationMarkerRef.current = new window.naver.maps.Marker({
+        map: mapRef.current,
+        position,
+        zIndex: 900,
+        icon: {
+          content: createCurrentLocationMarkerHtml(),
+          anchor: new window.naver.maps.Point(9, 9),
+        },
+      });
+      return;
+    }
+
+    currentLocationMarkerRef.current.setMap(mapRef.current);
+    currentLocationMarkerRef.current.setPosition(position);
+  }, [currentLocation]);
+
   const handleUndo = () => {
-    setPoints((currentPoints) => currentPoints.slice(0, -1));
+    if (isReturnRouteEnabled) {
+      setReturnTrimCount((currentTrimCount) =>
+        Math.min(currentTrimCount + 1, Math.max(0, manualPoints.length - 1)),
+      );
+      return;
+    }
+
+    setManualPoints((currentPoints) => currentPoints.slice(0, -1));
   };
 
   const handleReset = () => {
     isDraggingMarkerRef.current = false;
-    setPoints([]);
+    setIsReturnRouteEnabled(false);
+    setReturnTrimCount(0);
+    setManualPoints([]);
+  };
+
+  const handleToggleReturnRoute = () => {
+    if (isReturnRouteEnabled) {
+      setIsReturnRouteEnabled(false);
+      setReturnTrimCount(0);
+      return;
+    }
+
+    if (manualPoints.length < 2) {
+      setErrorMessage(
+        "왕복 경로를 만들려면 최소 2개 이상의 지점을 찍어주세요.",
+      );
+      return;
+    }
+
+    setErrorMessage("");
+    setReturnTrimCount(0);
+    setIsReturnRouteEnabled(true);
   };
 
   const handleDownload = () => {
@@ -535,7 +724,7 @@ const GpxMakerPage = () => {
       return;
     }
 
-    const trimmedRouteName = routeName.trim() || "my-route";
+    const trimmedRouteName = routeName.trim() || "내 경로";
     setErrorMessage("");
 
     try {
@@ -564,220 +753,369 @@ const GpxMakerPage = () => {
         width: "100%",
         padding: "24px 16px 48px",
         fontFamily: "GMedium",
-        color: "#1f2937",
+        color: "#021227",
         boxSizing: "border-box",
       }}
     >
       <div style={{ maxWidth: "1040px", margin: "0 auto" }}>
         <div className="fs28" style={{ marginBottom: "8px" }}>
-          나만의 지도 만들기 🗺️
+          나만의 지도 만들기 📍
         </div>
 
-        <div style={{ color: "#6b7280", lineHeight: 1.7, marginBottom: "4px" }}>
-          지도에서 원하는 경로를 직접 터치해 지점을 추가하고,
-          <br />
-          드래그해서 위치를 수정할 수 있어요.
-          <br />
-        </div>
-
-        <div
-          style={{
-            color: "#b6b9bf",
-            lineHeight: 1.3,
-            marginBottom: "20px",
-            fontSize: "9px",
-          }}
-        >
-          (* 일부 앱 내 브라우저에서는 다운로드가 제한될 수 있습니다.)
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: "20px",
-            marginBottom: "20px",
-          }}
-        >
-          <div
-            style={{
-              padding: "18px",
-              borderRadius: "24px",
-              backgroundColor: "#f8fafc",
-              border: "1px solid rgba(148, 163, 184, 0.16)",
-            }}
-          >
+        {view === "menu" ? (
+          <>
             <div
+              className="fs14"
               style={{
-                color: "#64748b",
-                fontSize: "13px",
-                marginBottom: "8px",
+                color: "#6b7280",
+                lineHeight: 1.7,
+                marginBottom: "20px",
               }}
             >
-              파일 이름
+              지도를 직접 터치해 나만의 경로를 새로 만들거나,
+              <br />
+              기존 GPX 경로를 불러와 수정할 수 있어요.
             </div>
 
-            <input
-              ref={routeNameInputRef}
-              value={routeName}
-              onChange={(event) => setRouteName(event.target.value)}
-              placeholder="my-route"
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "14px",
+                maxWidth: "340px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setErrorMessage("");
+                  setView("create");
+                }}
+                style={{
+                  minHeight: "56px",
+                  padding: "0 20px",
+                  borderRadius: "999px",
+                  border: "1px solid rgba(148, 163, 184, 0.28)",
+                  backgroundColor: "transparent",
+                  color: "#0f172a",
+                  fontSize: "15px",
+                  fontFamily: "inherit",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.04)",
+                }}
+              >
+                새로 만들기
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setErrorMessage("기존 경로 수정하기는 아직 준비 중이에요.")
+                }
+                style={{
+                  minHeight: "56px",
+                  padding: "0 20px",
+                  borderRadius: "999px",
+                  border: "1px solid rgba(148, 163, 184, 0.28)",
+                  backgroundColor: "transparent",
+                  color: "#0f172a",
+                  fontSize: "15px",
+                  fontFamily: "inherit",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.04)",
+                }}
+              >
+                기존 경로 수정하기
+              </button>
+            </div>
+
+            <div
+              style={{
+                color: "#fdc494",
+                lineHeight: 1.5,
+                marginTop: "12px",
+                fontSize: "11px",
+                marginLeft: "1rem",
+                marginRight: "1rem",
+              }}
+            >
+              * 일부 앱 내 브라우저에서는 파일 다운로드가 제한될 수 있어,
+              <br />
+              사파리, 크롬 같은 기본 브라우저 사용을 권장해요.
+            </div>
+
+            {errorMessage ? (
+              <div
+                style={{
+                  marginTop: "16px",
+                  borderRadius: "18px",
+                  backgroundColor: "#fef2f2",
+                  color: "#b91c1c",
+                  padding: "14px 16px",
+                }}
+              >
+                {errorMessage}
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <div
+              style={{
+                marginBottom: "12px",
+              }}
+            >
+              <div
+                style={{
+                  padding: "clamp(12px, 3vw, 16px) clamp(16px, 4.8vw, 22px)",
+                  borderRadius: "24px",
+                  backgroundColor: "#f8fafc",
+                  border: "1px solid rgba(148, 163, 184, 0.16)",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#64748b",
+                    fontSize: "13px",
+                    marginBottom: "8px",
+                  }}
+                >
+                  경로 정보
+                </div>
+
+                <div
+                  style={{ display: "flex", gap: "clamp(8px, 1.6vw, 16px)" }}
+                >
+                  <div style={{ flex: 1, minWidth: 0, textAlign: "center" }}>
+                    <div style={{ color: "#94a3b8", fontSize: "11px" }}>
+                      지점
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "clamp(17px, 3.8vw, 22px)",
+                        color: "#0f172a",
+                      }}
+                    >
+                      {points.length}
+                    </div>
+                  </div>
+
+                  <div style={{ flex: 3, minWidth: 0, textAlign: "right" }}>
+                    <div style={{ color: "#94a3b8", fontSize: "11px" }}>
+                      총 거리
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "clamp(17px, 3.8vw, 22px)",
+                        color: "#ea580c",
+                      }}
+                    >
+                      {formatDistance(totalDistanceKm)}
+                    </div>
+                  </div>
+
+                  <div style={{ flex: 3, minWidth: 0, textAlign: "right" }}>
+                    <div style={{ color: "#94a3b8", fontSize: "11px" }}>
+                      상승 고도
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "clamp(17px, 3.8vw, 22px)",
+                        color: "#2563eb",
+                      }}
+                    >
+                      {`${Math.round(elevationGain ?? 0)}m`}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "10px",
+                flexWrap: "nowrap",
+                marginBottom: "6px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flex: 1,
+                  gap: "10px",
+                  flexWrap: "nowrap",
+                  minWidth: 0,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={handleToggleReturnRoute}
+                  disabled={!isReturnRouteEnabled && manualPoints.length < 2}
+                  className="gmedium fs10"
+                  style={{
+                    height: "32px",
+                    padding: "0 12px",
+
+                    borderRadius: "999px",
+                    border: "1.6px solid #2563eb",
+                    backgroundColor: isReturnRouteEnabled
+                      ? "#0f172a"
+                      : "#ffffff",
+                    color: isReturnRouteEnabled ? "#efefef" : "#2563eb",
+                    cursor:
+                      isReturnRouteEnabled || manualPoints.length >= 2
+                        ? "pointer"
+                        : "not-allowed",
+                    opacity:
+                      isReturnRouteEnabled || manualPoints.length >= 2
+                        ? 1
+                        : 0.45,
+                    whiteSpace: "nowrap",
+                    flexShrink: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  {isReturnRouteEnabled ? "왕복 경로 해제" : "왕복 경로 설정"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  disabled={!manualPoints.length}
+                  className="gmedium fs10"
+                  style={{
+                    height: "32px",
+                    padding: "0 12px",
+                    borderRadius: "999px",
+                    border: "1.6px solid #ea580c",
+                    backgroundColor: "#ffffff",
+
+                    cursor: manualPoints.length ? "pointer" : "not-allowed",
+                    opacity: manualPoints.length ? 1 : 0.45,
+                    whiteSpace: "nowrap",
+                    flexShrink: 1,
+                    minWidth: 0,
+                    color: "#ea580c",
+                  }}
+                >
+                  전체 초기화
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleUndo}
+                disabled={!manualPoints.length}
+                className="gmedium fs10"
+                style={{
+                  height: "32px",
+                  padding: "0 12px",
+                  borderRadius: "999px",
+                  border: "1.6px solid #383838",
+                  backgroundColor: "#ffffff",
+                  cursor: manualPoints.length ? "pointer" : "not-allowed",
+                  opacity: manualPoints.length ? 1 : 0.45,
+
+                  marginLeft: "auto",
+                  whiteSpace: "nowrap",
+                  flexShrink: 1,
+                  minWidth: 0,
+                  color: "#383838",
+                }}
+              >
+                마지막 점 삭제
+              </button>
+            </div>
+
+            {errorMessage ? (
+              <div
+                style={{
+                  marginBottom: "10px",
+                  borderRadius: "18px",
+                  backgroundColor: "#fef2f2",
+                  color: "#b91c1c",
+                  padding: "14px 16px",
+                }}
+              >
+                {errorMessage}
+              </div>
+            ) : null}
+
+            <div
+              ref={mapElementRef}
               style={{
                 width: "100%",
-                height: "44px",
-                borderRadius: "14px",
-                border: "1px solid rgba(148, 163, 184, 0.22)",
-                padding: "0 14px",
-                fontSize: "15px",
-                boxSizing: "border-box",
+                minHeight: "clamp(360px, 58vh, 560px)",
+                borderRadius: "28px",
+                overflow: "hidden",
+                background:
+                  "radial-gradient(circle at top, rgba(56, 189, 248, 0.16), transparent 52%), #e2e8f0",
+                border: "1px solid rgba(148, 163, 184, 0.16)",
               }}
             />
-          </div>
 
-          <div
-            style={{
-              padding: "18px",
-              borderRadius: "24px",
-              backgroundColor: "#f8fafc",
-              border: "1px solid rgba(148, 163, 184, 0.16)",
-            }}
-          >
             <div
               style={{
-                color: "#64748b",
-                fontSize: "13px",
-                marginBottom: "8px",
+                marginTop: "12px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "10px",
+                flexWrap: "nowrap",
               }}
             >
-              경로 정보
+              <div
+                style={{
+                  flex: "1 1 auto",
+                  minWidth: 0,
+                }}
+              >
+                <input
+                  ref={routeNameInputRef}
+                  value={routeName}
+                  onChange={(event) => setRouteName(event.target.value)}
+                  placeholder="경로 이름을 입력해주세요"
+                  className="glight"
+                  style={{
+                    width: "100%",
+                    height: "42px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(148, 163, 184, 0.22)",
+                    padding: "0 16px",
+                    fontSize: "12px",
+                    boxSizing: "border-box",
+                    backgroundColor: "#ffffff",
+                  }}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleDownload}
+                disabled={!canDownload}
+                className="gmedium fs12"
+                style={{
+                  flexShrink: 0,
+                  height: "42px",
+                  padding: "0 18px",
+                  borderRadius: "999px",
+                  border: "none",
+                  backgroundColor: "#111827",
+                  color: "#ffffff",
+                  cursor: canDownload ? "pointer" : "not-allowed",
+                  opacity: canDownload ? 1 : 0.45,
+                }}
+              >
+                GPX 다운로드
+              </button>
             </div>
-
-            <div style={{ display: "flex", gap: "16px" }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: "#94a3b8", fontSize: "12px" }}>지점</div>
-                <div style={{ fontSize: "22px", color: "#0f172a" }}>
-                  {points.length}
-                </div>
-              </div>
-
-              <div style={{ flex: 3, minWidth: 0 }}>
-                <div style={{ color: "#94a3b8", fontSize: "12px" }}>
-                  총 거리
-                </div>
-                <div style={{ fontSize: "22px", color: "#ea580c" }}>
-                  {formatDistance(totalDistanceKm)}
-                </div>
-              </div>
-
-              <div style={{ flex: 3, minWidth: 0 }}>
-                <div style={{ color: "#94a3b8", fontSize: "12px" }}>
-                  상승 고도
-                </div>
-                <div style={{ fontSize: "22px", color: "#2563eb" }}>
-                  {elevationGain === null
-                    ? "-"
-                    : `${Math.round(elevationGain)} m`}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            gap: "10px",
-            flexWrap: "wrap",
-            marginBottom: "16px",
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleUndo}
-            disabled={!points.length}
-            style={{
-              height: "42px",
-              padding: "0 16px",
-              borderRadius: "999px",
-              border: "1px solid rgba(148, 163, 184, 0.22)",
-              backgroundColor: "#ffffff",
-              cursor: points.length ? "pointer" : "not-allowed",
-              opacity: points.length ? 1 : 0.45,
-            }}
-          >
-            마지막 점 삭제
-          </button>
-
-          <button
-            type="button"
-            onClick={handleReset}
-            disabled={!points.length}
-            style={{
-              height: "42px",
-              padding: "0 16px",
-              borderRadius: "999px",
-              border: "1px solid rgba(148, 163, 184, 0.22)",
-              backgroundColor: "#ffffff",
-              cursor: points.length ? "pointer" : "not-allowed",
-              opacity: points.length ? 1 : 0.45,
-            }}
-          >
-            전체 초기화
-          </button>
-        </div>
-
-        {errorMessage ? (
-          <div
-            style={{
-              marginBottom: "16px",
-              borderRadius: "18px",
-              backgroundColor: "#fef2f2",
-              color: "#b91c1c",
-              padding: "14px 16px",
-            }}
-          >
-            {errorMessage}
-          </div>
-        ) : null}
-
-        <div
-          ref={mapElementRef}
-          style={{
-            width: "100%",
-            minHeight: "560px",
-            borderRadius: "28px",
-            overflow: "hidden",
-            background:
-              "radial-gradient(circle at top, rgba(56, 189, 248, 0.16), transparent 52%), #e2e8f0",
-            border: "1px solid rgba(148, 163, 184, 0.16)",
-          }}
-        />
-
-        <div
-          style={{
-            marginTop: "16px",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleDownload}
-            disabled={!canDownload}
-            style={{
-              height: "42px",
-              padding: "0 18px",
-              borderRadius: "999px",
-              border: "none",
-              backgroundColor: "#111827",
-              color: "#ffffff",
-              cursor: canDownload ? "pointer" : "not-allowed",
-              opacity: canDownload ? 1 : 0.45,
-            }}
-          >
-            GPX 다운로드
-          </button>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
