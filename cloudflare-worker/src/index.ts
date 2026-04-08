@@ -7,6 +7,8 @@ const CORS_HEADERS = {
 type Env = {
   NAVER_DIRECTION_API_KEY_ID?: string;
   NAVER_DIRECTION_API_KEY?: string;
+  NAVER_SEARCH_CLIENT_ID?: string;
+  NAVER_SEARCH_CLIENT_SECRET?: string;
 };
 
 const jsonResponse = (body: unknown, status = 200) =>
@@ -103,6 +105,55 @@ const handleDirectionsProxy = async (requestUrl: URL, env: Env) => {
   }
 };
 
+const handleLocalSearchProxy = async (requestUrl: URL, env: Env) => {
+  const clientId = env.NAVER_SEARCH_CLIENT_ID?.trim();
+  const clientSecret = env.NAVER_SEARCH_CLIENT_SECRET?.trim();
+
+  if (!clientId || !clientSecret) {
+    return jsonResponse(
+      { error: "NAVER local search credentials are not configured" },
+      500,
+    );
+  }
+
+  const query = requestUrl.searchParams.get("query")?.trim();
+  const display = requestUrl.searchParams.get("display") || "5";
+  const start = requestUrl.searchParams.get("start") || "1";
+  const sort = requestUrl.searchParams.get("sort") || "random";
+
+  if (!query) {
+    return jsonResponse({ error: "query is required" }, 400);
+  }
+
+  const upstreamUrl = new URL("https://openapi.naver.com/v1/search/local.json");
+  upstreamUrl.searchParams.set("query", query);
+  upstreamUrl.searchParams.set("display", display);
+  upstreamUrl.searchParams.set("start", start);
+  upstreamUrl.searchParams.set("sort", sort);
+
+  try {
+    const upstreamResponse = await fetch(upstreamUrl.toString(), {
+      headers: {
+        Accept: "application/json",
+        "X-Naver-Client-Id": clientId,
+        "X-Naver-Client-Secret": clientSecret,
+      },
+    });
+
+    const text = await upstreamResponse.text();
+
+    return new Response(text, {
+      status: upstreamResponse.status,
+      headers: {
+        ...CORS_HEADERS,
+        "Content-Type": "application/json; charset=utf-8",
+      },
+    });
+  } catch {
+    return jsonResponse({ error: "failed to fetch local search data" }, 502);
+  }
+};
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === "OPTIONS") {
@@ -120,6 +171,10 @@ export default {
 
     if (requestUrl.pathname === "/directions-15") {
       return handleDirectionsProxy(requestUrl, env);
+    }
+
+    if (requestUrl.pathname === "/search-local") {
+      return handleLocalSearchProxy(requestUrl, env);
     }
 
     return handleElevationProxy(requestUrl);

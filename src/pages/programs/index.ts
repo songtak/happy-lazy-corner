@@ -5,6 +5,7 @@ import LostAndFoundMainPage from "./LostAndFoundMainPage";
 import LostAndFoundPageJW from "./LostAndFoundPageJW";
 import SeasonalFoodPage from "./SeasonalFoodPage";
 import SeasonalFoodWorldcubPage from "./SeasonalFoodWorldcubPage";
+import GpxMainPage from "./GpxMainPage";
 import GpxViewerPage from "./GpxViewerPage";
 import GpxMakerPage from "./GpxMakerPage";
 import JejuTrail2026Page from "./JejuTrail2026Page";
@@ -17,6 +18,7 @@ export {
   LostAndFoundPageJW,
   SeasonalFoodPage,
   SeasonalFoodWorldcubPage,
+  GpxMainPage,
   GpxViewerPage,
   GpxMakerPage,
   JejuTrail2026Page,

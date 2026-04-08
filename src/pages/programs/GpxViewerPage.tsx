@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import ReactECharts from "echarts-for-react";
+import { useNavigate } from "react-router-dom";
 
 type GpxPoint = {
   lat: number;
@@ -49,6 +50,14 @@ const formatDistance = (distanceKm: number) => `${distanceKm.toFixed(2)} km`;
 
 const formatElevation = (elevation: number | null) =>
   elevation === null ? "-" : `${Math.round(elevation)} m`;
+
+const truncateFileName = (fileName: string, maxLength = 20) => {
+  if (fileName.length <= maxLength) {
+    return fileName;
+  }
+
+  return `${fileName.slice(0, maxLength)}...`;
+};
 
 const formatPace = (secondsPerKm: number) => {
   const minutes = Math.floor(secondsPerKm / 60);
@@ -382,6 +391,7 @@ const createFocusMarkerHtml = () => {
 };
 
 const GpxViewerPage = () => {
+  const navigate = useNavigate();
   const [track, setTrack] = useState<GpxTrack | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isMapReady, setIsMapReady] = useState(false);
@@ -454,6 +464,23 @@ const GpxViewerPage = () => {
       focusMarkerRef.current.setMap(null);
       focusMarkerRef.current = null;
     }
+  };
+
+  const handleEditTrack = () => {
+    if (!track) {
+      return;
+    }
+
+    navigate("/gpx-maker", {
+      state: {
+        routeName: track.fileName.replace(/\.gpx$/i, ""),
+        points: track.points.map((point) => ({
+          lat: point.lat,
+          lon: point.lon,
+          ele: point.ele,
+        })),
+      },
+    });
   };
 
   const showFocusMarker = (point: GpxPoint) => {
@@ -1096,21 +1123,33 @@ const GpxViewerPage = () => {
       style={{
         width: "100%",
         padding: "24px 16px 48px",
-        fontFamily: "GMedium",
+        fontFamily: "Pretendard",
         color: "#1f2937",
         boxSizing: "border-box",
       }}
     >
+      <div
+        style={{
+          fontFamily: "Comico",
+          fontSize: "clamp(20px, 2vw, 28px)",
+          lineHeight: 1,
+          letterSpacing: "-0.03em",
+          color: "#111827",
+          textTransform: "lowercase",
+          marginBottom: "24px",
+        }}
+      >
+        happy route corner
+      </div>
+
       <div style={{ maxWidth: "1040px", margin: "0 auto" }}>
-        <div className="fs28" style={{ marginBottom: "8px" }}>
-          GPX 뷰어
-        </div>
         {!track ? (
           <>
             <div
               style={{
                 color: "#6b7280",
                 lineHeight: 1.7,
+                marginTop: "24px",
                 marginBottom: "20px",
                 wordBreak: "keep-all",
               }}
@@ -1119,23 +1158,36 @@ const GpxViewerPage = () => {
               확인할 수 있는 그래프를 함께 보여줘요.
             </div>
 
-            <label
-              htmlFor="gpx-upload"
+            <div
               style={{
-                display: "inline-flex",
-                alignItems: "center",
+                display: "flex",
                 justifyContent: "center",
-                minHeight: "48px",
-                padding: "0 18px",
-                borderRadius: "999px",
-                backgroundColor: "#111827",
-                color: "#ffffff",
-                cursor: "pointer",
-                fontSize: "15px",
               }}
             >
-              GPX 파일 업로드
-            </label>
+              <label
+                htmlFor="gpx-upload"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: "56px",
+                  minWidth: "220px",
+                  padding: "0 28px",
+                  borderRadius: "22px 40px 24px 46px / 42px 24px 38px 20px",
+                  backgroundColor: "#111827",
+                  border: "3px solid #111827",
+                  color: "#ffffff",
+                  cursor: "pointer",
+                  textDecoration: "none",
+                  fontFamily: "Pretendard",
+                  fontSize: "clamp(18px, 2.2vw, 24px)",
+                  fontWeight: 700,
+                  boxShadow: "0 12px 28px rgba(15, 23, 42, 0.16)",
+                }}
+              >
+                GPX 파일 업로드
+              </label>
+            </div>
           </>
         ) : null}
         <input
@@ -1161,38 +1213,59 @@ const GpxViewerPage = () => {
         ) : null}
 
         {!track ? (
-          <div
-            style={{
-              marginTop: "24px",
-              borderRadius: "28px",
-              padding: "28px",
-              background:
-                "linear-gradient(135deg, rgba(236, 253, 245, 1) 0%, rgba(239, 246, 255, 1) 100%)",
-              border: "1px solid rgba(148, 163, 184, 0.2)",
-            }}
-          >
-            <div style={{ fontSize: "18px", marginBottom: "8px" }}>
-              아직 불러온 경로가 없어요
-            </div>
-            <div style={{ color: "#475569", lineHeight: 1.7 }}>
-              러닝, 라이딩, 등산 앱에서 내보낸 `.gpx` 파일을 올리면 경로와 고도
-              프로필을 바로 확인할 수 있습니다.
-            </div>
-          </div>
+          <div></div>
         ) : (
           <>
             <div
               style={{
                 marginTop: "24px",
                 marginBottom: "20px",
-                padding: "20px",
+                padding: "16px",
                 borderRadius: "28px",
                 backgroundColor: "#f8fafc",
                 border: "1px solid rgba(148, 163, 184, 0.16)",
               }}
             >
-              <div style={{ fontSize: "18px", marginBottom: "6px" }}>
-                {track.fileName}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                  marginBottom: "4px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "18px",
+                    minWidth: 0,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  title={track.fileName}
+                >
+                  {truncateFileName(track.fileName)}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleEditTrack}
+                  style={{
+                    flexShrink: 0,
+                    height: "36px",
+                    padding: "0 14px",
+                    borderRadius: "999px",
+                    border: "2px solid #111827",
+                    backgroundColor: "#ffffff",
+                    color: "#111827",
+                    fontFamily: "Pretendard",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  수정하기
+                </button>
               </div>
               <div style={{ color: "#64748b" }}>
                 좌표 {track.points.length.toLocaleString()}개를 읽었어요.
@@ -1203,7 +1276,7 @@ const GpxViewerPage = () => {
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
                   gap: "12px",
-                  marginTop: "20px",
+                  marginTop: "14px",
                 }}
               >
                 {[
@@ -1231,28 +1304,35 @@ const GpxViewerPage = () => {
                   <div
                     key={item.label}
                     style={{
-                      padding: "14px 16px",
+                      padding: "12px 14px",
                       borderRadius: "20px",
                       backgroundColor: "#ffffff",
+                      textAlign: "left",
                     }}
                   >
                     <div
                       style={{
                         color: "#64748b",
                         fontSize: "13px",
-                        marginBottom: "6px",
+                        marginBottom: "4px",
                       }}
                     >
                       {item.label}
                     </div>
-                    <div style={{ color: item.color, fontSize: "20px" }}>
+                    <div
+                      style={{
+                        color: item.color,
+                        fontSize: "20px",
+                        textAlign: "right",
+                      }}
+                    >
                       {item.value}
                     </div>
                   </div>
                 ))}
                 <div
                   style={{
-                    padding: "14px 16px",
+                    padding: "12px 14px",
                     borderRadius: "20px",
                     backgroundColor: "#ffffff",
                     gridColumn: "span 2",
@@ -1263,7 +1343,7 @@ const GpxViewerPage = () => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      marginBottom: "8px",
+                      marginBottom: "6px",
                     }}
                   >
                     <div
@@ -1289,7 +1369,7 @@ const GpxViewerPage = () => {
                       display: "flex",
                       alignItems: "stretch",
                       justifyContent: "space-between",
-                      gap: "12px",
+                      gap: "10px",
                       width: "100%",
                     }}
                   >
@@ -1297,7 +1377,7 @@ const GpxViewerPage = () => {
                       style={{
                         display: "flex",
                         flexDirection: "column",
-                        gap: "8px",
+                        gap: "6px",
                       }}
                     >
                       <div
@@ -1338,13 +1418,14 @@ const GpxViewerPage = () => {
                               selectedPaceIndex === PACE_OPTIONS.length - 1
                             }
                             style={{
-                              width: "18px",
-                              height: "18px",
-                              border: "1px solid rgba(148, 163, 184, 0.24)",
+                              width: "22px",
+                              height: "22px",
+                              border: "2px solid #111827",
                               borderRadius: "999px",
-                              backgroundColor: "rgba(255,255,255,0.92)",
-                              color: "#334155",
-                              fontSize: "8px",
+                              backgroundColor: "#ffffff",
+                              color: "#111827",
+                              fontSize: "9px",
+                              fontWeight: 700,
                               lineHeight: 1,
                               cursor:
                                 selectedPaceIndex === PACE_OPTIONS.length - 1
@@ -1354,6 +1435,7 @@ const GpxViewerPage = () => {
                                 selectedPaceIndex === PACE_OPTIONS.length - 1
                                   ? 0.4
                                   : 1,
+                              boxShadow: "0 6px 14px rgba(15, 23, 42, 0.1)",
                             }}
                           >
                             ▲
@@ -1363,19 +1445,21 @@ const GpxViewerPage = () => {
                             onClick={() => updateSelectedPaceByStep(-1)}
                             disabled={selectedPaceIndex === 0}
                             style={{
-                              width: "18px",
-                              height: "18px",
-                              border: "1px solid rgba(148, 163, 184, 0.24)",
+                              width: "22px",
+                              height: "22px",
+                              border: "2px solid #111827",
                               borderRadius: "999px",
-                              backgroundColor: "rgba(255,255,255,0.92)",
-                              color: "#334155",
-                              fontSize: "8px",
+                              backgroundColor: "#ffffff",
+                              color: "#111827",
+                              fontSize: "9px",
+                              fontWeight: 700,
                               lineHeight: 1,
                               cursor:
                                 selectedPaceIndex === 0
                                   ? "not-allowed"
                                   : "pointer",
                               opacity: selectedPaceIndex === 0 ? 0.4 : 1,
+                              boxShadow: "0 6px 14px rgba(15, 23, 42, 0.1)",
                             }}
                           >
                             ▼

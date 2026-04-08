@@ -4,6 +4,7 @@
 
 - `OpenTopoData` 고도 조회
 - NAVER Maps `Directions 15` 경로 검색
+- NAVER Search `지역 검색` 장소 검색
 
 ## 1. 설치
 
@@ -53,3 +54,14 @@ npx wrangler secret put NAVER_DIRECTION_API_KEY
 ```
 
 시크릿 설정 후 다시 배포하세요.
+
+## 7. 지역 검색 시크릿 설정
+
+지역 검색은 네이버 개발자센터 Search API 인증 정보를 Worker에 시크릿으로 넣어야 합니다.
+
+```bash
+npx wrangler secret put NAVER_SEARCH_CLIENT_ID
+npx wrangler secret put NAVER_SEARCH_CLIENT_SECRET
+```
+
+네이버 개발자센터에서 애플리케이션에 검색 API 권한이 활성화되어 있어야 합니다.
