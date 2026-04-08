@@ -175,6 +175,50 @@ const GpxMainPage = () => {
             나만의 경로 만들기
           </Link>
         </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "Comico",
+              fontSize: "10px",
+              lineHeight: 1,
+              letterSpacing: "-0.02em",
+              textTransform: "none",
+              color: "#6b7280",
+            }}
+          >
+            준비중이에요, 곧 추천 경로도 둘러볼 수 있어요
+          </div>
+          <button
+            type="button"
+            disabled
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "56px",
+              minWidth: "220px",
+              padding: "0 28px",
+              borderRadius: "34px 26px 40px 18px / 24px 38px 28px 42px",
+              backgroundColor: "rgba(255, 255, 255, 0.72)",
+              border: "3px solid rgba(17, 24, 39, 0.42)",
+              color: "rgba(17, 24, 39, 0.56)",
+              fontFamily: "Pretendard",
+              fontSize: "clamp(18px, 2.2vw, 24px)",
+              fontWeight: 700,
+              boxShadow: "0 12px 28px rgba(15, 23, 42, 0.08)",
+              cursor: "not-allowed",
+            }}
+          >
+            경로 둘러보기
+          </button>
+        </div>
       </div>
 
       <div

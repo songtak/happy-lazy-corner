@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
 type RoutePoint = {
@@ -597,6 +598,7 @@ const GpxMakerPage = () => {
   const [isMapReady, setIsMapReady] = useState(false);
   const [isFetchingElevation, setIsFetchingElevation] = useState(false);
   const [isSearchingRoute, setIsSearchingRoute] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [mapGuideMessage, setMapGuideMessage] = useState("");
   const [currentLocation, setCurrentLocation] =
@@ -1480,6 +1482,24 @@ const GpxMakerPage = () => {
     setMapGuideMessage("지도에서 새 위치를 탭하면 선택한 지점이 이동해요.");
   };
 
+  const showPreparingToast = () => {
+    setToastMessage("준비중이에요.");
+  };
+
+  useEffect(() => {
+    if (!toastMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setToastMessage("");
+    }, 1800);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [toastMessage]);
+
   const loadImportedRoute = async (
     sourcePoints: RoutePoint[],
     nextRouteName: string,
@@ -1757,288 +1777,51 @@ const GpxMakerPage = () => {
           </>
         ) : (
           <>
-            {/* <div
+            <div
               style={{
                 marginBottom: "12px",
-                borderRadius: "24px",
-                backgroundColor: "#f8fafc",
-                border: "1px solid rgba(148, 163, 184, 0.16)",
-                overflow: "hidden",
               }}
             >
-              <div
+              <button
+                type="button"
+                onClick={showPreparingToast}
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "8px",
-                  padding: "12px",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  height: "42px",
+                  padding: "0 16px",
+                  borderRadius: "999px",
+                  border: "1px solid rgba(148, 163, 184, 0.22)",
+                  backgroundColor: "#ffffff",
+                  color: "#0f172a",
+                  fontSize: "14px",
+                  fontFamily: "Pretendard",
+                  textAlign: "left",
+                  cursor: "pointer",
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => setIsRouteSearchOpen((current) => !current)}
-                  style={{
-                    flex: 1,
-                    height: "42px",
-                    padding: "0 16px",
-                    borderRadius: "999px",
-                    border: "1px solid rgba(148, 163, 184, 0.22)",
-                    backgroundColor: "#ffffff",
-                    color: "#0f172a",
-                    fontSize: "14px",
-                    fontFamily: "inherit",
-                    textAlign: "left",
-                    cursor: "pointer",
-                  }}
-                >
+                <span style={{ display: "inline-flex", alignItems: "center" }}>
                   경로 검색하기
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsRouteSearchOpen((current) => !current)}
-                  aria-label={
-                    isRouteSearchOpen ? "경로 검색 접기" : "경로 검색 펼치기"
-                  }
+                </span>
+                <span
+                  aria-hidden="true"
                   style={{
-                    width: "42px",
-                    height: "42px",
-                    borderRadius: "999px",
-                    border: "1px solid rgba(148, 163, 184, 0.22)",
-                    backgroundColor: "#ffffff",
-                    color: "#0f172a",
-                    fontSize: "18px",
-                    fontFamily: "inherit",
-                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     flexShrink: 0,
                   }}
                 >
-                  {isRouteSearchOpen ? "⌃" : "⌄"}
-                </button>
-              </div>
-
-              {isRouteSearchOpen ? (
-                <div
-                  style={{
-                    padding: "0 12px 12px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "10px",
-                  }}
-                >
-                  <input
-                    value={startQuery}
-                    onChange={(event) => {
-                      setStartQuery(event.target.value);
-                      setSelectedStartLocation(null);
-                    }}
-                    placeholder="출발지 검색"
-                    style={{
-                      width: "100%",
-                      height: "42px",
-                      borderRadius: "16px",
-                      border: "1px solid rgba(148, 163, 184, 0.22)",
-                      padding: "0 16px",
-                      fontSize: "14px",
-                      boxSizing: "border-box",
-                      backgroundColor: "#ffffff",
-                    }}
-                  />
-
-                  {isSearchingStartSuggestions ? (
-                    <div
-                      style={{
-                        padding: "0 4px",
-                        color: "#94a3b8",
-                        fontSize: "12px",
-                      }}
-                    >
-                      검색 중...
-                    </div>
-                  ) : null}
-
-                  {startSuggestions.length ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "6px",
-                        marginTop: "-2px",
-                      }}
-                    >
-                      {startSuggestions.map((suggestion) => (
-                        <button
-                          key={`start-${suggestion.title || suggestion.address}-${suggestion.address}`}
-                          type="button"
-                          onClick={() =>
-                            handleSelectSuggestion("start", suggestion)
-                          }
-                          style={{
-                            padding: "10px 14px",
-                            borderRadius: "14px",
-                            border: "1px solid rgba(148, 163, 184, 0.18)",
-                            backgroundColor: "#ffffff",
-                            color: "#334155",
-                            fontSize: "13px",
-                            textAlign: "left",
-                            cursor: "pointer",
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: "13px",
-                              color: "#0f172a",
-                              marginBottom: suggestion.title ? "2px" : 0,
-                            }}
-                          >
-                            {suggestion.title || suggestion.address}
-                          </div>
-                          {suggestion.title ? (
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "#64748b",
-                              }}
-                            >
-                              {suggestion.address}
-                            </div>
-                          ) : null}
-                        </button>
-                      ))}
-                    </div>
-                  ) : startQuery.trim().length >= 2 &&
-                    !selectedStartLocation &&
-                    !isSearchingStartSuggestions ? (
-                    <div
-                      style={{
-                        padding: "0 4px",
-                        color: "#94a3b8",
-                        fontSize: "12px",
-                      }}
-                    >
-                      검색 결과가 없어요.
-                    </div>
-                  ) : null}
-
-                  <input
-                    value={goalQuery}
-                    onChange={(event) => {
-                      setGoalQuery(event.target.value);
-                      setSelectedGoalLocation(null);
-                    }}
-                    placeholder="도착지 검색"
-                    style={{
-                      width: "100%",
-                      height: "42px",
-                      borderRadius: "16px",
-                      border: "1px solid rgba(148, 163, 184, 0.22)",
-                      padding: "0 16px",
-                      fontSize: "14px",
-                      boxSizing: "border-box",
-                      backgroundColor: "#ffffff",
-                    }}
-                  />
-
-                  {isSearchingGoalSuggestions ? (
-                    <div
-                      style={{
-                        padding: "0 4px",
-                        color: "#94a3b8",
-                        fontSize: "12px",
-                      }}
-                    >
-                      검색 중...
-                    </div>
-                  ) : null}
-
-                  {goalSuggestions.length ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "6px",
-                        marginTop: "-2px",
-                      }}
-                    >
-                      {goalSuggestions.map((suggestion) => (
-                        <button
-                          key={`goal-${suggestion.title || suggestion.address}-${suggestion.address}`}
-                          type="button"
-                          onClick={() =>
-                            handleSelectSuggestion("goal", suggestion)
-                          }
-                          style={{
-                            padding: "10px 14px",
-                            borderRadius: "14px",
-                            border: "1px solid rgba(148, 163, 184, 0.18)",
-                            backgroundColor: "#ffffff",
-                            color: "#334155",
-                            fontSize: "13px",
-                            textAlign: "left",
-                            cursor: "pointer",
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: "13px",
-                              color: "#0f172a",
-                              marginBottom: suggestion.title ? "2px" : 0,
-                            }}
-                          >
-                            {suggestion.title || suggestion.address}
-                          </div>
-                          {suggestion.title ? (
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "#64748b",
-                              }}
-                            >
-                              {suggestion.address}
-                            </div>
-                          ) : null}
-                        </button>
-                      ))}
-                    </div>
-                  ) : goalQuery.trim().length >= 2 &&
-                    !selectedGoalLocation &&
-                    !isSearchingGoalSuggestions ? (
-                    <div
-                      style={{
-                        padding: "0 4px",
-                        color: "#94a3b8",
-                        fontSize: "12px",
-                      }}
-                    >
-                      검색 결과가 없어요.
-                    </div>
-                  ) : null}
-
-                  <button
-                    type="button"
-                    onClick={() => void handleSearchRoute()}
-                    disabled={isSearchingRoute}
-                    style={{
-                      height: "42px",
-                      borderRadius: "999px",
-                      border: "none",
-                      backgroundColor: "#111827",
-                      color: "#ffffff",
-                      fontSize: "14px",
-                      fontFamily: "inherit",
-                      cursor: isSearchingRoute ? "not-allowed" : "pointer",
-                      opacity: isSearchingRoute ? 0.6 : 1,
-                    }}
-                  >
-                    {isSearchingRoute ? "경로 검색 중..." : "경로 검색"}
-                  </button>
-                </div>
-              ) : null}
-            </div> */}
+                  <ChevronDown size={18} strokeWidth={2.2} />
+                </span>
+              </button>
+            </div>
 
             <div
               style={{
-                marginTop: "32px",
+                marginTop: "8px",
                 marginBottom: "12px",
               }}
             >
@@ -2248,7 +2031,7 @@ const GpxMakerPage = () => {
                     zIndex: 20,
                     padding: "8px 14px",
                     borderRadius: "999px",
-                    backgroundColor: "rgba(11, 52, 147, 0.508)",
+                    backgroundColor: "rgba(17, 24, 39, 0.386)",
                     color: "#ffffff",
                     fontSize: "12px",
                     whiteSpace: "nowrap",
@@ -2333,6 +2116,29 @@ const GpxMakerPage = () => {
           </>
         )}
       </div>
+
+      {toastMessage ? (
+        <div
+          style={{
+            position: "fixed",
+            left: "50%",
+            top: "24px",
+            transform: "translateX(-50%)",
+            zIndex: 60,
+            padding: "10px 16px",
+            borderRadius: "999px",
+            backgroundColor: "rgba(17, 24, 39, 0.568)",
+            color: "#ffffff",
+            fontFamily: "Pretendard",
+            fontSize: "13px",
+            fontWeight: 500,
+            boxShadow: "0 12px 28px rgba(15, 23, 42, 0.18)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {toastMessage}
+        </div>
+      ) : null}
     </div>
   );
 };
