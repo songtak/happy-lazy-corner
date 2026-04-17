@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import ReactECharts from "echarts-for-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 type GpxPoint = {
@@ -39,6 +40,15 @@ type PaceOption = {
 
 const NAVER_MAP_CLIENT_ID = "uqms5x0d6b";
 const NAVER_MAP_SCRIPT_ID = "naver-map-sdk";
+const ELEVATION_PROXY_URL =
+  `${import.meta.env.VITE_ELEVATION_PROXY_URL || ""}`.trim();
+const OPENTOPO_BASE_URL = import.meta.env.DEV
+  ? ELEVATION_PROXY_URL || "/api/opentopo/v1/aster30m,srtm90m"
+  : ELEVATION_PROXY_URL || "https://api.opentopodata.org/v1/aster30m,srtm90m";
+const ELEVATION_BATCH_SIZE = 100;
+const ELEVATION_REQUEST_DELAY_MS = 1200;
+const ELEVATION_RATE_LIMIT_MESSAGE =
+  "고도 API 요청 제한에 걸렸어요. 잠시 후 다시 시도해주세요.";
 
 declare global {
   interface Window {
@@ -82,8 +92,8 @@ const formatDuration = (totalSeconds: number) => {
 };
 
 const PACE_OPTIONS: PaceOption[] = Array.from(
-  { length: 33 },
-  (_, index) => 300 + index * 15,
+  { length: 49 },
+  (_, index) => 180 + index * 15,
 ).map((secondsPerKm) => ({
   secondsPerKm,
   label: formatPace(secondsPerKm),
@@ -173,8 +183,73 @@ const parseNumber = (rawValue: string | null) => {
     return null;
   }
 
-  const parsedValue = Number(rawValue);
+  const trimmedValue = rawValue.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const parsedValue = Number(trimmedValue);
   return Number.isFinite(parsedValue) ? parsedValue : null;
+};
+
+const wait = (durationMs: number) =>
+  new Promise<void>((resolve) => {
+    window.setTimeout(resolve, durationMs);
+  });
+
+const buildGpxTrack = (
+  fileName: string,
+  routePoints: Array<Pick<GpxPoint, "lat" | "lon" | "ele">>,
+): GpxTrack => {
+  let totalDistance = 0;
+  let elevationGain = 0;
+  let elevationLoss = 0;
+  let previousPoint: GpxPoint | null = null;
+
+  const points = routePoints.map(({ lat, lon, ele }) => {
+    if (previousPoint) {
+      totalDistance += calculateDistanceInMeters(
+        previousPoint.lat,
+        previousPoint.lon,
+        lat,
+        lon,
+      );
+
+      if (previousPoint.ele !== null && ele !== null) {
+        const elevationDelta = ele - previousPoint.ele;
+        if (elevationDelta > 0) {
+          elevationGain += elevationDelta;
+        } else {
+          elevationLoss += Math.abs(elevationDelta);
+        }
+      }
+    }
+
+    const currentPoint: GpxPoint = {
+      lat,
+      lon,
+      ele,
+      distance: totalDistance / 1000,
+    };
+
+    previousPoint = currentPoint;
+    return currentPoint;
+  });
+
+  const elevations = points
+    .map((point) => point.ele)
+    .filter((value): value is number => value !== null);
+
+  return {
+    fileName,
+    points,
+    totalDistanceKm: totalDistance / 1000,
+    elevationGain,
+    elevationLoss,
+    minElevation: elevations.length ? Math.min(...elevations) : null,
+    maxElevation: elevations.length ? Math.max(...elevations) : null,
+  };
 };
 
 const parseGpxText = (xmlText: string, fileName: string): GpxTrack => {
@@ -194,72 +269,123 @@ const parseGpxText = (xmlText: string, fileName: string): GpxTrack => {
     throw new Error("경로를 그리려면 최소 2개 이상의 좌표가 필요해요.");
   }
 
-  let totalDistance = 0;
-  let elevationGain = 0;
-  let elevationLoss = 0;
-  let previousPoint: GpxPoint | null = null;
+  const routePoints = pointElements.reduce<
+    Array<Pick<GpxPoint, "lat" | "lon" | "ele">>
+  >((accumulator, pointElement) => {
+    const lat = parseNumber(pointElement.getAttribute("lat"));
+    const lon = parseNumber(pointElement.getAttribute("lon"));
+    const ele = parseNumber(
+      pointElement.querySelector("ele")?.textContent ?? null,
+    );
 
-  const points = pointElements.reduce<GpxPoint[]>(
-    (accumulator, pointElement) => {
-      const lat = parseNumber(pointElement.getAttribute("lat"));
-      const lon = parseNumber(pointElement.getAttribute("lon"));
-      const ele = parseNumber(
-        pointElement.querySelector("ele")?.textContent ?? null,
-      );
+    if (lat === null || lon === null) {
+      return accumulator;
+    }
 
-      if (lat === null || lon === null) {
-        return accumulator;
+    accumulator.push({ lat, lon, ele });
+    return accumulator;
+  }, []);
+
+  if (routePoints.length < 2) {
+    throw new Error("유효한 위도/경도 좌표를 2개 이상 찾지 못했어요.");
+  }
+
+  return buildGpxTrack(fileName, routePoints);
+};
+
+const fetchElevations = async (
+  locations: Array<{ lat: number; lon: number }>,
+) => {
+  if (!locations.length) {
+    return [];
+  }
+
+  const locationQuery = locations
+    .map(({ lat, lon }) => `${lat},${lon}`)
+    .join("|");
+  const requestUrl = `${OPENTOPO_BASE_URL}?locations=${encodeURIComponent(
+    locationQuery,
+  )}`;
+  let response: Response | null = null;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    response = await fetch(requestUrl);
+
+    if (response.status !== 429) {
+      break;
+    }
+
+    if (attempt < 2) {
+      await wait(ELEVATION_REQUEST_DELAY_MS * (attempt + 1));
+    }
+  }
+
+  if (!response || !response.ok) {
+    throw new Error(
+      response?.status === 429
+        ? ELEVATION_RATE_LIMIT_MESSAGE
+        : "고도 정보를 불러오지 못했어요.",
+    );
+  }
+
+  const data = await response.json();
+
+  if (data?.status !== "OK" || !Array.isArray(data?.results)) {
+    throw new Error("고도 정보를 불러오지 못했어요.");
+  }
+
+  return data.results.map((result: any) =>
+    typeof result?.elevation === "number" ? result.elevation : null,
+  ) as Array<number | null>;
+};
+
+const fillMissingElevations = async (track: GpxTrack) => {
+  const missingIndices = track.points.reduce<number[]>(
+    (accumulator, point, index) => {
+      if (point.ele === null) {
+        accumulator.push(index);
       }
 
-      if (previousPoint) {
-        totalDistance += calculateDistanceInMeters(
-          previousPoint.lat,
-          previousPoint.lon,
-          lat,
-          lon,
-        );
-
-        if (previousPoint.ele !== null && ele !== null) {
-          const elevationDelta = ele - previousPoint.ele;
-          if (elevationDelta > 0) {
-            elevationGain += elevationDelta;
-          } else {
-            elevationLoss += Math.abs(elevationDelta);
-          }
-        }
-      }
-
-      const currentPoint: GpxPoint = {
-        lat,
-        lon,
-        ele,
-        distance: totalDistance / 1000,
-      };
-
-      previousPoint = currentPoint;
-      accumulator.push(currentPoint);
       return accumulator;
     },
     [],
   );
 
-  if (points.length < 2) {
-    throw new Error("유효한 위도/경도 좌표를 2개 이상 찾지 못했어요.");
+  if (!missingIndices.length) {
+    return track;
   }
 
-  const elevations = points
-    .map((point) => point.ele)
-    .filter((value): value is number => value !== null);
+  const nextPoints = track.points.map((point) => ({ ...point }));
 
-  return {
-    fileName,
-    points,
-    totalDistanceKm: totalDistance / 1000,
-    elevationGain,
-    elevationLoss,
-    minElevation: elevations.length ? Math.min(...elevations) : null,
-    maxElevation: elevations.length ? Math.max(...elevations) : null,
-  };
+  for (
+    let startIndex = 0;
+    startIndex < missingIndices.length;
+    startIndex += ELEVATION_BATCH_SIZE
+  ) {
+    if (startIndex > 0) {
+      await wait(ELEVATION_REQUEST_DELAY_MS);
+    }
+
+    const chunkIndices = missingIndices.slice(
+      startIndex,
+      startIndex + ELEVATION_BATCH_SIZE,
+    );
+    const elevations = await fetchElevations(
+      chunkIndices.map((index) => ({
+        lat: track.points[index].lat,
+        lon: track.points[index].lon,
+      })),
+    );
+
+    chunkIndices.forEach((pointIndex, chunkIndex) => {
+      nextPoints[pointIndex] = {
+        ...nextPoints[pointIndex],
+        ele: elevations[chunkIndex] ?? null,
+      };
+    });
+  }
+
+  return buildGpxTrack(track.fileName, nextPoints);
 };
 
 const loadNaverMapScript = () =>
@@ -321,6 +447,32 @@ const interpolateHexColor = (
   return `#${toHex(red)}${toHex(green)}${toHex(blue)}`;
 };
 
+const getElevationColor = (ratio: number) => {
+  const colorStops = [
+    { ratio: 0, color: "#2563eb" },
+    { ratio: 0.3, color: "#06b6d4" },
+    { ratio: 0.6, color: "#22c55e" },
+    { ratio: 0.82, color: "#facc15" },
+    { ratio: 1, color: "#f97316" },
+  ];
+  const normalizedRatio = Math.max(0, Math.min(1, ratio));
+  const nextStopIndex = colorStops.findIndex(
+    (stop) => stop.ratio >= normalizedRatio,
+  );
+
+  if (nextStopIndex <= 0) {
+    return colorStops[0].color;
+  }
+
+  const previousStop = colorStops[nextStopIndex - 1];
+  const nextStop = colorStops[nextStopIndex];
+  const stopRatio =
+    (normalizedRatio - previousStop.ratio) /
+    (nextStop.ratio - previousStop.ratio || 1);
+
+  return interpolateHexColor(previousStop.color, nextStop.color, stopRatio);
+};
+
 const buildColoredSegments = (points: GpxPoint[]): ColoredSegment[] => {
   if (points.length < 2) {
     return [];
@@ -351,7 +503,7 @@ const buildColoredSegments = (points: GpxPoint[]): ColoredSegment[] => {
 
     return {
       points: [previousPoint, point],
-      color: interpolateHexColor("#38bdf8", "#f97316", colorRatio),
+      color: getElevationColor(colorRatio),
     };
   });
 };
@@ -394,8 +546,9 @@ const GpxViewerPage = () => {
   const navigate = useNavigate();
   const [track, setTrack] = useState<GpxTrack | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isFetchingElevation, setIsFetchingElevation] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
-  const [selectedPaceIndex, setSelectedPaceIndex] = useState(16);
+  const [selectedPaceIndex, setSelectedPaceIndex] = useState(24);
   const [selectedPointIndex, setSelectedPointIndex] = useState<number | null>(
     null,
   );
@@ -408,6 +561,7 @@ const GpxViewerPage = () => {
   const markerRefs = useRef<any[]>([]);
   const focusMarkerRef = useRef<any>(null);
   const selectedPointIndexRef = useRef<number | null>(null);
+  const fileUploadSequenceRef = useRef(0);
   const lastTouchInteractionAtRef = useRef(0);
   const isChartTouchActiveRef = useRef(false);
 
@@ -442,15 +596,45 @@ const GpxViewerPage = () => {
       return;
     }
 
+    const uploadSequence = fileUploadSequenceRef.current + 1;
+    fileUploadSequenceRef.current = uploadSequence;
+    setIsFetchingElevation(false);
+
     try {
       const fileText = await selectedFile.text();
       const parsedTrack = parseGpxText(fileText, selectedFile.name);
       setTrack(parsedTrack);
       setSelectedPointIndex(null);
       setErrorMessage("");
+
+      if (parsedTrack.points.some((point) => point.ele === null)) {
+        setIsFetchingElevation(true);
+
+        try {
+          const trackWithElevation = await fillMissingElevations(parsedTrack);
+
+          if (fileUploadSequenceRef.current === uploadSequence) {
+            setTrack(trackWithElevation);
+          }
+        } catch (error) {
+          if (fileUploadSequenceRef.current === uploadSequence) {
+            setErrorMessage(
+              error instanceof Error &&
+                error.message === ELEVATION_RATE_LIMIT_MESSAGE
+                ? error.message
+                : "일부 지점의 고도 값을 불러오지 못해 GPX 원본 값만 표시했어요.",
+            );
+          }
+        } finally {
+          if (fileUploadSequenceRef.current === uploadSequence) {
+            setIsFetchingElevation(false);
+          }
+        }
+      }
     } catch (error) {
       setTrack(null);
       setSelectedPointIndex(null);
+      setIsFetchingElevation(false);
       setErrorMessage(
         error instanceof Error
           ? error.message
@@ -1212,6 +1396,21 @@ const GpxViewerPage = () => {
           </div>
         ) : null}
 
+        {isFetchingElevation ? (
+          <div
+            style={{
+              marginTop: "16px",
+              borderRadius: "18px",
+              backgroundColor: "#eff6ff",
+              color: "#1d4ed8",
+              padding: "14px 16px",
+            }}
+          >
+            GPX에 없는 고도값을 계산하고 있어요. 잠시 뒤 통계와 그래프가
+            업데이트돼요.
+          </div>
+        ) : null}
+
         {!track ? (
           <div></div>
         ) : (
@@ -1255,13 +1454,14 @@ const GpxViewerPage = () => {
                     height: "36px",
                     padding: "0 14px",
                     borderRadius: "999px",
-                    border: "2px solid #111827",
+                    border: "1px solid rgba(15, 23, 42, 0.14)",
                     backgroundColor: "#ffffff",
-                    color: "#111827",
+                    color: "#0f172a",
                     fontFamily: "Pretendard",
                     fontSize: "13px",
-                    fontWeight: 700,
+                    fontWeight: 500,
                     cursor: "pointer",
+                    boxShadow: "0 6px 14px rgba(15, 23, 42, 0.06)",
                   }}
                 >
                   수정하기
@@ -1408,61 +1608,82 @@ const GpxViewerPage = () => {
                           style={{
                             display: "flex",
                             flexDirection: "column",
-                            gap: "4px",
+                            gap: "2px",
                           }}
                         >
                           <button
                             type="button"
+                            aria-label="페이스 느리게"
                             onClick={() => updateSelectedPaceByStep(1)}
                             disabled={
                               selectedPaceIndex === PACE_OPTIONS.length - 1
                             }
                             style={{
-                              width: "22px",
-                              height: "22px",
-                              border: "2px solid #111827",
-                              borderRadius: "999px",
-                              backgroundColor: "#ffffff",
-                              color: "#111827",
-                              fontSize: "9px",
-                              fontWeight: 700,
+                              width: "16px",
+                              height: "12px",
+                              border: "1px solid rgba(15, 23, 42, 0.16)",
+                              borderRadius: "6px 6px 3px 3px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor:
+                                selectedPaceIndex === PACE_OPTIONS.length - 1
+                                  ? "#e2e8f0"
+                                  : "#ffffff",
+                              color:
+                                selectedPaceIndex === PACE_OPTIONS.length - 1
+                                  ? "#94a3b8"
+                                  : "#111827",
+                              fontSize: "10px",
+                              fontWeight: 800,
                               lineHeight: 1,
+                              fontFamily: "Pretendard",
                               cursor:
                                 selectedPaceIndex === PACE_OPTIONS.length - 1
                                   ? "not-allowed"
                                   : "pointer",
-                              opacity:
+                              boxShadow:
                                 selectedPaceIndex === PACE_OPTIONS.length - 1
-                                  ? 0.4
-                                  : 1,
-                              boxShadow: "0 6px 14px rgba(15, 23, 42, 0.1)",
+                                  ? "none"
+                                  : "0 3px 8px rgba(15, 23, 42, 0.08)",
+                              padding: 0,
                             }}
                           >
-                            ▲
+                            <ChevronUp size={10} strokeWidth={2.5} />
                           </button>
                           <button
                             type="button"
+                            aria-label="페이스 빠르게"
                             onClick={() => updateSelectedPaceByStep(-1)}
                             disabled={selectedPaceIndex === 0}
                             style={{
-                              width: "22px",
-                              height: "22px",
-                              border: "2px solid #111827",
-                              borderRadius: "999px",
-                              backgroundColor: "#ffffff",
-                              color: "#111827",
-                              fontSize: "9px",
-                              fontWeight: 700,
+                              width: "16px",
+                              height: "12px",
+                              border: "1px solid rgba(15, 23, 42, 0.16)",
+                              borderRadius: "3px 3px 6px 6px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor:
+                                selectedPaceIndex === 0 ? "#e2e8f0" : "#ffffff",
+                              color:
+                                selectedPaceIndex === 0 ? "#94a3b8" : "#111827",
+                              fontSize: "10px",
+                              fontWeight: 800,
                               lineHeight: 1,
+                              fontFamily: "Pretendard",
                               cursor:
                                 selectedPaceIndex === 0
                                   ? "not-allowed"
                                   : "pointer",
-                              opacity: selectedPaceIndex === 0 ? 0.4 : 1,
-                              boxShadow: "0 6px 14px rgba(15, 23, 42, 0.1)",
+                              boxShadow:
+                                selectedPaceIndex === 0
+                                  ? "none"
+                                  : "0 3px 8px rgba(15, 23, 42, 0.08)",
+                              padding: 0,
                             }}
                           >
-                            ▼
+                            <ChevronDown size={10} strokeWidth={2.5} />
                           </button>
                         </div>
                       </div>

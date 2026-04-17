@@ -106,7 +106,7 @@ const GpxMainPage = () => {
               color: "#6b7280",
             }}
           >
-            gpx file viewer
+            viewer
           </div>
           <Link
             to="/gpx-viewer"
@@ -150,7 +150,7 @@ const GpxMainPage = () => {
               color: "#6b7280",
             }}
           >
-            GPX FILE MAKER
+            MAKER
           </div>
           <Link
             to="/gpx-maker"
@@ -189,15 +189,14 @@ const GpxMainPage = () => {
               fontSize: "10px",
               lineHeight: 1,
               letterSpacing: "-0.02em",
-              textTransform: "none",
+              textTransform: "uppercase",
               color: "#6b7280",
             }}
           >
-            준비중이에요, 곧 추천 경로도 둘러볼 수 있어요
+            LIST
           </div>
-          <button
-            type="button"
-            disabled
+          <Link
+            to="/gpx-list"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -206,18 +205,19 @@ const GpxMainPage = () => {
               minWidth: "220px",
               padding: "0 28px",
               borderRadius: "34px 26px 40px 18px / 24px 38px 28px 42px",
-              backgroundColor: "rgba(255, 255, 255, 0.72)",
-              border: "3px solid rgba(17, 24, 39, 0.42)",
-              color: "rgba(17, 24, 39, 0.56)",
+              backgroundColor: "#ffffff",
+              border: "3px solid #111827",
+              color: "#111827",
               fontFamily: "Pretendard",
               fontSize: "clamp(18px, 2.2vw, 24px)",
               fontWeight: 700,
-              boxShadow: "0 12px 28px rgba(15, 23, 42, 0.08)",
-              cursor: "not-allowed",
+              boxShadow: "0 12px 28px rgba(15, 23, 42, 0.12)",
+              cursor: "pointer",
+              textDecoration: "none",
             }}
           >
             경로 둘러보기
-          </button>
+          </Link>
         </div>
       </div>
 

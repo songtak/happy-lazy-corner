@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import ReactECharts from "echarts-for-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import jejuTrailGpxText from "@/assets/gpx/제주트레일_가시리_36K.gpx?raw";
 
 type GpxPoint = {
@@ -85,8 +86,8 @@ const formatDuration = (totalSeconds: number) => {
 };
 
 const PACE_OPTIONS: PaceOption[] = Array.from(
-  { length: 41 },
-  (_, index) => 300 + index * 15,
+  { length: 49 },
+  (_, index) => 180 + index * 15,
 ).map((secondsPerKm) => ({
   secondsPerKm,
   label: formatPace(secondsPerKm),
@@ -399,6 +400,32 @@ const interpolateHexColor = (
   return `#${toHex(red)}${toHex(green)}${toHex(blue)}`;
 };
 
+const getElevationColor = (ratio: number) => {
+  const colorStops = [
+    { ratio: 0, color: "#2563eb" },
+    { ratio: 0.3, color: "#06b6d4" },
+    { ratio: 0.6, color: "#22c55e" },
+    { ratio: 0.82, color: "#facc15" },
+    { ratio: 1, color: "#f97316" },
+  ];
+  const normalizedRatio = Math.max(0, Math.min(1, ratio));
+  const nextStopIndex = colorStops.findIndex(
+    (stop) => stop.ratio >= normalizedRatio,
+  );
+
+  if (nextStopIndex <= 0) {
+    return colorStops[0].color;
+  }
+
+  const previousStop = colorStops[nextStopIndex - 1];
+  const nextStop = colorStops[nextStopIndex];
+  const stopRatio =
+    (normalizedRatio - previousStop.ratio) /
+    (nextStop.ratio - previousStop.ratio || 1);
+
+  return interpolateHexColor(previousStop.color, nextStop.color, stopRatio);
+};
+
 const buildColoredSegments = (points: GpxPoint[]): ColoredSegment[] => {
   if (points.length < 2) {
     return [];
@@ -429,7 +456,7 @@ const buildColoredSegments = (points: GpxPoint[]): ColoredSegment[] => {
 
     return {
       points: [previousPoint, point],
-      color: interpolateHexColor("#38bdf8", "#f97316", colorRatio),
+      color: getElevationColor(colorRatio),
     };
   });
 };
@@ -527,7 +554,7 @@ const JejuTrail2026Page = () => {
   const [track, setTrack] = useState<GpxTrack | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isMapReady, setIsMapReady] = useState(false);
-  const [selectedPaceIndex, setSelectedPaceIndex] = useState(16);
+  const [selectedPaceIndex, setSelectedPaceIndex] = useState(24);
   const [selectedPointIndex, setSelectedPointIndex] = useState<number | null>(
     null,
   );
@@ -1509,57 +1536,82 @@ const JejuTrail2026Page = () => {
                           style={{
                             display: "flex",
                             flexDirection: "column",
-                            gap: "4px",
+                            gap: "2px",
                           }}
                         >
                           <button
                             type="button"
+                            aria-label="페이스 느리게"
                             onClick={() => updateSelectedPaceByStep(1)}
                             disabled={
                               selectedPaceIndex === PACE_OPTIONS.length - 1
                             }
                             style={{
-                              width: "18px",
-                              height: "18px",
-                              border: "1px solid rgba(148, 163, 184, 0.24)",
-                              borderRadius: "999px",
-                              backgroundColor: "rgba(255,255,255,0.92)",
-                              color: "#334155",
-                              fontSize: "8px",
+                              width: "14px",
+                              height: "12px",
+                              border: "1px solid rgba(15, 23, 42, 0.16)",
+                              borderRadius: "6px 6px 3px 3px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor:
+                                selectedPaceIndex === PACE_OPTIONS.length - 1
+                                  ? "#e2e8f0"
+                                  : "#ffffff",
+                              color:
+                                selectedPaceIndex === PACE_OPTIONS.length - 1
+                                  ? "#94a3b8"
+                                  : "#111827",
+                              fontSize: "10px",
+                              fontWeight: 800,
                               lineHeight: 1,
+                              fontFamily: "Pretendard",
                               cursor:
                                 selectedPaceIndex === PACE_OPTIONS.length - 1
                                   ? "not-allowed"
                                   : "pointer",
-                              opacity:
+                              boxShadow:
                                 selectedPaceIndex === PACE_OPTIONS.length - 1
-                                  ? 0.4
-                                  : 1,
+                                  ? "none"
+                                  : "0 3px 8px rgba(15, 23, 42, 0.08)",
+                              padding: 0,
                             }}
                           >
-                            ▲
+                            <ChevronUp size={12} strokeWidth={2.5} />
                           </button>
                           <button
                             type="button"
+                            aria-label="페이스 빠르게"
                             onClick={() => updateSelectedPaceByStep(-1)}
                             disabled={selectedPaceIndex === 0}
                             style={{
-                              width: "18px",
-                              height: "18px",
-                              border: "1px solid rgba(148, 163, 184, 0.24)",
-                              borderRadius: "999px",
-                              backgroundColor: "rgba(255,255,255,0.92)",
-                              color: "#334155",
-                              fontSize: "8px",
+                              width: "14px",
+                              height: "12px",
+                              border: "1px solid rgba(15, 23, 42, 0.16)",
+                              borderRadius: "3px 3px 6px 6px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor:
+                                selectedPaceIndex === 0 ? "#e2e8f0" : "#ffffff",
+                              color:
+                                selectedPaceIndex === 0 ? "#94a3b8" : "#111827",
+                              fontSize: "10px",
+                              fontWeight: 800,
                               lineHeight: 1,
+                              fontFamily: "Pretendard",
                               cursor:
                                 selectedPaceIndex === 0
                                   ? "not-allowed"
                                   : "pointer",
-                              opacity: selectedPaceIndex === 0 ? 0.4 : 1,
+                              boxShadow:
+                                selectedPaceIndex === 0
+                                  ? "none"
+                                  : "0 3px 8px rgba(15, 23, 42, 0.08)",
+                              padding: 0,
                             }}
                           >
-                            ▼
+                            <ChevronDown size={12} strokeWidth={2.5} />
                           </button>
                         </div>
                       </div>

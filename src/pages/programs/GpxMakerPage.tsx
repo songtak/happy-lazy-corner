@@ -37,6 +37,10 @@ const ELEVATION_PROXY_URL =
 const OPENTOPO_BASE_URL = import.meta.env.DEV
   ? "/api/opentopo/v1/aster30m,srtm90m"
   : ELEVATION_PROXY_URL || "https://api.opentopodata.org/v1/aster30m,srtm90m";
+const ELEVATION_BATCH_SIZE = 100;
+const ELEVATION_REQUEST_DELAY_MS = 1200;
+const ELEVATION_RATE_LIMIT_MESSAGE =
+  "고도 API 요청 제한에 걸렸어요. 잠시 후 다시 시도해주세요.";
 
 declare global {
   interface Window {
@@ -56,9 +60,20 @@ const parseNumber = (rawValue: string | null) => {
     return null;
   }
 
-  const parsedValue = Number(rawValue);
+  const trimmedValue = rawValue.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const parsedValue = Number(trimmedValue);
   return Number.isFinite(parsedValue) ? parsedValue : null;
 };
+
+const wait = (durationMs: number) =>
+  new Promise<void>((resolve) => {
+    window.setTimeout(resolve, durationMs);
+  });
 
 const calculateDistanceInMeters = (
   firstLat: number,
@@ -406,12 +421,29 @@ const fetchElevations = async (
   const locationQuery = locations
     .map(({ lat, lon }) => `${lat},${lon}`)
     .join("|");
-  const response = await fetch(
-    `${OPENTOPO_BASE_URL}?locations=${encodeURIComponent(locationQuery)}`,
-  );
+  const requestUrl = `${OPENTOPO_BASE_URL}?locations=${encodeURIComponent(
+    locationQuery,
+  )}`;
+  let response: Response | null = null;
 
-  if (!response.ok) {
-    throw new Error("고도 정보를 불러오지 못했어요.");
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    response = await fetch(requestUrl);
+
+    if (response.status !== 429) {
+      break;
+    }
+
+    if (attempt < 2) {
+      await wait(ELEVATION_REQUEST_DELAY_MS * (attempt + 1));
+    }
+  }
+
+  if (!response || !response.ok) {
+    throw new Error(
+      response?.status === 429
+        ? ELEVATION_RATE_LIMIT_MESSAGE
+        : "고도 정보를 불러오지 못했어요.",
+    );
   }
 
   const data = await response.json();
@@ -442,16 +474,19 @@ const fillMissingElevations = async (points: RoutePoint[]) => {
   }
 
   const nextPoints = [...points];
-  const chunkSize = 100;
 
   for (
     let startIndex = 0;
     startIndex < missingIndices.length;
-    startIndex += chunkSize
+    startIndex += ELEVATION_BATCH_SIZE
   ) {
+    if (startIndex > 0) {
+      await wait(ELEVATION_REQUEST_DELAY_MS);
+    }
+
     const chunkIndices = missingIndices.slice(
       startIndex,
-      startIndex + chunkSize,
+      startIndex + ELEVATION_BATCH_SIZE,
     );
     const elevations = await fetchElevations(
       chunkIndices.map((index) => ({
@@ -1521,9 +1556,11 @@ const GpxMakerPage = () => {
       try {
         const pointsWithElevation = await fillMissingElevations(sourcePoints);
         setManualPoints(pointsWithElevation);
-      } catch {
+      } catch (error) {
         setErrorMessage(
-          "일부 지점의 고도 값을 불러오지 못해 원본 GPX 값을 유지했어요.",
+          error instanceof Error && error.message === ELEVATION_RATE_LIMIT_MESSAGE
+            ? error.message
+            : "일부 지점의 고도 값을 불러오지 못해 원본 GPX 값을 유지했어요.",
         );
       } finally {
         setIsFetchingElevation(false);

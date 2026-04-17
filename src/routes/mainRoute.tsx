@@ -57,6 +57,11 @@ const programRoutes: RouteObject[] = [
     errorElement: <ErrorPage />,
   },
   {
+    path: "/gpx-list",
+    element: <Program.GpxListPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
     path: "/gpx",
     element: <Program.GpxMainPage />,
     errorElement: <ErrorPage />,
@@ -64,6 +69,16 @@ const programRoutes: RouteObject[] = [
   {
     path: "/jeju-trail-2026",
     element: <Program.JejuTrail2026Page />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/lunch-menu",
+    element: <Program.LunchMenuPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/dinner-menu",
+    element: <Program.DinnerMenuPage />,
     errorElement: <ErrorPage />,
   },
 ];
@@ -91,6 +106,8 @@ const projectList = [
   { id: 6, path: "/gpx-viewer", title: "GPX 경로 뷰어 🗺️" },
   { id: 7, path: "/gpx-maker", title: "GPX 메이커 ✍️" },
   { id: 8, path: "/jeju-trail-2026", title: "제주 트레일 2026 🥾" },
+  { id: 9, path: "/lunch-menu", title: "점심 메뉴 추천기 🍽️" },
+  { id: 10, path: "/dinner-menu", title: "저녁 메뉴 추천기 🍽️" },
 ];
 
 export { defaultRoutes, programRoutes, projectList };

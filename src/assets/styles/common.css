@@ -1,3 +1,4 @@
+@import url("https://cdn.jsdelivr.net/gh/MonadABXY/mona-font/web/mona.css");
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap");
 
 /* @font-face {
@@ -161,4 +162,149 @@ body {
   font-size: 5rem;
   white-space: nowrap;
   letter-spacing: 1.2rem;
+}
+
+.dinner-menu-recommend-button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.dinner-title-container {
+  --dinner-title-start-top: calc(50% - 88px);
+}
+
+.dinner-menu-content {
+  --dinner-menu-idle-padding-top: 72px;
+  --dinner-menu-idle-height: 160px;
+}
+
+.dinner-menu-recommend-button:active {
+  transform: translateY(3px) scale(0.98);
+  box-shadow: 0 5px 12px rgba(17, 24, 39, 0.18) !important;
+  background-color: #020617 !important;
+}
+
+.dinner-menu-result-card {
+  animation: dinner-menu-result-enter 520ms cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+.dinner-menu-result-card-exit {
+  animation: dinner-menu-result-exit 360ms ease-in both;
+}
+
+.dinner-menu-click-message {
+  animation: dinner-menu-click-message 1800ms ease-in-out both;
+}
+
+.dinner-title-letter,
+.dinner-title-question {
+  display: inline-block;
+}
+
+.dinner-title-line {
+  display: inline;
+}
+
+.dinner-title-letter {
+  animation: dinner-title-pop 2.4s ease-in-out infinite;
+}
+
+.dinner-title-question {
+  transform-origin: 50% 80%;
+  animation: dinner-title-wiggle 2.4s ease-in-out infinite;
+}
+
+@keyframes dinner-title-pop {
+  0%,
+  58%,
+  100% {
+    transform: translateY(0);
+  }
+  8% {
+    transform: translateY(-10px);
+  }
+  18% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes dinner-title-wiggle {
+  0%,
+  58%,
+  100% {
+    transform: rotate(0deg);
+  }
+  8% {
+    transform: rotate(-10deg);
+  }
+  14% {
+    transform: rotate(10deg);
+  }
+  20% {
+    transform: rotate(-7deg);
+  }
+  26% {
+    transform: rotate(7deg);
+  }
+  34% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes dinner-menu-result-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dinner-menu-result-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.96);
+  }
+}
+
+@keyframes dinner-menu-click-message {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  16%,
+  76% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@media screen and (max-width: 1023px) {
+  .dinner-title-container {
+    --dinner-title-start-top: calc(50% - 190px);
+  }
+
+  .dinner-menu-content {
+    --dinner-menu-idle-padding-top: 160px;
+    --dinner-menu-idle-height: 250px;
+  }
+
+  .dinner-title-line {
+    display: block;
+  }
 }

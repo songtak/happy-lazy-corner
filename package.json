@@ -21,6 +21,7 @@
     "@mui/material": "^6.1.8",
     "@mui/styled-engine": "^6.1.9",
     "@mui/x-date-pickers": "^7.22.3",
+    "@supabase/supabase-js": "^2.103.2",
     "axios": "^1.6.8",
     "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
