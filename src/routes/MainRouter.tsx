@@ -13,6 +13,7 @@ import "../assets/styles/web.css";
 import "../assets/styles/mobile.css";
 
 const GA_MEASUREMENT_ID = "G-VN1W6B09RJ";
+const GA_ALLOWED_HOSTNAME = "www.happy-lazy-corner.co.kr";
 
 declare global {
   interface Window {
@@ -21,11 +22,7 @@ declare global {
   }
 }
 
-const isLocalHost = () =>
-  ["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname) ||
-  window.location.hostname.endsWith(".local");
-
-const shouldEnableGa = () => import.meta.env.PROD && !isLocalHost();
+const shouldEnableGa = () => window.location.hostname === GA_ALLOWED_HOSTNAME;
 
 const initializeGa = () => {
   if (!shouldEnableGa() || window.gtag) {
@@ -117,19 +114,21 @@ const MainRouter = () => {
           : undefined;
 
       window.gtag?.("event", "button_click", {
+        send_to: GA_MEASUREMENT_ID,
         button_label: clickLabel,
         button_category: clickableElement.dataset.gaCategory || "global",
         button_tag: clickableElement.tagName.toLowerCase(),
         page_path: window.location.pathname,
         page_location: window.location.href,
         link_url: linkUrl,
+        transport_type: "beacon",
       });
     };
 
-    document.addEventListener("click", handleDocumentClick);
+    document.addEventListener("click", handleDocumentClick, true);
 
     return () => {
-      document.removeEventListener("click", handleDocumentClick);
+      document.removeEventListener("click", handleDocumentClick, true);
     };
   }, []);
 
