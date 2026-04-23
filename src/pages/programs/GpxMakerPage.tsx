@@ -48,8 +48,17 @@ declare global {
   }
 }
 
+const formatNumber = (value: number, fractionDigits = 0) =>
+  value.toLocaleString("ko-KR", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  });
+
 const formatDistance = (distanceKm: number) =>
-  distanceKm === 0 ? "0km" : `${distanceKm.toFixed(2)} km`;
+  distanceKm === 0 ? "0km" : `${formatNumber(distanceKm, 2)} km`;
+
+const formatElevation = (elevation: number) =>
+  `${formatNumber(Math.round(elevation))}m`;
 
 const stripHtmlTags = (value: string) => value.replace(/<[^>]*>/g, "").trim();
 const limitRoutePoints = (points: RoutePoint[]) =>
@@ -756,7 +765,7 @@ const GpxMakerPage = () => {
     selectedSourceIndex < manualPoints.length - 1;
   const visibleMapGuideMessage =
     mapGuideMessage ||
-    (!manualPoints.length ? "지도 터치로 시작 지점을 설정해보세요." : "");
+    (!manualPoints.length ? "지도 터치로 시작 좌표를 설정해보세요." : "");
 
   const dismissMobileKeyboard = (target: EventTarget | null) => {
     const inputElement = routeNameInputRef.current;
@@ -1324,7 +1333,7 @@ const GpxMakerPage = () => {
 
     if (manualPoints.length < 2) {
       setErrorMessage(
-        "왕복 경로를 만들려면 최소 2개 이상의 지점을 찍어주세요.",
+        "왕복 경로를 만들려면 최소 2개 이상의 좌표를 찍어주세요.",
       );
       return;
     }
@@ -1336,7 +1345,7 @@ const GpxMakerPage = () => {
 
   const handleDownload = () => {
     if (points.length < 2) {
-      setErrorMessage("GPX 파일을 만들려면 최소 2개 이상의 지점을 찍어주세요.");
+      setErrorMessage("GPX 파일을 만들려면 최소 2개 이상의 좌표를 찍어주세요.");
       return;
     }
 
@@ -1408,7 +1417,7 @@ const GpxMakerPage = () => {
       setMoveTargetIndex(null);
       if (routePoints.length >= MAX_MARKER_COUNT) {
         setErrorMessage(
-          `경로는 최대 ${MAX_MARKER_COUNT}개 지점까지만 반영했어요.`,
+          `경로는 최대 ${MAX_MARKER_COUNT}개 좌표까지만 반영했어요.`,
         );
       }
       setRouteName(
@@ -1514,7 +1523,7 @@ const GpxMakerPage = () => {
     }
 
     setMoveTargetIndex(selectedMarkerIndex);
-    setMapGuideMessage("지도에서 새 위치를 탭하면 선택한 지점이 이동해요.");
+    setMapGuideMessage("지도에서 새 위치를 탭하면 선택한 좌표가 이동해요.");
   };
 
   const showPreparingToast = () => {
@@ -1558,9 +1567,10 @@ const GpxMakerPage = () => {
         setManualPoints(pointsWithElevation);
       } catch (error) {
         setErrorMessage(
-          error instanceof Error && error.message === ELEVATION_RATE_LIMIT_MESSAGE
+          error instanceof Error &&
+            error.message === ELEVATION_RATE_LIMIT_MESSAGE
             ? error.message
-            : "일부 지점의 고도 값을 불러오지 못해 원본 GPX 값을 유지했어요.",
+            : "일부 좌표의 고도 값을 불러오지 못해 원본 GPX 값을 유지했어요.",
         );
       } finally {
         setIsFetchingElevation(false);
@@ -1636,7 +1646,7 @@ const GpxMakerPage = () => {
         parsedPoints,
         nextRouteName,
         parsedGpxPoints.length > MAX_MARKER_COUNT
-          ? `GPX는 최대 ${MAX_MARKER_COUNT}개 지점까지만 불러왔어요.`
+          ? `GPX는 최대 ${MAX_MARKER_COUNT}개 좌표까지만 불러왔어요.`
           : "",
       );
     } catch (error) {
@@ -1661,7 +1671,7 @@ const GpxMakerPage = () => {
       limitedPoints,
       (importState.routeName || "불러온 경로").replace(/\.gpx$/i, ""),
       importState.points.length > MAX_MARKER_COUNT
-        ? `GPX는 최대 ${MAX_MARKER_COUNT}개 지점까지만 불러왔어요.`
+        ? `GPX는 최대 ${MAX_MARKER_COUNT}개 좌표까지만 불러왔어요.`
         : "",
     );
   }, [location.key, location.state]);
@@ -1885,7 +1895,7 @@ const GpxMakerPage = () => {
                 >
                   <div style={{ flex: 1, minWidth: 0, textAlign: "center" }}>
                     <div style={{ color: "#94a3b8", fontSize: "11px" }}>
-                      지점
+                      좌표
                     </div>
                     <div
                       style={{
@@ -1893,7 +1903,7 @@ const GpxMakerPage = () => {
                         color: "#0f172a",
                       }}
                     >
-                      {points.length}
+                      {formatNumber(points.length)}
                     </div>
                   </div>
 
@@ -1921,7 +1931,7 @@ const GpxMakerPage = () => {
                         color: "#2563eb",
                       }}
                     >
-                      {`${Math.round(elevationGain ?? 0)}m`}
+                      {formatElevation(elevationGain ?? 0)}
                     </div>
                   </div>
                 </div>

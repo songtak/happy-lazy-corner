@@ -58,10 +58,17 @@ declare global {
   }
 }
 
-const formatDistance = (distanceKm: number) => `${distanceKm.toFixed(2)} km`;
+const formatNumber = (value: number, fractionDigits = 0) =>
+  value.toLocaleString("ko-KR", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  });
+
+const formatDistance = (distanceKm: number) =>
+  `${formatNumber(distanceKm, 2)} km`;
 
 const formatElevation = (elevation: number | null) =>
-  elevation === null ? "-" : `${Math.round(elevation)} m`;
+  elevation === null ? "-" : `${formatNumber(Math.round(elevation))} m`;
 
 const formatPace = (secondsPerKm: number) => {
   const minutes = Math.floor(secondsPerKm / 60);
@@ -1198,7 +1205,9 @@ const JejuTrail2026Page = () => {
             return "";
           }
 
-          return `${point.value[0].toFixed(2)} km<br/>${Math.round(point.value[1])} m`;
+          return `${formatNumber(point.value[0], 2)} km<br/>${formatNumber(
+            Math.round(point.value[1]),
+          )} m`;
         },
       },
       axisPointer: {
@@ -1217,7 +1226,7 @@ const JejuTrail2026Page = () => {
         axisLabel: {
           color: "#94a3b8",
           margin: 10,
-          formatter: (value: number) => `${value.toFixed(1)}km`,
+          formatter: (value: number) => `${formatNumber(value, 1)}km`,
         },
         axisLine: {
           lineStyle: {
@@ -1247,11 +1256,11 @@ const JejuTrail2026Page = () => {
             }
 
             if (roundedValue === Number(middleElevation.toFixed(1))) {
-              return `${Math.round(middleElevation)}m`;
+              return `${formatNumber(Math.round(middleElevation))}m`;
             }
 
             if (roundedValue === Number(yAxisMax.toFixed(1))) {
-              return `${Math.round(yAxisMax)}m`;
+              return `${formatNumber(Math.round(yAxisMax))}m`;
             }
 
             return "";
@@ -1389,7 +1398,7 @@ const JejuTrail2026Page = () => {
                 {track.fileName}
               </div>
               <div style={{ color: "#64748b" }}>
-                좌표 {track.points.length.toLocaleString()}개를 읽었어요.
+                좌표 {formatNumber(track.points.length)}개를 읽었어요.
               </div>
               <div
                 style={{
@@ -1422,7 +1431,7 @@ const JejuTrail2026Page = () => {
                   },
                   {
                     label: "누적 상승",
-                    value: `${Math.round(track.elevationGain)} m`,
+                    value: formatElevation(track.elevationGain),
                     color: "#ea580c",
                   },
                   {

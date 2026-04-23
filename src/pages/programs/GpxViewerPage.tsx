@@ -7,9 +7,10 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { createClient } from "@supabase/supabase-js";
 import ReactECharts from "echarts-for-react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 type GpxPoint = {
   lat: number;
@@ -38,8 +39,28 @@ type PaceOption = {
   secondsPerKm: number;
 };
 
+type GpxRouteCheckpoint = {
+  sequence: number;
+  distanceKm: number;
+};
+
+type GpxRouteCheckpointRow = {
+  sequence: number;
+  distance_km: number;
+};
+
+type GpxRouteCatalogRow = {
+  file_name: string;
+  gpx_url: string;
+};
+
 const NAVER_MAP_CLIENT_ID = "uqms5x0d6b";
 const NAVER_MAP_SCRIPT_ID = "naver-map-sdk";
+const SUPABASE_URL = `${import.meta.env.VITE_SUPABASE_URL || ""}`.trim();
+const SUPABASE_PUBLISHABLE_KEY =
+  `${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ""}`.trim();
+const SUPABASE_GPX_TABLE = "gpx_route_catalog";
+const SUPABASE_GPX_CHECKPOINT_TABLE = "gpx_route_checkpoints";
 const ELEVATION_PROXY_URL =
   `${import.meta.env.VITE_ELEVATION_PROXY_URL || ""}`.trim();
 const OPENTOPO_BASE_URL = import.meta.env.DEV
@@ -50,16 +71,28 @@ const ELEVATION_REQUEST_DELAY_MS = 1200;
 const ELEVATION_RATE_LIMIT_MESSAGE =
   "고도 API 요청 제한에 걸렸어요. 잠시 후 다시 시도해주세요.";
 
+const supabase =
+  SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY
+    ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+    : null;
+
 declare global {
   interface Window {
     naver?: any;
   }
 }
 
-const formatDistance = (distanceKm: number) => `${distanceKm.toFixed(2)} km`;
+const formatNumber = (value: number, fractionDigits = 0) =>
+  value.toLocaleString("ko-KR", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  });
+
+const formatDistance = (distanceKm: number) =>
+  `${formatNumber(distanceKm, 2)} km`;
 
 const formatElevation = (elevation: number | null) =>
-  elevation === null ? "-" : `${Math.round(elevation)} m`;
+  elevation === null ? "-" : `${formatNumber(Math.round(elevation))} m`;
 
 const truncateFileName = (fileName: string, maxLength = 20) => {
   if (fileName.length <= maxLength) {
@@ -529,6 +562,29 @@ const createMarkerHtml = (label: string, backgroundColor: string) => {
   `;
 };
 
+const createCheckpointMarkerHtml = (label: string) => {
+  return `
+    <div style="
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-width:28px;
+      height:22px;
+      padding:0 7px;
+      border-radius:999px;
+      background:#7c3aed;
+      color:#fff;
+      font-size:10px;
+      font-weight:800;
+      box-shadow:0 6px 14px rgba(15, 23, 42, 0.2);
+      border:1.5px solid rgba(255,255,255,0.92);
+      white-space:nowrap;
+    ">
+      ${label}
+    </div>
+  `;
+};
+
 const createFocusMarkerHtml = () => {
   return `
     <div style="
@@ -542,11 +598,18 @@ const createFocusMarkerHtml = () => {
   `;
 };
 
+const GPX_LOADING_TEXT = "gpx loading...";
+
 const GpxViewerPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [track, setTrack] = useState<GpxTrack | null>(null);
+  const [routeCheckpoints, setRouteCheckpoints] = useState<
+    GpxRouteCheckpoint[]
+  >([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isFetchingElevation, setIsFetchingElevation] = useState(false);
+  const [isRouteDownloadLoading, setIsRouteDownloadLoading] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
   const [selectedPaceIndex, setSelectedPaceIndex] = useState(24);
   const [selectedPointIndex, setSelectedPointIndex] = useState<number | null>(
@@ -569,6 +632,33 @@ const GpxViewerPage = () => {
     () => track?.points.filter((point) => point.ele !== null) ?? [],
     [track],
   );
+  const checkpointPoints = useMemo(() => {
+    if (!track?.points.length) {
+      return [];
+    }
+
+    return routeCheckpoints
+      .map((checkpoint) => {
+        const pointIndex = findNearestPointIndexByDistance(
+          track.points,
+          checkpoint.distanceKm,
+        );
+        const point = pointIndex >= 0 ? track.points[pointIndex] : null;
+
+        return point
+          ? {
+              ...checkpoint,
+              point,
+            }
+          : null;
+      })
+      .filter(
+        (
+          checkpoint,
+        ): checkpoint is GpxRouteCheckpoint & { point: GpxPoint } =>
+          checkpoint !== null,
+      );
+  }, [routeCheckpoints, track]);
   const selectedPace = PACE_OPTIONS[selectedPaceIndex];
   const estimatedFinishTime = useMemo(() => {
     if (!track) {
@@ -587,6 +677,162 @@ const GpxViewerPage = () => {
     selectedPointIndexRef.current = selectedPointIndex;
   }, [selectedPointIndex]);
 
+  const loadGpxTrackFromText = async (
+    fileText: string,
+    fileName: string,
+    onInitialTrackLoaded?: () => void,
+  ) => {
+    const uploadSequence = fileUploadSequenceRef.current + 1;
+    fileUploadSequenceRef.current = uploadSequence;
+    setIsFetchingElevation(false);
+
+    const parsedTrack = parseGpxText(fileText, fileName);
+    setTrack(parsedTrack);
+    setSelectedPointIndex(null);
+    setErrorMessage("");
+    onInitialTrackLoaded?.();
+
+    if (!parsedTrack.points.some((point) => point.ele === null)) {
+      return;
+    }
+
+    setIsFetchingElevation(true);
+
+    try {
+      const trackWithElevation = await fillMissingElevations(parsedTrack);
+
+      if (fileUploadSequenceRef.current === uploadSequence) {
+        setTrack(trackWithElevation);
+      }
+    } catch (error) {
+      if (fileUploadSequenceRef.current === uploadSequence) {
+        setErrorMessage(
+          error instanceof Error && error.message === ELEVATION_RATE_LIMIT_MESSAGE
+            ? error.message
+            : "일부 좌표의 고도 값을 불러오지 못해 GPX 원본 값만 표시했어요.",
+        );
+      }
+    } finally {
+      if (fileUploadSequenceRef.current === uploadSequence) {
+        setIsFetchingElevation(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const routeId = searchParams.get("routeId");
+
+    if (!routeId) {
+      setRouteCheckpoints([]);
+      setIsRouteDownloadLoading(false);
+      return;
+    }
+
+    if (!supabase) {
+      setRouteCheckpoints([]);
+      setIsRouteDownloadLoading(false);
+      setErrorMessage("Supabase 환경변수를 확인해주세요.");
+      return;
+    }
+
+    let isCancelled = false;
+
+    const loadRouteFromDatabase = async () => {
+      setTrack(null);
+      setRouteCheckpoints([]);
+      setSelectedPointIndex(null);
+      setErrorMessage("");
+      setIsRouteDownloadLoading(true);
+      setIsFetchingElevation(true);
+
+      const { data: routeData, error: routeError } = await supabase
+        .from(SUPABASE_GPX_TABLE)
+        .select("file_name, gpx_url")
+        .eq("id", routeId)
+        .single();
+
+      if (isCancelled) {
+        return;
+      }
+
+      if (routeError || !routeData) {
+        setIsFetchingElevation(false);
+        setIsRouteDownloadLoading(false);
+        setErrorMessage(
+          routeError
+            ? `GPX 정보를 불러오지 못했어요: ${routeError.message}`
+            : "GPX 정보를 찾지 못했어요.",
+        );
+        return;
+      }
+
+      const route = routeData as GpxRouteCatalogRow;
+      const { data: checkpointData, error: checkpointError } = await supabase
+        .from(SUPABASE_GPX_CHECKPOINT_TABLE)
+        .select("sequence, distance_km")
+        .eq("route_id", routeId)
+        .order("sequence", { ascending: true });
+
+      if (isCancelled) {
+        return;
+      }
+
+      if (checkpointError) {
+        setRouteCheckpoints([]);
+        setIsFetchingElevation(false);
+        setIsRouteDownloadLoading(false);
+        setErrorMessage(`CP 정보를 불러오지 못했어요: ${checkpointError.message}`);
+        return;
+      }
+
+      setRouteCheckpoints(
+        ((checkpointData ?? []) as GpxRouteCheckpointRow[])
+          .map((checkpoint) => ({
+            sequence: checkpoint.sequence,
+            distanceKm: checkpoint.distance_km,
+          }))
+          .filter((checkpoint) => Number.isFinite(checkpoint.distanceKm)),
+      );
+
+      try {
+        const response = await fetch(route.gpx_url);
+
+        if (!response.ok) {
+          throw new Error("GPX 파일을 불러오지 못했어요.");
+        }
+
+        const fileText = await response.text();
+
+        if (!isCancelled) {
+          await loadGpxTrackFromText(fileText, route.file_name, () => {
+            if (!isCancelled) {
+              setIsRouteDownloadLoading(false);
+            }
+          });
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setTrack(null);
+          setSelectedPointIndex(null);
+          setIsFetchingElevation(false);
+          setIsRouteDownloadLoading(false);
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : "GPX 파일을 불러오는 중 문제가 발생했어요.",
+          );
+        }
+      }
+    };
+
+    loadRouteFromDatabase();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [location.search]);
+
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     window.open("https://link.coupang.com/a/ei7Vvo", "_blank");
 
@@ -596,41 +842,10 @@ const GpxViewerPage = () => {
       return;
     }
 
-    const uploadSequence = fileUploadSequenceRef.current + 1;
-    fileUploadSequenceRef.current = uploadSequence;
-    setIsFetchingElevation(false);
-
     try {
       const fileText = await selectedFile.text();
-      const parsedTrack = parseGpxText(fileText, selectedFile.name);
-      setTrack(parsedTrack);
-      setSelectedPointIndex(null);
-      setErrorMessage("");
-
-      if (parsedTrack.points.some((point) => point.ele === null)) {
-        setIsFetchingElevation(true);
-
-        try {
-          const trackWithElevation = await fillMissingElevations(parsedTrack);
-
-          if (fileUploadSequenceRef.current === uploadSequence) {
-            setTrack(trackWithElevation);
-          }
-        } catch (error) {
-          if (fileUploadSequenceRef.current === uploadSequence) {
-            setErrorMessage(
-              error instanceof Error &&
-                error.message === ELEVATION_RATE_LIMIT_MESSAGE
-                ? error.message
-                : "일부 지점의 고도 값을 불러오지 못해 GPX 원본 값만 표시했어요.",
-            );
-          }
-        } finally {
-          if (fileUploadSequenceRef.current === uploadSequence) {
-            setIsFetchingElevation(false);
-          }
-        }
-      }
+      setRouteCheckpoints([]);
+      await loadGpxTrackFromText(fileText, selectedFile.name);
     } catch (error) {
       setTrack(null);
       setSelectedPointIndex(null);
@@ -1025,6 +1240,20 @@ const GpxViewerPage = () => {
           anchor: new window.naver.maps.Point(10, 10),
         },
       }),
+      ...checkpointPoints.map(
+        (checkpoint) =>
+          new window.naver.maps.Marker({
+            map,
+            position: new window.naver.maps.LatLng(
+              checkpoint.point.lat,
+              checkpoint.point.lon,
+            ),
+            icon: {
+              content: createCheckpointMarkerHtml(`CP${checkpoint.sequence}`),
+              anchor: new window.naver.maps.Point(18, 11),
+            },
+          }),
+      ),
     ];
 
     const bounds = path.reduce(
@@ -1038,7 +1267,7 @@ const GpxViewerPage = () => {
       bottom: 48,
       left: 48,
     });
-  }, [elevationProfilePoints, isMapReady, track]);
+  }, [checkpointPoints, elevationProfilePoints, isMapReady, track]);
 
   useEffect(() => {
     if (
@@ -1186,7 +1415,9 @@ const GpxViewerPage = () => {
             return "";
           }
 
-          return `${point.value[0].toFixed(2)} km<br/>${Math.round(point.value[1])} m`;
+          return `${formatNumber(point.value[0], 2)} km<br/>${formatNumber(
+            Math.round(point.value[1]),
+          )} m`;
         },
       },
       axisPointer: {
@@ -1205,7 +1436,7 @@ const GpxViewerPage = () => {
         axisLabel: {
           color: "#94a3b8",
           margin: 10,
-          formatter: (value: number) => `${value.toFixed(1)}km`,
+          formatter: (value: number) => `${formatNumber(value, 1)}km`,
         },
         axisLine: {
           lineStyle: {
@@ -1235,11 +1466,11 @@ const GpxViewerPage = () => {
             }
 
             if (roundedValue === Number(middleElevation.toFixed(1))) {
-              return `${Math.round(middleElevation)}m`;
+              return `${formatNumber(Math.round(middleElevation))}m`;
             }
 
             if (roundedValue === Number(yAxisMax.toFixed(1))) {
-              return `${Math.round(yAxisMax)}m`;
+              return `${formatNumber(Math.round(yAxisMax))}m`;
             }
 
             return "";
@@ -1291,16 +1522,101 @@ const GpxViewerPage = () => {
               borderWidth: 2,
             },
           },
+          markLine: {
+            symbol: "none",
+            silent: true,
+            label: {
+              formatter: (params: any) => params.name,
+              color: "#111827",
+              fontFamily: "GMedium",
+              fontSize: 11,
+              padding: [3, 5],
+              backgroundColor: "rgba(255, 255, 255, 0.88)",
+              borderRadius: 6,
+            },
+            lineStyle: {
+              color: "rgba(17, 24, 39, 0.62)",
+              width: 1.5,
+              type: "dashed",
+            },
+            data: routeCheckpoints
+              .filter(
+                (checkpoint) =>
+                  checkpoint.distanceKm >= 0 &&
+                  checkpoint.distanceKm <= totalDistanceKm,
+              )
+              .map((checkpoint) => ({
+                name: `CP${checkpoint.sequence}`,
+                xAxis: Number(checkpoint.distanceKm.toFixed(3)),
+              })),
+          },
           data: chartData,
         },
       ],
     };
   }, [
     elevationProfilePoints,
+    routeCheckpoints,
     track?.maxElevation,
     track?.minElevation,
     track?.totalDistanceKm,
   ]);
+
+  const routeIdFromQuery = new URLSearchParams(location.search).get("routeId");
+
+  if (routeIdFromQuery && isRouteDownloadLoading) {
+    return (
+      <div
+        style={{
+          width: "100%",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "24px",
+          boxSizing: "border-box",
+          color: "#111827",
+        }}
+      >
+        <style>
+          {`
+            @keyframes gpxDownloadLetterLift {
+              0%, 100% {
+                transform: translateY(0);
+              }
+              45% {
+                transform: translateY(-10px);
+              }
+            }
+          `}
+        </style>
+        <div
+          aria-label={GPX_LOADING_TEXT}
+          style={{
+            fontFamily: "Comico",
+            fontSize: "clamp(26px, 6vw, 56px)",
+            lineHeight: 1.1,
+            textTransform: "lowercase",
+            whiteSpace: "pre",
+          }}
+        >
+          {GPX_LOADING_TEXT.split("").map((character, index) => (
+            <span
+              key={`${character}-${index}`}
+              aria-hidden="true"
+              style={{
+                display: "inline-block",
+                animation: "gpxDownloadLetterLift 1.15s ease-in-out infinite",
+                animationDelay: `${index * 0.08}s`,
+              }}
+            >
+              {character}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -1468,7 +1784,7 @@ const GpxViewerPage = () => {
                 </button>
               </div>
               <div style={{ color: "#64748b" }}>
-                좌표 {track.points.length.toLocaleString()}개를 읽었어요.
+                좌표 {formatNumber(track.points.length)}개를 읽었어요.
               </div>
 
               <div
@@ -1487,7 +1803,7 @@ const GpxViewerPage = () => {
                   },
                   {
                     label: "누적 상승",
-                    value: `${Math.round(track.elevationGain)} m`,
+                    value: formatElevation(track.elevationGain),
                     color: "#ea580c",
                   },
                   {

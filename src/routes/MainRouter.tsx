@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { RouterProvider } from "react-router-dom";
-import ReactGA from "react-ga4";
 
 import useDynamicRoutes from "@libs/hooks/useDynamicRoutes";
 import CoupangAd from "@components/CoupangAd";
@@ -13,6 +12,72 @@ import "../assets/styles/code.css";
 import "../assets/styles/web.css";
 import "../assets/styles/mobile.css";
 
+const GA_MEASUREMENT_ID = "G-VN1W6B09RJ";
+
+declare global {
+  interface Window {
+    dataLayer?: any[];
+    gtag?: (...args: any[]) => void;
+  }
+}
+
+const isLocalHost = () =>
+  ["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname) ||
+  window.location.hostname.endsWith(".local");
+
+const shouldEnableGa = () => import.meta.env.PROD && !isLocalHost();
+
+const initializeGa = () => {
+  if (!shouldEnableGa() || window.gtag) {
+    return;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = (...args: any[]) => {
+    window.dataLayer?.push(args);
+  };
+  window.gtag("js", new Date());
+  window.gtag("config", GA_MEASUREMENT_ID, {
+    page_path: window.location.pathname,
+    page_location: window.location.href,
+    page_title: document.title,
+  });
+
+  const gaScript = document.createElement("script");
+  gaScript.async = true;
+  gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+  document.head.appendChild(gaScript);
+};
+
+const getGaClickLabel = (element: HTMLElement) => {
+  const customLabel = element.dataset.gaLabel?.trim();
+  const ariaLabel = element.getAttribute("aria-label")?.trim();
+  const title = element.getAttribute("title")?.trim();
+  const text = element.textContent?.replace(/\s+/g, " ").trim();
+
+  if (customLabel) {
+    return customLabel;
+  }
+
+  if (ariaLabel) {
+    return ariaLabel;
+  }
+
+  if (title) {
+    return title;
+  }
+
+  if (text) {
+    return text;
+  }
+
+  if (element instanceof HTMLAnchorElement) {
+    return element.href;
+  }
+
+  return "unknown";
+};
+
 /** 기본 라우터 */
 const MainRouter = () => {
   const router = useDynamicRoutes();
@@ -21,9 +86,51 @@ const MainRouter = () => {
     pathname.startsWith("/seasonal-food") ||
     pathname.startsWith("/gpx") ||
     pathname.startsWith("/jeju-trail-2026");
-  // const PUBLIC_GA_ID = `${import.meta.env.VITE_PUBLIC_GA_ID}`;
   useEffect(() => {
-    // ReactGA.initialize(`${PUBLIC_GA_ID}`);
+    initializeGa();
+  }, []);
+
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      if (!shouldEnableGa()) {
+        return;
+      }
+
+      const target = event.target;
+
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const clickableElement = target.closest<HTMLElement>(
+        "button, a, [role='button']",
+      );
+
+      if (!clickableElement || !document.body.contains(clickableElement)) {
+        return;
+      }
+
+      const clickLabel = getGaClickLabel(clickableElement);
+      const linkUrl =
+        clickableElement instanceof HTMLAnchorElement
+          ? clickableElement.href
+          : undefined;
+
+      window.gtag?.("event", "button_click", {
+        button_label: clickLabel,
+        button_category: clickableElement.dataset.gaCategory || "global",
+        button_tag: clickableElement.tagName.toLowerCase(),
+        page_path: window.location.pathname,
+        page_location: window.location.href,
+        link_url: linkUrl,
+      });
+    };
+
+    document.addEventListener("click", handleDocumentClick);
+
+    return () => {
+      document.removeEventListener("click", handleDocumentClick);
+    };
   }, []);
 
   useEffect(() => {
@@ -46,6 +153,15 @@ const MainRouter = () => {
     forceScrollTop();
     const unsubscribe = router.subscribe(() => {
       setPathname(router.state.location.pathname);
+
+      if (shouldEnableGa()) {
+        window.gtag?.("config", GA_MEASUREMENT_ID, {
+          page_path: router.state.location.pathname,
+          page_location: window.location.href,
+          page_title: document.title,
+        });
+      }
+
       forceScrollTop();
       window.setTimeout(forceScrollTop, 0);
       window.setTimeout(forceScrollTop, 80);
