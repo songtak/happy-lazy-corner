@@ -17,10 +17,12 @@ type GpxPoint = {
   lon: number;
   ele: number | null;
   distance: number;
+  elevationGain: number;
 };
 
 type GpxTrack = {
   fileName: string;
+  displayName: string;
   points: GpxPoint[];
   totalDistanceKm: number;
   elevationGain: number;
@@ -50,6 +52,7 @@ type GpxRouteCheckpointRow = {
 };
 
 type GpxRouteCatalogRow = {
+  title: string;
   file_name: string;
   gpx_url: string;
 };
@@ -94,7 +97,7 @@ const formatDistance = (distanceKm: number) =>
 const formatElevation = (elevation: number | null) =>
   elevation === null ? "-" : `${formatNumber(Math.round(elevation))} m`;
 
-const truncateFileName = (fileName: string, maxLength = 20) => {
+const truncateFileName = (fileName: string, maxLength = 40) => {
   if (fileName.length <= maxLength) {
     return fileName;
   }
@@ -234,6 +237,7 @@ const wait = (durationMs: number) =>
 const buildGpxTrack = (
   fileName: string,
   routePoints: Array<Pick<GpxPoint, "lat" | "lon" | "ele">>,
+  displayName = fileName,
 ): GpxTrack => {
   let totalDistance = 0;
   let elevationGain = 0;
@@ -264,6 +268,7 @@ const buildGpxTrack = (
       lon,
       ele,
       distance: totalDistance / 1000,
+      elevationGain,
     };
 
     previousPoint = currentPoint;
@@ -276,6 +281,7 @@ const buildGpxTrack = (
 
   return {
     fileName,
+    displayName,
     points,
     totalDistanceKm: totalDistance / 1000,
     elevationGain,
@@ -285,7 +291,11 @@ const buildGpxTrack = (
   };
 };
 
-const parseGpxText = (xmlText: string, fileName: string): GpxTrack => {
+const parseGpxText = (
+  xmlText: string,
+  fileName: string,
+  displayName = fileName,
+): GpxTrack => {
   const parser = new DOMParser();
   const xmlDocument = parser.parseFromString(xmlText, "application/xml");
   const parserError = xmlDocument.querySelector("parsererror");
@@ -323,7 +333,7 @@ const parseGpxText = (xmlText: string, fileName: string): GpxTrack => {
     throw new Error("유효한 위도/경도 좌표를 2개 이상 찾지 못했어요.");
   }
 
-  return buildGpxTrack(fileName, routePoints);
+  return buildGpxTrack(fileName, routePoints, displayName);
 };
 
 const fetchElevations = async (
@@ -418,7 +428,7 @@ const fillMissingElevations = async (track: GpxTrack) => {
     });
   }
 
-  return buildGpxTrack(track.fileName, nextPoints);
+  return buildGpxTrack(track.fileName, nextPoints, track.displayName);
 };
 
 const loadNaverMapScript = () =>
@@ -572,7 +582,7 @@ const createCheckpointMarkerHtml = (label: string) => {
       height:22px;
       padding:0 7px;
       border-radius:999px;
-      background:#7c3aed;
+      background:#475569;
       color:#fff;
       font-size:10px;
       font-weight:800;
@@ -653,9 +663,7 @@ const GpxViewerPage = () => {
           : null;
       })
       .filter(
-        (
-          checkpoint,
-        ): checkpoint is GpxRouteCheckpoint & { point: GpxPoint } =>
+        (checkpoint): checkpoint is GpxRouteCheckpoint & { point: GpxPoint } =>
           checkpoint !== null,
       );
   }, [routeCheckpoints, track]);
@@ -680,13 +688,14 @@ const GpxViewerPage = () => {
   const loadGpxTrackFromText = async (
     fileText: string,
     fileName: string,
+    displayName = fileName,
     onInitialTrackLoaded?: () => void,
   ) => {
     const uploadSequence = fileUploadSequenceRef.current + 1;
     fileUploadSequenceRef.current = uploadSequence;
     setIsFetchingElevation(false);
 
-    const parsedTrack = parseGpxText(fileText, fileName);
+    const parsedTrack = parseGpxText(fileText, fileName, displayName);
     setTrack(parsedTrack);
     setSelectedPointIndex(null);
     setErrorMessage("");
@@ -707,7 +716,8 @@ const GpxViewerPage = () => {
     } catch (error) {
       if (fileUploadSequenceRef.current === uploadSequence) {
         setErrorMessage(
-          error instanceof Error && error.message === ELEVATION_RATE_LIMIT_MESSAGE
+          error instanceof Error &&
+            error.message === ELEVATION_RATE_LIMIT_MESSAGE
             ? error.message
             : "일부 좌표의 고도 값을 불러오지 못해 GPX 원본 값만 표시했어요.",
         );
@@ -748,7 +758,7 @@ const GpxViewerPage = () => {
 
       const { data: routeData, error: routeError } = await supabase
         .from(SUPABASE_GPX_TABLE)
-        .select("file_name, gpx_url")
+        .select("title, file_name, gpx_url")
         .eq("id", routeId)
         .single();
 
@@ -782,7 +792,9 @@ const GpxViewerPage = () => {
         setRouteCheckpoints([]);
         setIsFetchingElevation(false);
         setIsRouteDownloadLoading(false);
-        setErrorMessage(`CP 정보를 불러오지 못했어요: ${checkpointError.message}`);
+        setErrorMessage(
+          `CP 정보를 불러오지 못했어요: ${checkpointError.message}`,
+        );
         return;
       }
 
@@ -805,11 +817,16 @@ const GpxViewerPage = () => {
         const fileText = await response.text();
 
         if (!isCancelled) {
-          await loadGpxTrackFromText(fileText, route.file_name, () => {
-            if (!isCancelled) {
-              setIsRouteDownloadLoading(false);
-            }
-          });
+          await loadGpxTrackFromText(
+            fileText,
+            route.file_name,
+            route.title,
+            () => {
+              if (!isCancelled) {
+                setIsRouteDownloadLoading(false);
+              }
+            },
+          );
         }
       } catch (error) {
         if (!isCancelled) {
@@ -1228,7 +1245,7 @@ const GpxViewerPage = () => {
         map,
         position: new window.naver.maps.LatLng(startPoint.lat, startPoint.lon),
         icon: {
-          content: createMarkerHtml("S", "#22c55e"),
+          content: createMarkerHtml("S", "#475569"),
           anchor: new window.naver.maps.Point(10, 10),
         },
       }),
@@ -1236,7 +1253,7 @@ const GpxViewerPage = () => {
         map,
         position: new window.naver.maps.LatLng(endPoint.lat, endPoint.lon),
         icon: {
-          content: createMarkerHtml("E", "#f97316"),
+          content: createMarkerHtml("E", "#78716c"),
           anchor: new window.naver.maps.Point(10, 10),
         },
       }),
@@ -1380,7 +1397,11 @@ const GpxViewerPage = () => {
 
   const elevationChartOption = useMemo(() => {
     const chartData = elevationProfilePoints.map((point) => ({
-      value: [Number(point.distance.toFixed(3)), point.ele as number],
+      value: [
+        Number(point.distance.toFixed(3)),
+        point.ele as number,
+        Number(point.elevationGain.toFixed(1)),
+      ],
     }));
     const totalDistanceKm = Number((track?.totalDistanceKm ?? 0).toFixed(3));
     const maxElevation = track?.maxElevation ?? 0;
@@ -1417,7 +1438,7 @@ const GpxViewerPage = () => {
 
           return `${formatNumber(point.value[0], 2)} km<br/>${formatNumber(
             Math.round(point.value[1]),
-          )} m`;
+          )} m<br/>+${formatNumber(Math.round(point.value[2] ?? 0))} m`;
         },
       },
       axisPointer: {
@@ -1628,6 +1649,19 @@ const GpxViewerPage = () => {
         boxSizing: "border-box",
       }}
     >
+      <style>
+        {`
+          .gpx-viewer-stat-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+          }
+
+          @media (max-width: 767px) {
+            .gpx-viewer-stat-grid {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+          }
+        `}
+      </style>
       <div
         style={{
           fontFamily: "Comico",
@@ -1758,9 +1792,9 @@ const GpxViewerPage = () => {
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
                   }}
-                  title={track.fileName}
+                  title={track.displayName}
                 >
-                  {truncateFileName(track.fileName)}
+                  {truncateFileName(track.displayName)}
                 </div>
                 <button
                   type="button"
@@ -1783,75 +1817,92 @@ const GpxViewerPage = () => {
                   수정하기
                 </button>
               </div>
-              <div style={{ color: "#64748b" }}>
-                좌표 {formatNumber(track.points.length)}개를 읽었어요.
-              </div>
-
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                  gridTemplateColumns:
+                    "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
                   gap: "12px",
                   marginTop: "14px",
                 }}
               >
-                {[
-                  {
-                    label: "총 거리",
-                    value: formatDistance(track.totalDistanceKm),
-                    color: "#0f766e",
-                  },
-                  {
-                    label: "누적 상승",
-                    value: formatElevation(track.elevationGain),
-                    color: "#ea580c",
-                  },
-                  {
-                    label: "최고 고도",
-                    value: formatElevation(track.maxElevation),
-                    color: "#7c3aed",
-                  },
-                  {
-                    label: "최저 고도",
-                    value: formatElevation(track.minElevation),
-                    color: "#2563eb",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    style={{
-                      padding: "12px 14px",
-                      borderRadius: "20px",
-                      backgroundColor: "#ffffff",
-                      textAlign: "left",
-                    }}
-                  >
+                <div
+                  className="gpx-viewer-stat-grid"
+                  style={{
+                    gridColumn: "1 / -1",
+                    display: "grid",
+                    gap: "8px",
+                  }}
+                >
+                  {[
+                    {
+                      label: "총 거리",
+                      value: formatDistance(track.totalDistanceKm),
+                      color: "#0f172a",
+                      isPrimary: true,
+                    },
+                    {
+                      label: "누적 상승",
+                      value: formatElevation(track.elevationGain),
+                      color: "#1f2937",
+                      isPrimary: true,
+                    },
+                    {
+                      label: "최고 고도",
+                      value: formatElevation(track.maxElevation),
+                      color: "#64748b",
+                      isPrimary: false,
+                    },
+                    {
+                      label: "최저 고도",
+                      value: formatElevation(track.minElevation),
+                      color: "#64748b",
+                      isPrimary: false,
+                    },
+                  ].map((item) => (
                     <div
+                      key={item.label}
                       style={{
-                        color: "#64748b",
-                        fontSize: "13px",
-                        marginBottom: "4px",
+                        minWidth: 0,
+                        padding: "12px 14px",
+                        borderRadius: "20px",
+                        backgroundColor: "#ffffff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "8px",
                       }}
                     >
-                      {item.label}
+                      <div
+                        style={{
+                          color: "#64748b",
+                          fontSize: "12px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                      <div
+                        style={{
+                          color: item.color,
+                          fontSize: item.isPrimary ? "17px" : "16px",
+                          fontWeight: item.isPrimary ? 800 : 500,
+                          lineHeight: 1.1,
+                          textAlign: "right",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {item.value}
+                      </div>
                     </div>
-                    <div
-                      style={{
-                        color: item.color,
-                        fontSize: "20px",
-                        textAlign: "right",
-                      }}
-                    >
-                      {item.value}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
                 <div
                   style={{
                     padding: "12px 14px",
                     borderRadius: "20px",
                     backgroundColor: "#ffffff",
-                    gridColumn: "span 2",
+                    gridColumn: "1 / -1",
                   }}
                 >
                   <div
@@ -1873,7 +1924,7 @@ const GpxViewerPage = () => {
                     <div
                       style={{
                         fontSize: "12px",
-                        color: "#9a3412",
+                        color: "#64748b",
                         textAlign: "right",
                       }}
                     >
@@ -1906,16 +1957,16 @@ const GpxViewerPage = () => {
                         <div
                           style={{
                             borderRadius: "12px",
-                            backgroundColor: "#f97316",
+                            backgroundColor: "#475569",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            color: "#fff7ed",
+                            color: "#f8fafc",
                             fontSize: "14px",
                             height: "32px",
                             minWidth: "92px",
                             padding: "0 12px",
-                            boxShadow: "0 4px 10px rgba(249, 115, 22, 0.14)",
+                            boxShadow: "0 4px 10px rgba(15, 23, 42, 0.1)",
                           }}
                         >
                           {selectedPace.label}
@@ -2018,7 +2069,7 @@ const GpxViewerPage = () => {
                         style={{
                           fontSize: "22px",
                           lineHeight: 1.15,
-                          color: "#7c2d12",
+                          color: "#334155",
                           wordBreak: "keep-all",
                           textAlign: "right",
                           minHeight: "32px",

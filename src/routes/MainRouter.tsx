@@ -13,37 +13,52 @@ import "../assets/styles/web.css";
 import "../assets/styles/mobile.css";
 
 const GA_MEASUREMENT_ID = "G-VN1W6B09RJ";
-const GA_ALLOWED_HOSTNAME = "www.happy-lazy-corner.co.kr";
+const GA_ALLOWED_URL_PREFIX = "www.happy-lazy-corner.co.kr/gpx";
+const GA_SCRIPT_ID = "happy-lazy-corner-ga";
 
 declare global {
   interface Window {
     dataLayer?: any[];
     gtag?: (...args: any[]) => void;
+    happyLazyGaInitialized?: boolean;
   }
 }
 
-const shouldEnableGa = () => window.location.hostname === GA_ALLOWED_HOSTNAME;
+const getUrlWithoutProtocol = () =>
+  window.location.href.replace(/^https?:\/\//i, "");
+
+const shouldEnableGa = () =>
+  getUrlWithoutProtocol().startsWith(GA_ALLOWED_URL_PREFIX);
 
 const initializeGa = () => {
-  if (!shouldEnableGa() || window.gtag) {
+  if (!shouldEnableGa() || window.happyLazyGaInitialized) {
     return;
   }
 
+  window.happyLazyGaInitialized = true;
   window.dataLayer = window.dataLayer || [];
-  window.gtag = (...args: any[]) => {
-    window.dataLayer?.push(args);
-  };
+
+  if (!window.gtag) {
+    window.gtag = (...args: any[]) => {
+      window.dataLayer?.push(args);
+    };
+  }
+
+  if (!document.getElementById(GA_SCRIPT_ID)) {
+    const gaScript = document.createElement("script");
+    gaScript.id = GA_SCRIPT_ID;
+    gaScript.async = true;
+    gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+    document.head.appendChild(gaScript);
+  }
+
   window.gtag("js", new Date());
   window.gtag("config", GA_MEASUREMENT_ID, {
     page_path: window.location.pathname,
     page_location: window.location.href,
     page_title: document.title,
+    debug_mode: true,
   });
-
-  const gaScript = document.createElement("script");
-  gaScript.async = true;
-  gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-  document.head.appendChild(gaScript);
 };
 
 const getGaClickLabel = (element: HTMLElement) => {
@@ -75,6 +90,29 @@ const getGaClickLabel = (element: HTMLElement) => {
   return "unknown";
 };
 
+const getGaClickPayload = (clickableElement: HTMLElement) => {
+  const clickLabel = getGaClickLabel(clickableElement);
+  const buttonCategory = clickableElement.dataset.gaCategory || "global";
+  const linkUrl =
+    clickableElement instanceof HTMLAnchorElement
+      ? clickableElement.href
+      : undefined;
+
+  return {
+    send_to: GA_MEASUREMENT_ID,
+    event_category: buttonCategory,
+    event_label: clickLabel,
+    button_label: clickLabel,
+    button_category: buttonCategory,
+    button_tag: clickableElement.tagName.toLowerCase(),
+    page_path: window.location.pathname,
+    page_location: window.location.href,
+    link_url: linkUrl,
+    transport_type: "beacon",
+    debug_mode: true,
+  };
+};
+
 /** 기본 라우터 */
 const MainRouter = () => {
   const router = useDynamicRoutes();
@@ -88,7 +126,9 @@ const MainRouter = () => {
   }, []);
 
   useEffect(() => {
-    const handleDocumentClick = (event: MouseEvent) => {
+    const trackedElements = new WeakSet<HTMLElement>();
+
+    const handleDocumentInteraction = (event: MouseEvent | PointerEvent) => {
       if (!shouldEnableGa()) {
         return;
       }
@@ -107,28 +147,23 @@ const MainRouter = () => {
         return;
       }
 
-      const clickLabel = getGaClickLabel(clickableElement);
-      const linkUrl =
-        clickableElement instanceof HTMLAnchorElement
-          ? clickableElement.href
-          : undefined;
+      if (trackedElements.has(clickableElement)) {
+        return;
+      }
 
-      window.gtag?.("event", "button_click", {
-        send_to: GA_MEASUREMENT_ID,
-        button_label: clickLabel,
-        button_category: clickableElement.dataset.gaCategory || "global",
-        button_tag: clickableElement.tagName.toLowerCase(),
-        page_path: window.location.pathname,
-        page_location: window.location.href,
-        link_url: linkUrl,
-        transport_type: "beacon",
-      });
+      trackedElements.add(clickableElement);
+      window.setTimeout(() => {
+        trackedElements.delete(clickableElement);
+      }, 500);
+
+      const payload = getGaClickPayload(clickableElement);
+      window.gtag?.("event", "button_click", payload);
     };
 
-    document.addEventListener("click", handleDocumentClick, true);
+    document.addEventListener("click", handleDocumentInteraction, true);
 
     return () => {
-      document.removeEventListener("click", handleDocumentClick, true);
+      document.removeEventListener("click", handleDocumentInteraction, true);
     };
   }, []);
 
@@ -152,12 +187,14 @@ const MainRouter = () => {
     forceScrollTop();
     const unsubscribe = router.subscribe(() => {
       setPathname(router.state.location.pathname);
+      initializeGa();
 
       if (shouldEnableGa()) {
         window.gtag?.("config", GA_MEASUREMENT_ID, {
           page_path: router.state.location.pathname,
           page_location: window.location.href,
           page_title: document.title,
+          debug_mode: true,
         });
       }
 

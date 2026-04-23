@@ -105,7 +105,7 @@ const SUPABASE_GPX_BUCKET = "route-gpx-files";
 const SUPABASE_GPX_TABLE = "gpx_route_catalog";
 const SUPABASE_GPX_CHECKPOINT_TABLE = "gpx_route_checkpoints";
 const MAX_GPX_FILE_SIZE = 5 * 1024 * 1024;
-const MAX_CHECKPOINT_COUNT = 10;
+const MAX_CHECKPOINT_COUNT = 5;
 const GPX_LIST_PAGE_SIZE = 10;
 const DISTANCE_FILTER_MIN = 0;
 const DISTANCE_FILTER_MAX = 150;
@@ -274,25 +274,13 @@ const isRaceDueWithinWeek = (dateValue?: string) => {
 };
 
 const getRaceCardBorderColor = (dateValue?: string) => {
-  const dayDiff = getRaceDueDayDiff(dateValue);
-
-  if (dayDiff === null) {
-    return "rgba(148, 163, 184, 0.16)";
-  }
-
-  if (dayDiff === 0) {
-    return "#ef4444";
-  }
-
-  if (dayDiff > 0 && dayDiff < 7) {
-    return "#f97316";
-  }
-
-  return "rgba(148, 163, 184, 0.16)";
+  return isRaceDueWithinWeek(dateValue)
+    ? "#111827"
+    : "rgba(148, 163, 184, 0.16)";
 };
 
 const getRaceCardBackgroundColor = (dateValue?: string) =>
-  isRaceDueWithinWeek(dateValue) ? "#fff7ed" : "#f8fafc";
+  isRaceDueWithinWeek(dateValue) ? "#ffffff" : "#f8fafc";
 
 const toInteger = (value: number) => Math.round(Number(value) || 0);
 
@@ -1501,7 +1489,9 @@ const GpxListPage = () => {
 
               <div
                 style={{
-                  display: "block",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
                   marginBottom: "12px",
                   color: "#334155",
                   fontSize: "11px",
@@ -1512,9 +1502,9 @@ const GpxListPage = () => {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "8px",
-                    marginBottom: "6px",
+                    gap: "6px",
+                    flexShrink: 0,
+                    height: "32px",
                   }}
                 >
                   <span>CP</span>
@@ -1527,8 +1517,8 @@ const GpxListPage = () => {
                     }
                     aria-label="CP 추가"
                     style={{
-                      width: "28px",
-                      height: "28px",
+                      width: "20px",
+                      height: "20px",
                       border: 0,
                       borderRadius: "999px",
                       backgroundColor:
@@ -1551,106 +1541,94 @@ const GpxListPage = () => {
                           : "pointer",
                     }}
                   >
-                    <Plus size={15} strokeWidth={2.5} />
+                    <Plus size={12} strokeWidth={2.5} />
                   </button>
                 </div>
                 <div
                   style={{
-                    display: "grid",
-                    gap: "8px",
+                    minWidth: 0,
+                    flex: 1,
+                    display: "flex",
+                    flexWrap: "nowrap",
+                    alignItems: "center",
+                    gap: "4px",
                   }}
                 >
                   {uploadCheckpoints.map((checkpoint, index) => (
                     <div
                       key={index}
                       style={{
-                        display: "grid",
-                        gridTemplateColumns: "48px minmax(0, 1fr)",
-                        alignItems: "center",
-                        gap: "8px",
-                        color: "#64748b",
-                        fontSize: "12px",
-                        fontWeight: 500,
+                        position: "relative",
+                        flex: "1 1 0",
+                        minWidth: "50px",
+                        maxWidth: "64px",
                       }}
                     >
-                      <label htmlFor={`gpx-upload-cp-${index}`}>
-                        CP {index + 1}
-                      </label>
-                      <div
+                      <input
+                        id={`gpx-upload-cp-${index}`}
+                        type="text"
+                        inputMode="decimal"
+                        value={checkpoint}
+                        onChange={(event) =>
+                          handleUploadCheckpointChange(
+                            index,
+                            event.target.value,
+                          )
+                        }
+                        disabled={isUploading}
+                        placeholder={`cp${index + 1}`}
                         style={{
-                          position: "relative",
-                          minWidth: 0,
+                          width: "100%",
+                          height: "32px",
+                          boxSizing: "border-box",
+                          borderRadius: "8px",
+                          border: "1px solid rgba(148, 163, 184, 0.45)",
+                          backgroundColor: isUploading ? "#f8fafc" : "#ffffff",
+                          padding: "0 32px 0 6px",
+                          fontFamily: "Pretendard",
+                          fontSize: "12px",
+                          outline: "none",
+                          cursor: isUploading ? "not-allowed" : "text",
+                        }}
+                      />
+                      <span
+                        style={{
+                          position: "absolute",
+                          top: "50%",
+                          right: "18px",
+                          color: "#64748b",
+                          fontSize: "9px",
+                          fontWeight: 500,
+                          transform: "translateY(-50%)",
+                          pointerEvents: "none",
                         }}
                       >
-                        <input
-                          id={`gpx-upload-cp-${index}`}
-                          type="text"
-                          inputMode="decimal"
-                          value={checkpoint}
-                          onChange={(event) =>
-                            handleUploadCheckpointChange(
-                              index,
-                              event.target.value,
-                            )
-                          }
-                          disabled={isUploading}
-                          placeholder="0"
-                          style={{
-                            width: "100%",
-                            height: "38px",
-                            borderRadius: "8px",
-                            border: "1px solid rgba(148, 163, 184, 0.45)",
-                            backgroundColor: isUploading
-                              ? "#f8fafc"
-                              : "#ffffff",
-                            padding: "0 74px 0 10px",
-                            fontFamily: "Pretendard",
-                            fontSize: "14px",
-                            outline: "none",
-                            cursor: isUploading ? "not-allowed" : "text",
-                          }}
-                        />
-                        <span
-                          style={{
-                            position: "absolute",
-                            top: "50%",
-                            right: "38px",
-                            color: "#64748b",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            transform: "translateY(-50%)",
-                            pointerEvents: "none",
-                          }}
-                        >
-                          km
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveUploadCheckpoint(index)}
-                          disabled={isUploading}
-                          aria-label={`CP ${index + 1} 삭제`}
-                          style={{
-                            position: "absolute",
-                            top: "50%",
-                            right: "7px",
-                            width: "24px",
-                            height: "24px",
-                            border: 0,
-                            borderRadius: "999px",
-                            backgroundColor: isUploading
-                              ? "#e2e8f0"
-                              : "#f1f5f9",
-                            color: isUploading ? "#94a3b8" : "#475569",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            transform: "translateY(-50%)",
-                            cursor: isUploading ? "not-allowed" : "pointer",
-                          }}
-                        >
-                          <Minus size={14} strokeWidth={2.5} />
-                        </button>
-                      </div>
+                        km
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveUploadCheckpoint(index)}
+                        disabled={isUploading}
+                        aria-label={`CP ${index + 1} 삭제`}
+                        style={{
+                          position: "absolute",
+                          top: "50%",
+                          right: "3px",
+                          width: "15px",
+                          height: "15px",
+                          border: 0,
+                          borderRadius: "999px",
+                          backgroundColor: isUploading ? "#e2e8f0" : "#f1f5f9",
+                          color: isUploading ? "#94a3b8" : "#475569",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transform: "translateY(-50%)",
+                          cursor: isUploading ? "not-allowed" : "pointer",
+                        }}
+                      >
+                        <Minus size={8} strokeWidth={2.5} />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -1716,6 +1694,7 @@ const GpxListPage = () => {
         <form
           onSubmit={handleSearchSubmit}
           style={{
+            marginTop: "26px",
             marginBottom: "18px",
             borderRadius: "28px",
             backgroundColor: "#ffffff",
@@ -2085,34 +2064,18 @@ const GpxListPage = () => {
               <div
                 style={{
                   display: "flex",
-                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
                   gap: "8px",
-                  minWidth: "96px",
+                  minWidth: 0,
                 }}
               >
-              <button
-                type="submit"
-                style={{
-                  flex: 1,
-                  minHeight: "38px",
-                  border: 0,
-                  borderRadius: "999px",
-                  backgroundColor: "#111827",
-                  color: "#ffffff",
-                  fontFamily: "Pretendard",
-                  fontSize: "13px",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                }}
-              >
-                검색
-              </button>
               <button
                 type="button"
                 onClick={handleSearchReset}
                 style={{
-                  flex: 1,
-                  minHeight: "38px",
+                  height: "34px",
+                  padding: "0 12px",
                   border: 0,
                   borderRadius: "999px",
                   backgroundColor: "#e2e8f0",
@@ -2124,6 +2087,23 @@ const GpxListPage = () => {
                 }}
               >
                 초기화
+              </button>
+              <button
+                type="submit"
+                style={{
+                  width: "58px",
+                  height: "34px",
+                  border: 0,
+                  borderRadius: "999px",
+                  backgroundColor: "#111827",
+                  color: "#ffffff",
+                  fontFamily: "Pretendard",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                }}
+              >
+                검색
               </button>
               </div>
             </div>
@@ -2174,6 +2154,10 @@ const GpxListPage = () => {
             const raceCardBackgroundColor = getRaceCardBackgroundColor(
               item.dueDate,
             );
+            const isRaceCardDueWithinWeek = isRaceDueWithinWeek(item.dueDate);
+            const statCardBackgroundColor = isRaceCardDueWithinWeek
+              ? "#f8fafc"
+              : "#ffffff";
 
             return (
               <article
@@ -2218,8 +2202,8 @@ const GpxListPage = () => {
                         style={{
                           flexShrink: 0,
                           borderRadius: "999px",
-                          backgroundColor: "#1e3a8a",
-                          color: "#ffffff",
+                          backgroundColor: "#e2e8f0",
+                          color: "#334155",
                           padding: "3px 6px",
                           fontSize: "10px",
                           fontWeight: 700,
@@ -2372,7 +2356,7 @@ const GpxListPage = () => {
                   style={{
                     flex: "0 0 108px",
                     borderRadius: "20px",
-                    backgroundColor: "#ffffff",
+                    backgroundColor: statCardBackgroundColor,
                     padding: "12px 14px",
                   }}
                 >
@@ -2391,7 +2375,7 @@ const GpxListPage = () => {
                   <strong
                     style={{
                       display: "block",
-                      color: "#0f766e",
+                      color: "#334155",
                       fontSize: "14px",
                       fontWeight: 500,
                       lineHeight: 1.1,
@@ -2416,12 +2400,12 @@ const GpxListPage = () => {
                     {
                       label: "누적 상승",
                       value: formatElevationMeter(item.elevationGain),
-                      color: "#ea580c",
+                      color: "#475569",
                     },
                     {
                       label: "최고 고도",
                       value: formatElevationMeter(item.maxElevation),
-                      color: "#7c3aed",
+                      color: "#64748b",
                     },
                   ].map((stat) => (
                     <span
@@ -2429,7 +2413,7 @@ const GpxListPage = () => {
                       style={{
                         minWidth: 0,
                         borderRadius: "20px",
-                        backgroundColor: "#ffffff",
+                        backgroundColor: statCardBackgroundColor,
                         padding: "12px 14px",
                       }}
                     >
