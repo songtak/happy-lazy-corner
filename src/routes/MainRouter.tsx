@@ -13,7 +13,12 @@ import "../assets/styles/web.css";
 import "../assets/styles/mobile.css";
 
 const GA_MEASUREMENT_ID = "G-VN1W6B09RJ";
-const GA_ALLOWED_URL_PREFIX = "www.happy-lazy-corner.co.kr/gpx";
+const GA_ALLOWED_HOSTNAMES = [
+  "www.happy-lazy-corner.co.kr",
+  "happy-lazy-corner.co.kr",
+  "192.168.0.81",
+] as const;
+const GA_ALLOWED_PATH_PREFIXES = ["/gpx", "/motion-drawing"] as const;
 const GA_SCRIPT_ID = "happy-lazy-corner-ga";
 
 declare global {
@@ -24,11 +29,21 @@ declare global {
   }
 }
 
-const getUrlWithoutProtocol = () =>
-  window.location.href.replace(/^https?:\/\//i, "");
-
 const shouldEnableGa = () =>
-  getUrlWithoutProtocol().startsWith(GA_ALLOWED_URL_PREFIX);
+  GA_ALLOWED_HOSTNAMES.includes(window.location.hostname as (typeof GA_ALLOWED_HOSTNAMES)[number]) &&
+  GA_ALLOWED_PATH_PREFIXES.some((prefix) =>
+    window.location.pathname.startsWith(prefix),
+  );
+
+const sendGaPageView = (pathname: string) => {
+  window.gtag?.("event", "page_view", {
+    send_to: GA_MEASUREMENT_ID,
+    page_path: pathname,
+    page_location: window.location.href,
+    page_title: document.title,
+    debug_mode: true,
+  });
+};
 
 const initializeGa = () => {
   if (!shouldEnableGa() || window.happyLazyGaInitialized) {
@@ -57,8 +72,10 @@ const initializeGa = () => {
     page_path: window.location.pathname,
     page_location: window.location.href,
     page_title: document.title,
+    send_page_view: false,
     debug_mode: true,
   });
+  sendGaPageView(window.location.pathname);
 };
 
 const getGaClickLabel = (element: HTMLElement) => {
@@ -118,8 +135,10 @@ const MainRouter = () => {
   const router = useDynamicRoutes();
   const [pathname, setPathname] = useState(router.state.location.pathname);
   const shouldHideCoupangAds =
+    pathname.startsWith("/oracle") ||
     pathname.startsWith("/seasonal-food") ||
     pathname.startsWith("/gpx") ||
+    pathname.startsWith("/motion-drawing") ||
     pathname.startsWith("/jeju-trail-2026");
   useEffect(() => {
     initializeGa();
@@ -194,8 +213,10 @@ const MainRouter = () => {
           page_path: router.state.location.pathname,
           page_location: window.location.href,
           page_title: document.title,
+          send_page_view: false,
           debug_mode: true,
         });
+        sendGaPageView(router.state.location.pathname);
       }
 
       forceScrollTop();

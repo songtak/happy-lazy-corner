@@ -12,6 +12,8 @@ import GpxListPage from "./GpxListPage";
 import JejuTrail2026Page from "./JejuTrail2026Page";
 import LunchMenuPage from "./LunchMenuPage";
 import DinnerMenuPage from "./DinnerMenuPage";
+import MotionDrawingPage from "./MotionDrawingPage";
+import OraclePage from "./OraclePage";
 
 export {
   YearlyProgressPage,
@@ -28,4 +30,6 @@ export {
   JejuTrail2026Page,
   LunchMenuPage,
   DinnerMenuPage,
+  MotionDrawingPage,
+  OraclePage,
 };

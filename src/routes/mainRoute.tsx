@@ -81,6 +81,16 @@ const programRoutes: RouteObject[] = [
     element: <Program.DinnerMenuPage />,
     errorElement: <ErrorPage />,
   },
+  {
+    path: "/motion-drawing",
+    element: <Program.MotionDrawingPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/oracle-receipt",
+    element: <Program.OraclePage />,
+    errorElement: <ErrorPage />,
+  },
 ];
 
 // const programRoutes: RouteObject[] = [
@@ -100,14 +110,16 @@ const programRoutes: RouteObject[] = [
 
 const projectList = [
   { id: 1, path: "/yearly-progress", title: "올해 남아 있는 날들 💪" },
-  { id: 2, path: "/lost-and-found", title: "경찰청 분실물 센터 👮" },
-  { id: 3, path: "/seasonal-food", title: "제철 음식 추천기 🍎" },
+  { id: 2, path: "/lost-and-found", title: "대중교통 분실물 센터 👮" },
+  { id: 3, path: "/seasonal-food", title: "마침 제철 🍎" },
   { id: 5, path: "/gpx", title: "HAPPY ROUTE CORNER" },
-  { id: 6, path: "/gpx-viewer", title: "GPX 경로 뷰어 🗺️" },
-  { id: 7, path: "/gpx-maker", title: "GPX 메이커 ✍️" },
-  { id: 8, path: "/jeju-trail-2026", title: "제주 트레일 2026 🥾" },
-  { id: 9, path: "/lunch-menu", title: "점심 메뉴 추천기 🍽️" },
-  { id: 10, path: "/dinner-menu", title: "저녁 메뉴 추천기 🍽️" },
+  // { id: 6, path: "/gpx-viewer", title: "GPX 경로 뷰어 🗺️" },
+  // { id: 7, path: "/gpx-maker", title: "GPX 메이커 ✍️" },
+  // { id: 8, path: "/jeju-trail-2026", title: "제주 트레일 2026 🥾" },
+  // { id: 9, path: "/lunch-menu", title: "점심 메뉴 추천기 🍽️" },
+  { id: 10, path: "/dinner-menu", title: "오늘 저녁 뭐 먹지? - 안주.ver 🍽️" },
+  { id: 11, path: "/motion-drawing", title: "모션 드로잉 ✋" },
+  { id: 12, path: "/oracle-receipt", title: "운명의 영수증 🧾" },
 ];
 
 export { defaultRoutes, programRoutes, projectList };
