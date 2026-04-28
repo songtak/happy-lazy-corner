@@ -69,6 +69,17 @@ function clampReceiptText(text: string, max = 44) {
   return `${normalized.slice(0, Math.max(0, max - 1))}…`;
 }
 
+const ReceiptSep = () => (
+  <span className="oracleReceipt__sepText" aria-hidden="true">
+    <span className="oracleReceipt__sepText--mobile">
+      ----------------------------------
+    </span>
+    {/* <span className="oracleReceipt__sepText--web">
+      ----------------------------------------
+    </span> */}
+  </span>
+);
+
 const OraclePage: React.FC = () => {
   const [question, setQuestion] = useState<string>("");
   const [result, setResult] = useState<OracleMessage | null>(null);
@@ -215,10 +226,16 @@ const OraclePage: React.FC = () => {
 
           <div
             className={`oracleReceiptWrap ${isReceiptVisible ? "isOpen" : ""}`}
-            style={{ maxHeight: `${receiptMaxHeight}px` }}
+            style={{
+              maxHeight: `${receiptMaxHeight}px`,
+              backgroundColor: "#ffffff",
+            }}
             aria-live="polite"
           >
-            <div className="oracleReceipt">
+            <div
+              className="oracleReceipt"
+              style={{ backgroundColor: "#ffffff" }}
+            >
               <div className="oracleReceipt__content">
                 <div className="oracleReceipt__line oracleReceipt__row">
                   <span className="oracleReceipt__caps">
@@ -231,7 +248,7 @@ const OraclePage: React.FC = () => {
                 </div>
 
                 <div className="oracleReceipt__line oracleReceipt__sep oracleReceipt__caps">
-                  ----------------------------------------
+                  <ReceiptSep />
                 </div>
 
                 <div className="oracleReceipt__line oracleReceipt__tableHeader oracleReceipt__caps">
@@ -240,7 +257,7 @@ const OraclePage: React.FC = () => {
                   <span>LENGTH</span>
                 </div>
                 <div className="oracleReceipt__line oracleReceipt__sep oracleReceipt__caps">
-                  ----------------------------------------
+                  <ReceiptSep />
                 </div>
 
                 <div className="oracleReceipt__line oracleReceipt__tableRow">
@@ -270,7 +287,7 @@ const OraclePage: React.FC = () => {
                 </div>
 
                 <div className="oracleReceipt__line oracleReceipt__sep oracleReceipt__caps">
-                  ----------------------------------------
+                  <ReceiptSep />
                 </div>
 
                 <div className="oracleReceipt__line oracleReceipt__row oracleReceipt__row--split oracleReceipt__caps">
@@ -283,7 +300,7 @@ const OraclePage: React.FC = () => {
                 </div>
 
                 <div className="oracleReceipt__line oracleReceipt__sep oracleReceipt__caps">
-                  ----------------------------------------
+                  <ReceiptSep />
                 </div>
 
                 <div className="oracleReceipt__line oracleReceipt__row oracleReceipt__row--split oracleReceipt__caps">
@@ -292,7 +309,7 @@ const OraclePage: React.FC = () => {
                 </div>
 
                 <div className="oracleReceipt__line oracleReceipt__sep oracleReceipt__caps">
-                  ----------------------------------------
+                  <ReceiptSep />
                 </div>
                 <div className="oracleReceipt__line oracleReceipt__footer oracleReceipt__caps">
                   THANK YOU
