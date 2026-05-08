@@ -303,11 +303,11 @@ const SunriseSunsetPage: React.FC = () => {
     const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
     const weekday = weekdays[date.getDay()];
 
-    // 01월 02일 (수)
+    // 2026.05.08 (수)
     const mm = String(m).padStart(2, "0");
     const dd = String(d).padStart(2, "0");
 
-    return `${mm}월 ${dd}일 (${weekday})`;
+    return `${y}.${mm}.${dd} (${weekday})`;
   };
 
   const canGoNext = () => {
@@ -369,7 +369,7 @@ const SunriseSunsetPage: React.FC = () => {
           try {
             mapInstance = new naver.maps.Map(mapDiv as any, {
               center: centerLatLng,
-              zoom: 12,
+              zoom: 11,
               mapTypeControl: true,
             });
             mapInstanceRef.current = mapInstance;
@@ -885,7 +885,7 @@ const SunriseSunsetPage: React.FC = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: isIntroComplete ? "flex-start" : "center",
-        paddingTop: isIntroComplete ? "60px" : "0",
+        paddingTop: isIntroComplete ? "80px" : "0",
         transition: "padding-top 700ms ease",
         boxSizing: "border-box",
         paddingLeft: "16px",
@@ -966,7 +966,13 @@ const SunriseSunsetPage: React.FC = () => {
           <ArrowLeft size={28} strokeWidth={2.25} />
         </button>
 
-        <span style={{ minWidth: "140px", textAlign: "center" }}>
+        <span
+          style={{
+            minWidth: "140px",
+            textAlign: "center",
+            color: "rgba(0,0,0,0.55)",
+          }}
+        >
           {formatDateDisplay(locDate)}
         </span>
 
