@@ -91,6 +91,11 @@ const programRoutes: RouteObject[] = [
     element: <Program.OraclePage />,
     errorElement: <ErrorPage />,
   },
+  {
+    path: "/sunrise-sunset",
+    element: <Program.SunriseSunsetPage />,
+    errorElement: <ErrorPage />,
+  },
 ];
 
 // const programRoutes: RouteObject[] = [
@@ -120,6 +125,7 @@ const projectList = [
   { id: 10, path: "/dinner-menu", title: "오늘 저녁 뭐 먹지? - 안주.ver 🍽️" },
   { id: 11, path: "/motion-drawing", title: "모션 드로잉 ✋" },
   { id: 12, path: "/oracle-receipt", title: "운명의 영수증 🧾" },
+  { id: 13, path: "/sunrise-sunset", title: "일출 일몰 시간 🌅" },
 ];
 
 export { defaultRoutes, programRoutes, projectList };

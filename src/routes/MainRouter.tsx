@@ -30,7 +30,9 @@ declare global {
 }
 
 const shouldEnableGa = () =>
-  GA_ALLOWED_HOSTNAMES.includes(window.location.hostname as (typeof GA_ALLOWED_HOSTNAMES)[number]) &&
+  GA_ALLOWED_HOSTNAMES.includes(
+    window.location.hostname as (typeof GA_ALLOWED_HOSTNAMES)[number],
+  ) &&
   GA_ALLOWED_PATH_PREFIXES.some((prefix) =>
     window.location.pathname.startsWith(prefix),
   );
@@ -139,6 +141,7 @@ const MainRouter = () => {
     pathname.startsWith("/seasonal-food") ||
     pathname.startsWith("/gpx") ||
     pathname.startsWith("/motion-drawing") ||
+    pathname.startsWith("/sunrise-sunset") ||
     pathname.startsWith("/jeju-trail-2026");
   useEffect(() => {
     initializeGa();
@@ -248,6 +251,7 @@ const MainRouter = () => {
           overflowY: isMobile() ? "auto" : "scroll",
           scrollbarGutter: "stable",
           WebkitOverflowScrolling: "touch",
+          width: "-webkit-fill-available",
           // height: "100%",
         }}
       >
@@ -255,7 +259,12 @@ const MainRouter = () => {
           className={`${isMobile() && "wrapper"}`}
           style={
             isMobile()
-              ? { overflow: "visible", height: "auto", minHeight: "100vh" }
+              ? {
+                  overflow: "visible",
+                  height: "auto",
+                  minHeight: "100vh",
+                  width: "100%",
+                }
               : undefined
           }
         >

@@ -8,6 +8,7 @@ interface Adfit {
 declare global {
   interface Window {
     adfit?: Adfit;
+    naver?: any;
   }
 
   interface DROPDOWN {
