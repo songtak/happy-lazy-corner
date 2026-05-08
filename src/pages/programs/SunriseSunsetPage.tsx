@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { sunrise_result } from "@/assets/sunrise_coords";
 
-const NCLOUD_CLIENT_ID = "4he4o3zf4v"; // provided by user
+const NCLOUD_CLIENT_ID = "uqms5x0d6b"; // provided by user
 // const NCLOUD_CLIENT_SECRET = "EwP64krczmUPTdvp8rgvT3drQ5mF03ABrI7Hmiby";
 
 const loadNaverMaps = (clientId: string) => {
@@ -279,30 +279,26 @@ const getRiseSetDisplayFields = (
   return fields;
 };
 
-  const buildRiseSetHtml = (item: Record<string, string>, locDate?: string) =>
-    getRiseSetDisplayFields(item, locDate)
-      .map(
+const buildRiseSetHtml = (item: Record<string, string>, locDate?: string) =>
+  getRiseSetDisplayFields(item, locDate)
+    .map(
       (field) =>
         `<div style="display:flex; justify-content:space-between; gap:12px; margin-bottom:4px;"><strong style="font-weight:600; color:#1c1c1e;">${escapeHtml(
           field.label,
         )}</strong><span style="color:#1c1c1e;">${escapeHtml(field.value)}</span></div>`,
-      )
-      .join("");
+    )
+    .join("");
 
-  const filterListDetailFields = (
-    fields: Array<{ label: string; value: string }>,
-  ) =>
-      fields.filter(
-        (field) =>
-          ![
-          "날짜",
-          "지역",
-          "일중",
-          "월출",
-          "월중",
-          "월몰",
-        ].includes(field.label),
-    );
+const filterListDetailFields = (
+  fields: Array<{ label: string; value: string }>,
+) =>
+  fields.filter(
+    (field) =>
+      !["날짜", "지역", "일중", "월출", "월중", "월몰"].includes(field.label),
+  );
+
+const normalizeSearchText = (value: string) =>
+  value.replace(/\s+/g, "").toLowerCase();
 
 const SunriseSunsetPage: React.FC = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -321,6 +317,7 @@ const SunriseSunsetPage: React.FC = () => {
   const [naverLoadedFlag, setNaverLoadedFlag] = useState<boolean>(false);
   const [isIntroComplete, setIsIntroComplete] = useState<boolean>(false);
   const [isLocationListOpen, setIsLocationListOpen] = useState<boolean>(false);
+  const [locationSearch, setLocationSearch] = useState<string>("");
   const [expandedLocationKey, setExpandedLocationKey] = useState<string | null>(
     null,
   );
@@ -349,6 +346,12 @@ const SunriseSunsetPage: React.FC = () => {
   useEffect(() => {
     setExpandedLocationKey(null);
   }, [locDate]);
+
+  useEffect(() => {
+    if (!isLocationListOpen) {
+      setLocationSearch("");
+    }
+  }, [isLocationListOpen]);
 
   useEffect(() => {
     const titleTimer = window.setTimeout(() => {
@@ -470,6 +473,12 @@ const SunriseSunsetPage: React.FC = () => {
     const maxDate = parseInt(getDateOffset(7));
     return currentDateNum < maxDate;
   };
+
+  const filteredSunriseLocations = sunrise_result.filter((item) => {
+    const query = normalizeSearchText(locationSearch.trim());
+    if (!query) return true;
+    return normalizeSearchText(item.location).includes(query);
+  });
 
   /** 송탁 버튼 클릭 */
   const handleClickSongtak = () => {
@@ -1088,7 +1097,7 @@ const SunriseSunsetPage: React.FC = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: isIntroComplete ? "flex-start" : "center",
-        paddingTop: isIntroComplete ? "90px" : "0",
+        paddingTop: isIntroComplete ? "120px" : "0",
         transition: "padding-top 700ms ease",
         boxSizing: "border-box",
         paddingLeft: "16px",
@@ -1285,7 +1294,7 @@ const SunriseSunsetPage: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
             style={{
               width: "min(560px, 100%)",
-              maxHeight: "78vh",
+              height: "78vh",
               background: "#ffffff",
               borderRadius: 20,
               boxShadow: "0 18px 50px rgba(0,0,0,0.2)",
@@ -1335,125 +1344,168 @@ const SunriseSunsetPage: React.FC = () => {
 
             <div
               style={{
-                overflowY: "auto",
-                padding: 12,
+                padding: "12px 12px 0",
+                flexShrink: 0,
               }}
             >
-              {sunrise_result.map((item) => {
-                const detailKey = getLocationDetailKey(item.location);
-                const detail = locationDetailCache[detailKey];
-                const isExpanded = expandedLocationKey === detailKey;
+              <input
+                value={locationSearch}
+                onChange={(e) => setLocationSearch(e.target.value)}
+                placeholder="지역 검색"
+                aria-label="지역 검색"
+                autoComplete="off"
+                style={{
+                  width: "100%",
+                  border: "1px solid rgba(28,28,30,0.14)",
+                  borderRadius: 14,
+                  padding: "12px 14px",
+                  fontSize: 14,
+                  outline: "none",
+                  boxSizing: "border-box",
+                  background: "#fff",
+                }}
+              />
+            </div>
 
-                return (
-                  <div
-                    key={item.location}
-                    style={{
-                      border: "1px solid rgba(28,28,30,0.08)",
-                      borderRadius: 16,
-                      marginBottom: 10,
-                      overflow: "hidden",
-                      background: "#fff",
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (isExpanded) {
-                          setExpandedLocationKey(null);
-                          return;
-                        }
-                        setExpandedLocationKey(detailKey);
-                        void loadLocationDetails(item.location);
-                      }}
+            <div
+              style={{
+                flex: 1,
+                overflowY: "auto",
+                padding: 12,
+                minHeight: 0,
+              }}
+            >
+              {filteredSunriseLocations.length ? (
+                filteredSunriseLocations.map((item) => {
+                  const detailKey = getLocationDetailKey(item.location);
+                  const detail = locationDetailCache[detailKey];
+                  const isExpanded = expandedLocationKey === detailKey;
+
+                  return (
+                    <div
+                      key={item.location}
                       style={{
-                        width: "100%",
-                        border: "none",
+                        border: "1px solid rgba(28,28,30,0.08)",
+                        borderRadius: 16,
+                        marginBottom: 10,
+                        overflow: "hidden",
                         background: "#fff",
-                        cursor: "pointer",
-                        padding: "14px 16px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 12,
                       }}
                     >
-                      <span
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isExpanded) {
+                            setExpandedLocationKey(null);
+                            return;
+                          }
+                          setExpandedLocationKey(detailKey);
+                          void loadLocationDetails(item.location);
+                        }}
                         style={{
-                          fontSize: 15,
-                          fontWeight: 600,
-                          color: "#1c1c1e",
-                          textAlign: "left",
+                          width: "100%",
+                          border: "none",
+                          background: "#fff",
+                          cursor: "pointer",
+                          padding: "14px 16px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 12,
                         }}
                       >
-                        {item.location}
-                      </span>
-                      {isExpanded ? (
-                        <ChevronUp size={18} color="rgba(28,28,30,0.6)" />
-                      ) : (
-                        <ChevronDown size={18} color="rgba(28,28,30,0.6)" />
-                      )}
-                    </button>
-
-                    {isExpanded ? (
-                      <div
-                        style={{
-                          borderTop: "1px solid rgba(28,28,30,0.08)",
-                          background: "#fafafa",
-                          padding: "14px 16px 16px",
-                        }}
-                      >
-                        {detail?.status === "loading" ? (
-                          <div style={{ color: "#6e6e73", fontSize: 13 }}>
-                            정보를 불러오는 중...
-                          </div>
-                        ) : detail?.status === "error" ? (
-                          <div style={{ color: "#c0392b", fontSize: 13 }}>
-                            {detail.error || "정보를 불러오지 못했습니다."}
-                          </div>
+                        <span
+                          style={{
+                            fontSize: 15,
+                            fontWeight: 600,
+                            color: "#1c1c1e",
+                            textAlign: "left",
+                          }}
+                        >
+                          {item.location}
+                        </span>
+                        {isExpanded ? (
+                          <ChevronUp size={18} color="rgba(28,28,30,0.6)" />
                         ) : (
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns:
-                                "repeat(auto-fit, minmax(140px, 1fr))",
-                              gap: "8px 12px",
-                            }}
-                          >
-                            {(detail?.fields ?? []).map((field) => (
-                              <div
-                                key={`${item.location}-${field.label}`}
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  gap: 2,
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    fontSize: 11,
-                                    color: "rgba(28,28,30,0.55)",
-                                  }}
-                                >
-                                  {field.label}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: 14,
-                                    color: "#1c1c1e",
-                                    fontWeight: 600,
-                                  }}
-                                >
-                                  {field.value}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
+                          <ChevronDown size={18} color="rgba(28,28,30,0.6)" />
                         )}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
+                      </button>
+
+                      {isExpanded ? (
+                        <div
+                          style={{
+                            borderTop: "1px solid rgba(28,28,30,0.08)",
+                            background: "#fafafa",
+                            padding: "14px 16px 16px",
+                          }}
+                        >
+                          {detail?.status === "loading" ? (
+                            <div style={{ color: "#6e6e73", fontSize: 13 }}>
+                              정보를 불러오는 중...
+                            </div>
+                          ) : detail?.status === "error" ? (
+                            <div style={{ color: "#c0392b", fontSize: 13 }}>
+                              {detail.error || "정보를 불러오지 못했습니다."}
+                            </div>
+                          ) : (
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns:
+                                  "repeat(3, minmax(0, 1fr))",
+                                gap: "10px 10px",
+                              }}
+                            >
+                              {(detail?.fields ?? []).map((field) => (
+                                <div
+                                  key={`${item.location}-${field.label}`}
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 2,
+                                    minWidth: 0,
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: 10,
+                                      color: "rgba(28,28,30,0.55)",
+                                      lineHeight: 1.2,
+                                    }}
+                                  >
+                                    {field.label}
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: 13,
+                                      color: "#1c1c1e",
+                                      fontWeight: 600,
+                                      lineHeight: 1.25,
+                                    }}
+                                  >
+                                    {field.value}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })
+              ) : (
+                <div
+                  style={{
+                    padding: "18px 12px",
+                    textAlign: "center",
+                    color: "rgba(28,28,30,0.55)",
+                    fontSize: 13,
+                  }}
+                >
+                  일치하는 지역이 없습니다.
+                </div>
+              )}
             </div>
           </div>
         </div>
