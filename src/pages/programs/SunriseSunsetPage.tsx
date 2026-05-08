@@ -1,6 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactGA from "react-ga4";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  List,
+  X,
+} from "lucide-react";
 import { sunrise_result } from "@/assets/sunrise_coords";
 
 const NCLOUD_CLIENT_ID = "4he4o3zf4v"; // provided by user
@@ -175,6 +182,128 @@ const formatTime = (raw?: string) => {
   return `${hhmm.slice(0, 2)}:${hhmm.slice(2)}`;
 };
 
+const getRiseSetTimeMinutes = (raw?: string) => {
+  if (!raw) return null;
+  const normalized = formatTime(raw);
+  if (normalized === "-") return null;
+
+  const [hours, mins] = normalized.split(":").map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(mins)) return null;
+  return hours * 60 + mins;
+};
+
+const formatDuration = (minutes: number) => {
+  const sign = minutes >= 0 ? "" : "-";
+  const abs = Math.abs(minutes);
+  const hh = String(Math.floor(abs / 60)).padStart(2, "0");
+  const mm = String(abs % 60).padStart(2, "0");
+  return `${sign}${hh}:${mm}`;
+};
+
+const getRiseSetDisplayFields = (
+  item: Record<string, string>,
+  locDate?: string,
+) => {
+  const sunrise =
+    item["sunrise"] ||
+    item["sunriseTime"] ||
+    item["srTime"] ||
+    item["sunR"] ||
+    item["suntime"] ||
+    "";
+  const sunset =
+    item["sunset"] ||
+    item["sunsetTime"] ||
+    item["ssTime"] ||
+    item["sunS"] ||
+    "";
+
+  const fields: Array<{ label: string; value: string }> = [];
+
+  if (locDate && locDate.length === 8) {
+    fields.push({
+      label: "날짜",
+      value: `${locDate.slice(0, 4)}.${locDate.slice(4, 6)}.${locDate.slice(
+        6,
+        8,
+      )}`,
+    });
+  }
+
+  fields.push({
+    label: "지역",
+    value: item.location || "-",
+  });
+
+  if (sunrise) {
+    fields.push({ label: "일출", value: formatTime(sunrise) });
+  }
+  if (item["suntransit"]) {
+    fields.push({ label: "일중", value: formatTime(item["suntransit"]) });
+  }
+  if (sunset) {
+    fields.push({ label: "일몰", value: formatTime(sunset) });
+  }
+
+  const sunriseMinutes = getRiseSetTimeMinutes(sunrise);
+  const sunsetMinutes = getRiseSetTimeMinutes(sunset);
+  if (
+    sunriseMinutes != null &&
+    sunsetMinutes != null &&
+    sunsetMinutes >= sunriseMinutes
+  ) {
+    fields.push({
+      label: "낮의 길이",
+      value: formatDuration(sunsetMinutes - sunriseMinutes),
+    });
+  }
+
+  const extraFields: Array<[string, string | undefined]> = [
+    ["월출", item["moonrise"]],
+    ["월중", item["moontransit"]],
+    ["월몰", item["moonset"]],
+    ["시민박명(아침)", item["civilm"]],
+    ["항해박명(아침)", item["nautm"]],
+    ["천문박명(아침)", item["astm"]],
+    ["시민박명(저녁)", item["civile"]],
+    ["항해박명(저녁)", item["naute"]],
+    ["천문박명(저녁)", item["aste"]],
+  ];
+
+  extraFields.forEach(([label, value]) => {
+    if (value) {
+      fields.push({ label, value: formatTime(value) });
+    }
+  });
+
+  return fields;
+};
+
+  const buildRiseSetHtml = (item: Record<string, string>, locDate?: string) =>
+    getRiseSetDisplayFields(item, locDate)
+      .map(
+      (field) =>
+        `<div style="display:flex; justify-content:space-between; gap:12px; margin-bottom:4px;"><strong style="font-weight:600; color:#1c1c1e;">${escapeHtml(
+          field.label,
+        )}</strong><span style="color:#1c1c1e;">${escapeHtml(field.value)}</span></div>`,
+      )
+      .join("");
+
+  const filterListDetailFields = (
+    fields: Array<{ label: string; value: string }>,
+  ) =>
+      fields.filter(
+        (field) =>
+          ![
+          "날짜",
+          "지역",
+          "일중",
+          "월출",
+          "월중",
+          "월몰",
+        ].includes(field.label),
+    );
+
 const SunriseSunsetPage: React.FC = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -191,6 +320,20 @@ const SunriseSunsetPage: React.FC = () => {
   const [debugReferrer, setDebugReferrer] = useState<string>("");
   const [naverLoadedFlag, setNaverLoadedFlag] = useState<boolean>(false);
   const [isIntroComplete, setIsIntroComplete] = useState<boolean>(false);
+  const [isLocationListOpen, setIsLocationListOpen] = useState<boolean>(false);
+  const [expandedLocationKey, setExpandedLocationKey] = useState<string | null>(
+    null,
+  );
+  const [locationDetailCache, setLocationDetailCache] = useState<
+    Record<
+      string,
+      {
+        status: "idle" | "loading" | "ready" | "error";
+        error?: string;
+        fields?: Array<{ label: string; value: string }>;
+      }
+    >
+  >({});
   // keep a ref of the selected date so closures (marker handlers) always read latest value
   const locDateRef = React.useRef<string>(locDate);
   const mapInstanceRef = React.useRef<any>(null);
@@ -201,6 +344,10 @@ const SunriseSunsetPage: React.FC = () => {
 
   React.useEffect(() => {
     locDateRef.current = locDate;
+  }, [locDate]);
+
+  useEffect(() => {
+    setExpandedLocationKey(null);
   }, [locDate]);
 
   useEffect(() => {
@@ -227,10 +374,18 @@ const SunriseSunsetPage: React.FC = () => {
       "font-size:13px; line-height:1.5; color:#1c1c1e; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto; overflow-wrap:break-word; text-align:center;";
 
     return `
-        <div style="padding:12px 14px; min-width:180px; max-width:300px; display:flex; flex-direction:column; align-items:center;">
-          <div style="${titleStyle}">${escapeHtml(title)}</div>
-          ${subtitle ? `<div style="${subtitleStyle}">${escapeHtml(subtitle)}</div>` : ""}
-          <div style="${bodyStyle}">${innerHtml}</div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:0;">
+          <div style="border:3px solid #f28c28; border-radius:18px; background:#ffffff; box-shadow:0 6px 18px rgba(0,0,0,0.08);">
+            <div style="padding:12px 14px; min-width:180px; max-width:300px; display:flex; flex-direction:column; align-items:center;">
+              <div style="${titleStyle}">${escapeHtml(title)}</div>
+              ${subtitle ? `<div style="${subtitleStyle}">${escapeHtml(subtitle)}</div>` : ""}
+              <div style="${bodyStyle}">${innerHtml}</div>
+            </div>
+          </div>
+          <div style="position:relative; width:28px; height:14px; margin-top:-2px;">
+            <div style="position:absolute; left:50%; transform:translateX(-50%); width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-top:14px solid #f28c28;"></div>
+            <div style="position:absolute; left:50%; top:-2px; transform:translateX(-50%); width:0; height:0; border-left:11px solid transparent; border-right:11px solid transparent; border-top:11px solid #ffffff;"></div>
+          </div>
         </div>
       `;
   };
@@ -494,14 +649,14 @@ const SunriseSunsetPage: React.FC = () => {
                 "",
                 '<div style="color:#6e6e73">정보를 불러오는 중...</div>',
               ),
-              backgroundColor: "#ffffff",
-              borderColor: "#e0e0e0",
-              borderWidth: 1,
-              borderRadius: 12,
+              backgroundColor: "transparent",
+              borderColor: "transparent",
+              borderWidth: 0,
+              borderRadius: 0,
               anchorSize: new naver.maps.Size(25, 25),
               anchorSkew: true,
-              anchorColor: "#ffffff",
-              pixelOffset: new naver.maps.Point(0, -10),
+              anchorColor: "transparent",
+              pixelOffset: new naver.maps.Point(0, 16),
               radius: 8,
             });
             infoWindowRef.current = infoWindow;
@@ -750,6 +905,54 @@ const SunriseSunsetPage: React.FC = () => {
       );
     });
 
+  const getLocationDetailKey = (location: string) =>
+    `${location}|${locDateRef.current || locDate}`;
+
+  const loadLocationDetails = async (location: string) => {
+    const detailKey = getLocationDetailKey(location);
+    const cached = locationDetailCache[detailKey];
+
+    if (cached?.status === "ready" || cached?.status === "loading") {
+      return;
+    }
+
+    setLocationDetailCache((prev) => ({
+      ...prev,
+      [detailKey]: { status: "loading" },
+    }));
+
+    try {
+      const items = await fetchRiseSetForLocation(
+        location,
+        locDateRef.current || locDate,
+      );
+      const fields = items?.[0]
+        ? filterListDetailFields(
+            getRiseSetDisplayFields(items[0], locDateRef.current || locDate),
+          )
+        : [
+            { label: "지역", value: location },
+            { label: "정보", value: "데이터가 없습니다." },
+          ];
+
+      setLocationDetailCache((prev) => ({
+        ...prev,
+        [detailKey]: {
+          status: "ready",
+          fields,
+        },
+      }));
+    } catch (err) {
+      setLocationDetailCache((prev) => ({
+        ...prev,
+        [detailKey]: {
+          status: "error",
+          error: "정보를 불러오지 못했습니다.",
+        },
+      }));
+    }
+  };
+
   const openInfoWindowForPoint = async (
     marker: any,
     options: {
@@ -775,14 +978,14 @@ const SunriseSunsetPage: React.FC = () => {
             "",
             '<div style="color:#6e6e73">정보를 불러오는 중...</div>',
           ),
-          backgroundColor: "#ffffff",
-          borderColor: "#e0e0e0",
-          borderWidth: 1,
-          borderRadius: 12,
+          backgroundColor: "transparent",
+          borderColor: "transparent",
+          borderWidth: 0,
+          borderRadius: 0,
           anchorSize: new naver.maps.Size(25, 25),
           anchorSkew: true,
-          anchorColor: "#ffffff",
-          pixelOffset: new naver.maps.Point(0, -10),
+          anchorColor: "transparent",
+          pixelOffset: new naver.maps.Point(0, 16),
           radius: 8,
         });
       } else {
@@ -827,8 +1030,8 @@ const SunriseSunsetPage: React.FC = () => {
           "";
 
         if (sunrise || sunset) {
-          bodyHtml += `<div style="color:#1c1c1e; margin-bottom:4px; display:flex; align-items:center;">일출 🌞  ${formatTime(sunrise)}${getTimeDifference(sunrise)}</div>`;
-          bodyHtml += `<div style="color:#1c1c1e; display:flex; align-items:center;">일몰 🌚  ${formatTime(sunset)}${getTimeDifference(sunset)}</div>`;
+          bodyHtml += `<div style="color:#1c1c1e; margin-bottom:4px; display:flex; align-items:center; justify-content:space-between; gap:12px;"><span>일출 🌞</span><span>${formatTime(sunrise)}${getTimeDifference(sunrise)}</span></div>`;
+          bodyHtml += `<div style="color:#1c1c1e; display:flex; align-items:center; justify-content:space-between; gap:12px;"><span>일몰 🌚</span><span>${formatTime(sunset)}${getTimeDifference(sunset)}</span></div>`;
         } else {
           const keys = Object.keys(first).slice(0, 6);
           keys.forEach((k) => {
@@ -865,7 +1068,7 @@ const SunriseSunsetPage: React.FC = () => {
     }
     openInfoWindowForPoint(activeMarkerRef.current, {
       title: activeLocationRef.current,
-      subtitle: "일출/일몰 기준 지역",
+      //   subtitle: "일출/일몰 기준 지역",
       locationForQuery: activeLocationRef.current,
     });
   }, [locDate]);
@@ -885,7 +1088,7 @@ const SunriseSunsetPage: React.FC = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: isIntroComplete ? "flex-start" : "center",
-        paddingTop: isIntroComplete ? "80px" : "0",
+        paddingTop: isIntroComplete ? "90px" : "0",
         transition: "padding-top 700ms ease",
         boxSizing: "border-box",
         paddingLeft: "16px",
@@ -938,58 +1141,87 @@ const SunriseSunsetPage: React.FC = () => {
 
       <div
         style={{
+          position: "relative",
           marginBottom: "24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: "1px",
           fontSize: "18px",
+          width: "100%",
+          maxWidth: "560px",
           opacity: isIntroComplete ? 1 : 0,
           transform: isIntroComplete ? "translateY(0)" : "translateY(12px)",
           transition: "opacity 700ms ease, transform 700ms ease",
           pointerEvents: isIntroComplete ? "auto" : "none",
         }}
       >
-        <button
-          onClick={() => handleDateChange(-1)}
-          disabled={locDate === getDateOffset(0)}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: locDate === getDateOffset(0) ? "default" : "pointer",
-            opacity: locDate === getDateOffset(0) ? 0.3 : 1,
-            padding: 0,
-            lineHeight: 1,
-          }}
-          aria-label="이전 날짜"
-        >
-          <ArrowLeft size={28} strokeWidth={2.25} />
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "1px" }}>
+          <button
+            onClick={() => handleDateChange(-1)}
+            disabled={locDate === getDateOffset(0)}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: locDate === getDateOffset(0) ? "default" : "pointer",
+              opacity: locDate === getDateOffset(0) ? 0.3 : 1,
+              padding: 0,
+              lineHeight: 1,
+            }}
+            aria-label="이전 날짜"
+          >
+            <ArrowLeft size={28} strokeWidth={2.25} color="rgba(0,0,0,0.45)" />
+          </button>
 
-        <span
-          style={{
-            minWidth: "140px",
-            textAlign: "center",
-            color: "rgba(0,0,0,0.55)",
-          }}
-        >
-          {formatDateDisplay(locDate)}
-        </span>
+          <span
+            style={{
+              minWidth: "140px",
+              textAlign: "center",
+              color: "rgba(0,0,0,0.55)",
+            }}
+          >
+            {formatDateDisplay(locDate)}
+          </span>
+
+          <button
+            onClick={() => handleDateChange(1)}
+            disabled={!canGoNext()}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: !canGoNext() ? "default" : "pointer",
+              opacity: !canGoNext() ? 0.3 : 1,
+              padding: 0,
+              lineHeight: 1,
+            }}
+            aria-label="다음 날짜"
+          >
+            <ArrowRight size={28} strokeWidth={2.25} color="rgba(0,0,0,0.45)" />
+          </button>
+        </div>
 
         <button
-          onClick={() => handleDateChange(1)}
-          disabled={!canGoNext()}
+          type="button"
+          onClick={() => setIsLocationListOpen(true)}
+          aria-label="지역 목록 열기"
           style={{
-            background: "none",
-            border: "none",
-            cursor: !canGoNext() ? "default" : "pointer",
-            opacity: !canGoNext() ? 0.3 : 1,
-            padding: 0,
-            lineHeight: 1,
+            position: "absolute",
+            right: 0,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 40,
+            height: 40,
+            borderRadius: 9999,
+            border: "1px solid rgba(28,28,30,0.12)",
+            background: "rgba(255,255,255,0.96)",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            flexShrink: 0,
           }}
-          aria-label="다음 날짜"
         >
-          <ArrowRight size={28} strokeWidth={2.25} />
+          <List size={20} color="#1c1c1e" strokeWidth={2.3} />
         </button>
       </div>
 
@@ -1005,11 +1237,13 @@ const SunriseSunsetPage: React.FC = () => {
           pointerEvents: isIntroComplete ? "auto" : "none",
         }}
       >
-        <div style={{ width: "100%", maxWidth: "100%" }}>
+        <div style={{ width: "100%", maxWidth: "100%", position: "relative" }}>
           <div
             ref={mapRef}
             id="naver-map"
             style={{
+              position: "relative",
+              zIndex: 0,
               width: "100%",
               height: "70vh",
               borderRadius: 8,
@@ -1030,6 +1264,200 @@ const SunriseSunsetPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {isLocationListOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsLocationListOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.34)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "24px 16px",
+            zIndex: 30,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(560px, 100%)",
+              maxHeight: "78vh",
+              background: "#ffffff",
+              borderRadius: 20,
+              boxShadow: "0 18px 50px rgba(0,0,0,0.2)",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                padding: "18px 18px 14px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                borderBottom: "1px solid rgba(28,28,30,0.08)",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: "#1c1c1e",
+                  }}
+                >
+                  지역 목록
+                </div>
+                <div style={{ fontSize: 12, color: "rgba(28,28,30,0.58)" }}>
+                  {formatDateDisplay(locDate)} 기준
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsLocationListOpen(false)}
+                aria-label="닫기"
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  padding: 4,
+                  lineHeight: 0,
+                }}
+              >
+                <X size={22} color="rgba(28,28,30,0.7)" />
+              </button>
+            </div>
+
+            <div
+              style={{
+                overflowY: "auto",
+                padding: 12,
+              }}
+            >
+              {sunrise_result.map((item) => {
+                const detailKey = getLocationDetailKey(item.location);
+                const detail = locationDetailCache[detailKey];
+                const isExpanded = expandedLocationKey === detailKey;
+
+                return (
+                  <div
+                    key={item.location}
+                    style={{
+                      border: "1px solid rgba(28,28,30,0.08)",
+                      borderRadius: 16,
+                      marginBottom: 10,
+                      overflow: "hidden",
+                      background: "#fff",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isExpanded) {
+                          setExpandedLocationKey(null);
+                          return;
+                        }
+                        setExpandedLocationKey(detailKey);
+                        void loadLocationDetails(item.location);
+                      }}
+                      style={{
+                        width: "100%",
+                        border: "none",
+                        background: "#fff",
+                        cursor: "pointer",
+                        padding: "14px 16px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 12,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 15,
+                          fontWeight: 600,
+                          color: "#1c1c1e",
+                          textAlign: "left",
+                        }}
+                      >
+                        {item.location}
+                      </span>
+                      {isExpanded ? (
+                        <ChevronUp size={18} color="rgba(28,28,30,0.6)" />
+                      ) : (
+                        <ChevronDown size={18} color="rgba(28,28,30,0.6)" />
+                      )}
+                    </button>
+
+                    {isExpanded ? (
+                      <div
+                        style={{
+                          borderTop: "1px solid rgba(28,28,30,0.08)",
+                          background: "#fafafa",
+                          padding: "14px 16px 16px",
+                        }}
+                      >
+                        {detail?.status === "loading" ? (
+                          <div style={{ color: "#6e6e73", fontSize: 13 }}>
+                            정보를 불러오는 중...
+                          </div>
+                        ) : detail?.status === "error" ? (
+                          <div style={{ color: "#c0392b", fontSize: 13 }}>
+                            {detail.error || "정보를 불러오지 못했습니다."}
+                          </div>
+                        ) : (
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns:
+                                "repeat(auto-fit, minmax(140px, 1fr))",
+                              gap: "8px 12px",
+                            }}
+                          >
+                            {(detail?.fields ?? []).map((field) => (
+                              <div
+                                key={`${item.location}-${field.label}`}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: 2,
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontSize: 11,
+                                    color: "rgba(28,28,30,0.55)",
+                                  }}
+                                >
+                                  {field.label}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: 14,
+                                    color: "#1c1c1e",
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {field.value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
