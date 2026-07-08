@@ -15,6 +15,7 @@ import DinnerMenuPage from "./DinnerMenuPage";
 import MotionDrawingPage from "./MotionDrawingPage";
 import OraclePage from "./OraclePage";
 import SunriseSunsetPage from "./SunriseSunsetPage";
+import SpicyMapPage from "./SpicyMapPage";
 
 export {
   YearlyProgressPage,
@@ -34,4 +35,5 @@ export {
   MotionDrawingPage,
   OraclePage,
   SunriseSunsetPage,
+  SpicyMapPage,
 };

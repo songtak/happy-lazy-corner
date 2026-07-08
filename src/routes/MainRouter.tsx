@@ -138,6 +138,7 @@ const MainRouter = () => {
   const [pathname, setPathname] = useState(router.state.location.pathname);
   const shouldHideCoupangAds =
     pathname.startsWith("/oracle") ||
+    pathname.startsWith("/lost-and-found") ||
     pathname.startsWith("/seasonal-food") ||
     pathname.startsWith("/gpx") ||
     pathname.startsWith("/motion-drawing") ||
@@ -285,10 +286,10 @@ const MainRouter = () => {
               // borderTop: "1px solid #efefef",
             }}
           >
-            <div style={{ fontSize: "8px", color: "#b8b8b8", lineHeight: 1 }}>
+            {/* <div style={{ fontSize: "8px", color: "#b8b8b8", lineHeight: 1 }}>
               이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의
               수수료를 제공받습니다.
-            </div>
+            </div> */}
             <a
               href="https://www.instagram.com/sn9tk"
               target="_blank"

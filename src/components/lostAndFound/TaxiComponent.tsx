@@ -17,7 +17,7 @@ const cardStyle: React.CSSProperties = {
 
 const buttonStyle = {
   borderRadius: "18px",
-  fontFamily: "GMedium",
+  fontFamily: "SeoulNamsan, sans-serif",
   padding: "8px 12px",
   width: "100%",
   minWidth: 0,
@@ -33,56 +33,64 @@ const TaxiLostNotice = ({ style }: { style?: React.CSSProperties }) => {
       >
         택시 분실물은 별도 보관소로 이동되기 전에{" "}
         <div>기사님이 보관하고 있는 경우가 많습니다.</div>
-        <div className="gbold" style={{ marginTop: "12px" }}>
-          빠른 확인을 위해 직접 연락해보세요.{" "}
+        <div
+          className="gbold"
+          style={{ marginTop: "12px", color: "#0082FF", fontWeight: 800 }}
+        >
+          빠른 확인을 위해 직접 연락해보세요.
         </div>
         <div style={{ marginTop: "12px" }}>
           일정 기간 주인을 찾지 못한 물품은 경찰서로 인계되며
         </div>
-        <div>이후 LOST112에서 조회할 수 있습니다.</div>
+        <div>이후 경찰민원24에서 조회할 수 있습니다.</div>
       </div>
+      <TaxiInquiryButtons />
+    </div>
+  );
+};
 
-      <div
-        style={{
-          marginTop: "16px",
+const TaxiInquiryButtons = () => {
+  return (
+    <div
+      style={{
+        marginTop: "16px",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "10px",
+      }}
+    >
+      <Button
+        sx={{
+          marginTop: "12px",
           width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "10px",
+          fontFamily: "SeoulNamsan, sans-serif",
+          borderRadius: "18px",
         }}
+        variant="outlined"
+        onClick={() =>
+          window.open("https://news.seoul.go.kr/traffic/find#list/1", "_blank")
+        }
       >
-        <Button
-          sx={{
-            marginTop: "12px",
-            width: "100%",
-            fontFamily: "GMedium",
-            borderRadius: "18px",
-          }}
-          variant="outlined"
-          onClick={() =>
-            window.open(
-              "https://news.seoul.go.kr/traffic/find#list/1",
-              "_blank",
-            )
-          }
-        >
-          서울시 대중교통 분실물센터 조회하기
-        </Button>
-        <Button
-          sx={{
-            width: "100%",
-            fontFamily: "GMedium",
-            borderRadius: "18px",
-          }}
-          variant="outlined"
-          onClick={() =>
-            window.open("https://www.lost112.go.kr/find/findList.do", "_blank")
-          }
-        >
-          경찰청 분실물 조회하기
-        </Button>
-      </div>
+        서울시 대중교통 분실물센터 조회하기
+      </Button>
+      <Button
+        sx={{
+          width: "100%",
+          fontFamily: "SeoulNamsan, sans-serif",
+          borderRadius: "18px",
+        }}
+        variant="outlined"
+        onClick={() =>
+          window.open(
+            "https://minwon24.police.go.kr/cvlcpt/cvlcptAply.do?cvlcptId=MW-201&keyword=",
+            "_blank",
+          )
+        }
+      >
+        경찰민원24 분실물 조회하기
+      </Button>
     </div>
   );
 };
@@ -181,7 +189,7 @@ const TaxiComponent = () => {
       <div style={cardStyle}>
         <div
           className="gmedium"
-          style={{ fontSize: "18px", marginBottom: "20px", textAlign: "left" }}
+          style={{ fontSize: "16px", marginBottom: "20px", textAlign: "left" }}
         >
           택시를 어떻게 이용했나요?
         </div>
@@ -191,14 +199,14 @@ const TaxiComponent = () => {
             sx={buttonStyle}
             onClick={() => handleSelectTaxiUseType("app")}
           >
-            🚖 호출 앱으로 이용
+            호출 앱으로 이용
           </Button>
           <Button
             variant={taxiUseType === "street" ? "contained" : "outlined"}
             sx={buttonStyle}
             onClick={() => handleSelectTaxiUseType("street")}
           >
-            🚕 길에서 탑승
+            길에서 탑승
           </Button>
         </div>
       </div>
@@ -208,7 +216,7 @@ const TaxiComponent = () => {
           <div
             className="gmedium"
             style={{
-              fontSize: "18px",
+              fontSize: "16px",
               marginBottom: "16px",
               textAlign: "left",
             }}
@@ -314,7 +322,7 @@ const TaxiComponent = () => {
           <div
             className="gmedium"
             style={{
-              fontSize: "18px",
+              fontSize: "16px",
               marginBottom: "20px",
               textAlign: "left",
             }}
@@ -399,7 +407,7 @@ const TaxiComponent = () => {
             <div
               className="gmedium"
               style={{
-                fontSize: "18px",
+                fontSize: "16px",
                 marginBottom: "20px",
                 textAlign: "left",
               }}
@@ -449,7 +457,7 @@ const TaxiComponent = () => {
               <div
                 className="gmedium"
                 style={{
-                  fontSize: "18px",
+                  fontSize: "16px",
                   marginBottom: "12px",
                   textAlign: "left",
                 }}
@@ -458,8 +466,9 @@ const TaxiComponent = () => {
               </div>
               <div className="glight" style={{ fontSize: "14px" }}>
                 <div>
-                  티머니 결제 단말기를 사용한 경우 고객센터를 통해 이용 택시
-                  정보를 확인할 수 있습니다.
+                  티머니 결제 단말기를 사용한 경우
+                  <br />
+                  고객센터를 통해 이용 택시정보를 확인할 수 있습니다.
                 </div>
                 <div></div>
                 <div style={{ marginTop: "32px" }}>
@@ -482,84 +491,101 @@ const TaxiComponent = () => {
         appHasRecord === "no" &&
         appNoRecordKnowTaxiNo === "no" &&
         appNoRecordPayment === "transfer" && (
-          <div ref={cardAppNoRecordPaymentGuideRef} style={cardStyle}>
-            <div
-              className="gmedium"
-              style={{
-                fontSize: "18px",
-                marginBottom: "12px",
-                textAlign: "left",
-              }}
-            >
-              계좌이체 안내
-            </div>
-            <div className="glight" style={{ fontSize: "14px" }}>
-              이체 기록(수취인/시간/금액)을 정리해 고객센터로 분실 문의를
-              진행하세요.
-              <div style={{ marginTop: "32px" }}>
-                <span className="gmedium">서울특별시개인택시운송사업조합</span>(
-                <a
-                  href="tel:0220846300"
-                  style={{ color: "#2f74ea", textDecoration: "underline" }}
-                >
-                  02-2084-6300
-                </a>
-                )
+          <>
+            <div ref={cardAppNoRecordPaymentGuideRef} style={cardStyle}>
+              <div
+                className="gmedium"
+                style={{
+                  fontSize: "16px",
+                  marginBottom: "12px",
+                  textAlign: "left",
+                }}
+              >
+                계좌이체 안내
               </div>
-              <div style={{ marginTop: "12px" }}>
-                <span className="gmedium">서울택시조합 </span>(
-                <a
-                  href="tel:0220339200"
-                  style={{ color: "#2f74ea", textDecoration: "underline" }}
-                >
-                  02-2033-9200
-                </a>
-                )
+              <div className="glight" style={{ fontSize: "14px" }}>
+                <>
+                  이체 기록(수취인/시간/금액)을 정리해
+                  <br /> 고객센터로 분실 문의를 진행하세요.
+                </>
+                <div style={{ marginTop: "32px" }}>
+                  <span className="gmedium">
+                    서울특별시개인택시운송사업조합
+                  </span>
+                  (
+                  <a
+                    href="tel:0220846300"
+                    style={{ color: "#2f74ea", textDecoration: "underline" }}
+                  >
+                    02-2084-6300
+                  </a>
+                  )
+                </div>
+                <div style={{ marginTop: "12px" }}>
+                  <span className="gmedium">서울택시조합 </span>(
+                  <a
+                    href="tel:0220339200"
+                    style={{ color: "#2f74ea", textDecoration: "underline" }}
+                  >
+                    02-2033-9200
+                  </a>
+                  )
+                </div>
               </div>
             </div>
-          </div>
+            <TaxiLostNotice />
+          </>
         )}
 
       {taxiUseType === "app" &&
         appHasRecord === "no" &&
         appNoRecordKnowTaxiNo === "no" &&
         appNoRecordPayment === "cash" && (
-          <div ref={cardAppNoRecordPaymentGuideRef} style={cardStyle}>
-            <div
-              className="gmedium"
-              style={{
-                fontSize: "18px",
-                marginBottom: "12px",
-                textAlign: "left",
-              }}
-            >
-              현금 결제 안내
-            </div>
-            <div className="glight" style={{ fontSize: "14px" }}>
-              탑승 시간/승하차 위치/택시 특징을 최대한 상세히 정리해 관할 기관에
-              문의하세요.
-              <div style={{ marginTop: "32px" }}>
-                <span className="gmedium">서울특별시개인택시운송사업조합</span>(
-                <a
-                  href="tel:0220846300"
-                  style={{ color: "#2f74ea", textDecoration: "underline" }}
-                >
-                  02-2084-6300
-                </a>
-                )
+          <>
+            <div ref={cardAppNoRecordPaymentGuideRef} style={cardStyle}>
+              <div
+                className="gmedium"
+                style={{
+                  fontSize: "16px",
+                  marginBottom: "12px",
+                  textAlign: "left",
+                }}
+              >
+                현금 결제 안내
               </div>
-              <div style={{ marginTop: "12px" }}>
-                <span className="gmedium">서울택시조합 </span>(
-                <a
-                  href="tel:0220339200"
-                  style={{ color: "#2f74ea", textDecoration: "underline" }}
-                >
-                  02-2033-9200
-                </a>
-                )
+              <div className="glight" style={{ fontSize: "14px" }}>
+                <>
+                  탑승 시간/승하차 위치/택시 특징을 최대한 상세히 정리해
+                  <br />
+                  관할기관에 문의하세요.
+                </>
+                <div style={{ marginTop: "32px" }}>
+                  <span className="gmedium">
+                    서울특별시개인택시운송사업조합
+                  </span>
+                  (
+                  <a
+                    href="tel:0220846300"
+                    style={{ color: "#2f74ea", textDecoration: "underline" }}
+                  >
+                    02-2084-6300
+                  </a>
+                  )
+                </div>
+                <div style={{ marginTop: "12px" }}>
+                  <span className="gmedium">서울택시조합 </span>(
+                  <a
+                    href="tel:0220339200"
+                    style={{ color: "#2f74ea", textDecoration: "underline" }}
+                  >
+                    02-2033-9200
+                  </a>
+                  )
+                </div>
               </div>
             </div>
-          </div>
+            <TaxiLostNotice />
+          </>
         )}
 
       {taxiUseType === "street" && (
@@ -567,7 +593,7 @@ const TaxiComponent = () => {
           <div
             className="gmedium"
             style={{
-              fontSize: "18px",
+              fontSize: "16px",
               marginBottom: "20px",
               textAlign: "left",
             }}
@@ -601,7 +627,7 @@ const TaxiComponent = () => {
             <div
               className="gmedium"
               style={{
-                fontSize: "18px",
+                fontSize: "16px",
                 marginBottom: "12px",
                 textAlign: "left",
               }}
@@ -641,7 +667,7 @@ const TaxiComponent = () => {
           <div
             className="gmedium"
             style={{
-              fontSize: "18px",
+              fontSize: "16px",
               marginBottom: "20px",
               textAlign: "left",
             }}
@@ -684,7 +710,7 @@ const TaxiComponent = () => {
               <div
                 className="gmedium"
                 style={{
-                  fontSize: "18px",
+                  fontSize: "16px",
                   marginBottom: "12px",
                   textAlign: "left",
                 }}
@@ -716,43 +742,49 @@ const TaxiComponent = () => {
       {taxiUseType === "street" &&
         streetKnowCarNo === "no" &&
         streetPayment === "transfer" && (
-          <div ref={cardStreet4Ref} style={cardStyle}>
-            <div
-              className="gmedium"
-              style={{
-                fontSize: "18px",
-                marginBottom: "12px",
-                textAlign: "left",
-              }}
-            >
-              계좌이체 안내
+          <>
+            <div ref={cardStreet4Ref} style={cardStyle}>
+              <div
+                className="gmedium"
+                style={{
+                  fontSize: "16px",
+                  marginBottom: "12px",
+                  textAlign: "left",
+                }}
+              >
+                계좌이체 안내
+              </div>
+              <div className="glight" style={{ fontSize: "14px" }}>
+                이체 기록(수취인, 시간, 금액)을 준비해 관할 택시조합/운수사에
+                분실 문의를 진행하세요.
+              </div>
             </div>
-            <div className="glight" style={{ fontSize: "14px" }}>
-              이체 기록(수취인, 시간, 금액)을 준비해 관할 택시조합/운수사에 분실
-              문의를 진행하세요.
-            </div>
-          </div>
+            <TaxiLostNotice />
+          </>
         )}
 
       {taxiUseType === "street" &&
         streetKnowCarNo === "no" &&
         streetPayment === "cash" && (
-          <div ref={cardStreet4Ref} style={cardStyle}>
-            <div
-              className="gmedium"
-              style={{
-                fontSize: "18px",
-                marginBottom: "12px",
-                textAlign: "left",
-              }}
-            >
-              현금 결제 안내
+          <>
+            <div ref={cardStreet4Ref} style={cardStyle}>
+              <div
+                className="gmedium"
+                style={{
+                  fontSize: "16px",
+                  marginBottom: "12px",
+                  textAlign: "left",
+                }}
+              >
+                현금 결제 안내
+              </div>
+              <div className="glight" style={{ fontSize: "14px" }}>
+                탑승 시간/하차 위치/택시 특징을 최대한 상세히 정리해 인근
+                택시조합과 경찰민원24 분실물 시스템에 문의하세요.
+              </div>
             </div>
-            <div className="glight" style={{ fontSize: "14px" }}>
-              탑승 시간/하차 위치/택시 특징을 최대한 상세히 정리해 인근
-              택시조합과 경찰청 분실물 시스템에 문의하세요.
-            </div>
-          </div>
+            <TaxiLostNotice />
+          </>
         )}
 
       <div style={{ height: "45vh", minHeight: "260px", width: "100%" }} />

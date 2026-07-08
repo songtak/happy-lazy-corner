@@ -57,6 +57,78 @@
 }
 
 @font-face {
+  font-family: "SeoulAlrimTTF";
+  src: url("../fonts/SeoulAlrimTTF-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SeoulAlrimTTF";
+  src: url("../fonts/SeoulAlrimTTF-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SeoulAlrimTTF";
+  src: url("../fonts/SeoulAlrimTTF-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SeoulAlrimTTF";
+  src: url("../fonts/SeoulAlrimTTF-Heavy.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SeoulNamsan";
+  src: url("../fonts/SeoulNamsanL.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SeoulNamsan";
+  src: url("../fonts/SeoulNamsanM.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SeoulNamsan";
+  src: url("../fonts/SeoulNamsanB.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SeoulNamsan";
+  src: url("../fonts/SeoulNamsanEB.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SeoulNamsanvert";
+  src: url("../fonts/SeoulNamsanvert.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: "Pretendard";
   src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Thin.woff2")
     format("woff2");
@@ -314,4 +386,10 @@ body {
   .dinner-title-line {
     display: block;
   }
+}
+
+.lost-and-found-page .gbold,
+.lost-and-found-page .gmedium,
+.lost-and-found-page .glight {
+  font-family: "SeoulNamsan", sans-serif;
 }

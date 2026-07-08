@@ -13,7 +13,7 @@ export type OracleMessage = {
   title: string;
 };
 
-const oracleMessages = (oracleJson as OracleMessage[]).slice(0, 20);
+const oracleMessages = oracleJson as OracleMessage[];
 
 const PRINT_DURATION_MS = 1500;
 const TOTAL_STEPS = 9;
@@ -88,6 +88,7 @@ const OraclePage: React.FC = () => {
 
   const stepTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const doneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastPickedIdRef = useRef<number | null>(null);
   const printMetaRef = useRef<{
     orderNo: number;
     printedAt: Date;
@@ -127,7 +128,12 @@ const OraclePage: React.FC = () => {
   const startPrint = useCallback(() => {
     if (isPrinting) return;
 
-    const picked = pickRandomMessage(oracleMessages);
+    const candidateMessages =
+      oracleMessages.length > 1
+        ? oracleMessages.filter((message) => message.id !== lastPickedIdRef.current)
+        : oracleMessages;
+    const picked = pickRandomMessage(candidateMessages);
+    lastPickedIdRef.current = picked.id;
     const questionSnapshot = question.trim() || "말하지 않은 고민";
     printMetaRef.current = {
       orderNo: 1000 + Math.floor(Math.random() * 9000),

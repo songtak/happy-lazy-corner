@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from "react";
+import React, { useLayoutEffect, useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
@@ -9,6 +9,7 @@ import {
   MetroComponent,
   TrainComponent,
 } from "@/components/lostAndFound";
+import { isMobile } from "@/libs/helpers";
 
 type TransportType = "bus" | "taxi" | "metro" | "train";
 
@@ -27,7 +28,7 @@ const typeConfig: Record<
     component: TaxiComponent,
   },
   metro: {
-    title: "전철",
+    title: "지하철/전철",
     description: "전철에서 잃어버린 물건을 조회할 수 있는 화면입니다.",
     component: MetroComponent,
   },
@@ -44,6 +45,12 @@ const LostAndFoundPage = () => {
   const { type } = useParams<{ type: string }>();
   const config = type ? typeConfig[type as TransportType] : undefined;
   const TransportComponent = config?.component;
+  const mobile = isMobile();
+
+  const contentWidth = useMemo(
+    () => (mobile ? "calc(100vw - 32px)" : "420px"),
+    [mobile],
+  );
 
   const forceScrollTop = () => {
     window.scrollTo(0, 0);
@@ -75,7 +82,9 @@ const LostAndFoundPage = () => {
     const timer4 = window.setTimeout(forceScrollTop, 320);
     const timer5 = window.setTimeout(forceScrollTop, 520);
     const raf1 = requestAnimationFrame(forceScrollTop);
-    const raf2 = requestAnimationFrame(() => requestAnimationFrame(forceScrollTop));
+    const raf2 = requestAnimationFrame(() =>
+      requestAnimationFrame(forceScrollTop),
+    );
     return () => {
       window.clearTimeout(timer1);
       window.clearTimeout(timer2);
@@ -89,34 +98,38 @@ const LostAndFoundPage = () => {
 
   return (
     <DefaultLayout>
-      <div style={{ width: "100%", minHeight: "100vh" }}>
-        <div
-        // style={{
-        //   width: "100%",
-        //   // marginTop: "-30px",
-        //   display: "flex",
-        //   justifyContent: "flex-start",
-        // }}
-        >
+      <div
+        className="lost-and-found-page"
+        style={{
+          width: contentWidth,
+          maxWidth: "100%",
+          minHeight: "100vh",
+          margin: "0 auto",
+          boxSizing: "border-box",
+          fontFamily: "SeoulNamsan, sans-serif",
+          color: "#4b5563",
+        }}
+      >
+        <div>
           <button
             type="button"
             onClick={() => navigate(-1)}
             aria-label="뒤로가기"
-            style={{
-              width: "32px",
-              height: "32px",
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
-              padding: 0,
-              display: "flex",
-              marginTop: "-46px",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: "32px",
-              marginLeft: "0px",
-              color: "black",
-            }}
+              style={{
+                width: "32px",
+                height: "32px",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                padding: 0,
+                display: "flex",
+                marginTop: "-46px",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: "32px",
+                marginLeft: "0px",
+                color: "#4b5563",
+              }}
           >
             <ArrowLeft size={22} />
           </button>
@@ -124,8 +137,15 @@ const LostAndFoundPage = () => {
         {config ? (
           <>
             <div
-              className="gmedium mb16"
-              style={{ fontSize: "28px", textAlign: "left" }}
+              className="mb16"
+              style={{
+                fontSize: "28px",
+                textAlign: "left",
+                width: "100%",
+                fontFamily: "SeoulAlrimTTF, sans-serif",
+                fontWeight: 700,
+                lineHeight: 1.15,
+              }}
             >
               {config.title}
             </div>
@@ -134,7 +154,7 @@ const LostAndFoundPage = () => {
               <div
                 style={{
                   width: "100%",
-                  maxWidth: "420px",
+                  maxWidth: "100%",
                   margin: "0 auto",
                   minHeight: "calc(100vh - 160px)",
                 }}
@@ -146,8 +166,15 @@ const LostAndFoundPage = () => {
         ) : (
           <>
             <div
-              className="gmedium mb16"
-              style={{ fontSize: "28px", textAlign: "left" }}
+              className="mb16"
+              style={{
+                fontSize: "28px",
+                textAlign: "left",
+                width: "100%",
+                fontFamily: "SeoulAlrimTTF, sans-serif",
+                fontWeight: 700,
+                lineHeight: 1.15,
+              }}
             >
               잘못된 접근입니다
             </div>

@@ -96,6 +96,11 @@ const programRoutes: RouteObject[] = [
     element: <Program.SunriseSunsetPage />,
     errorElement: <ErrorPage />,
   },
+  {
+    path: "/spicy-map",
+    element: <Program.SpicyMapPage />,
+    errorElement: <ErrorPage />,
+  },
 ];
 
 // const programRoutes: RouteObject[] = [
@@ -126,6 +131,7 @@ const projectList = [
   { id: 11, path: "/motion-drawing", title: "모션 드로잉 ✋" },
   { id: 12, path: "/oracle-receipt", title: "운명의 영수증 🧾" },
   { id: 13, path: "/sunrise-sunset", title: "일출 일몰 시간 🌅" },
+  { id: 14, path: "/spicy-map", title: "매운음식 지도 🌶️" },
 ];
 
 export { defaultRoutes, programRoutes, projectList };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -13,10 +13,11 @@ import "dayjs/locale/ko";
 import axios from "axios";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import DefaultLayout from "@/components/common/DefaultLayout";
+import { isMobile } from "@/libs/helpers";
 const VITE_DATA_API_EN_KEY = `${import.meta.env.VITE_DATA_API_EN_KEY}`;
 const VITE_DATA_API_DE_KEY = `${import.meta.env.VITE_DATA_API_DE_KEY}`;
 
@@ -70,14 +71,45 @@ const locationCodeList: DROPDOWN[] = [
 const transportTypeMap: Record<string, string> = {
   버스: "bus",
   택시: "taxi",
-  전철: "metro",
+  "지하철/전철": "metro",
   기차: "train",
 };
+
+const transportCards = [
+  {
+    label: "버스",
+    description: "노선/차량번호 기준으로 안내",
+    iconSrc: "/bus_icon.png",
+  },
+  {
+    label: "택시",
+    description: "결제수단에 따라 조회 방법 안내",
+    iconSrc: "/taxi_icon.png",
+  },
+  {
+    label: "지하철/전철",
+    description: "노선별 유실물센터 안내",
+    iconSrc: "/metro_icon.png",
+  },
+];
+
+const buttonArrowStyles = `
+  @keyframes transport-card-arrow-slide {
+    0% { transform: translateX(-6px); opacity: 0.65; }
+    50% { transform: translateX(6px); opacity: 1; }
+    100% { transform: translateX(-6px); opacity: 0.65; }
+  }
+
+  .transport-card:hover .transport-card-arrow {
+    animation: transport-card-arrow-slide 0.9s ease-in-out infinite;
+  }
+`;
 
 //  http://apis.data.go.kr/1320000/LostGoodsInfoInqireService
 const LostAndFoundMainPage = () => {
   const navigate = useNavigate();
   const BASE_URL = "http://apis.data.go.kr/1320000/LosPtfundInfoInqireService/";
+  const mobile = isMobile();
 
   const today = dayjs().format("YYYYMMDD");
   const now = dayjs();
@@ -94,10 +126,6 @@ const LostAndFoundMainPage = () => {
   const [findDayEnd, setFindDayEnd] = useState<string>(today); // END_YMD
   /** 습득 위치 */
   const [findLocation, setFindLocation] = useState<string>(""); // N_FD_LCT_CD
-  const [showTransportButtons, setShowTransportButtons] =
-    useState<boolean>(false);
-  const transportSectionRef = useRef<HTMLDivElement | null>(null);
-
   /** 분류별, 지역별, 기간별 습득물 정보 조회 */
   const fetchLocationData = async () => {
     try {
@@ -200,158 +228,202 @@ const LostAndFoundMainPage = () => {
     });
   };
 
-  const scrollToTransportSection = () => {
-    transportSectionRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  };
-
-  const handleClickGoFind = () => {
-    if (!showTransportButtons) {
-      setShowTransportButtons(true);
-      return;
-    }
-    scrollToTransportSection();
-  };
-
-  useEffect(() => {
-    if (!showTransportButtons) return;
-    const timer = window.setTimeout(() => {
-      scrollToTransportSection();
-    }, 50);
-
-    return () => window.clearTimeout(timer);
-  }, [showTransportButtons]);
-
   return (
     <DefaultLayout>
+      <style>{buttonArrowStyles}</style>
       <div
         style={{
+          width: "100%",
           minHeight: "100vh",
+          // padding: "24px 16px",
+          // boxSizing: "border-box",
+          fontFamily: "SeoulNamsan, sans-serif",
         }}
       >
-        <div className="mb24  gmedium" style={{ fontSize: 28 }}>
-          대중교통 분실물 센터
-        </div>
-        <div className="mb16 fs18 glight">
-          대중교통에서 두고 내린 물건
-          <br />
-          지금 바로 찾아보세요!
-        </div>
-        <div className="animation-container">
-          <motion.div
-            className="moving-icons"
-            animate={{ x: "-100%" }}
-            initial={{ x: 0 }}
-            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-          >
-            🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋
-            🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌
-            🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕
-            🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅
-            🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋 🚅 🚕 🚌 🚋
-          </motion.div>
-        </div>
-        <div
-          style={{
-            marginTop: "40px",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <Button
-            endIcon={<ArrowRight size={18} />}
-            onClick={handleClickGoFind}
-            sx={{
-              borderRadius: "24px",
-              background: "linear-gradient(135deg, #22c1c3 0%, #3a86ff 100%)",
-              color: "white",
-              fontFamily: "GMedium",
-              fontSize: "14px",
-              fontWeight: 600,
-              padding: "12px 24px",
-              boxShadow: "0 4px 10px rgba(58, 134, 255, 0.35)",
-              "&:hover": {
-                background: "linear-gradient(135deg, #1db1b3 0%, #2f74ea 100%)",
-                boxShadow: "0 10px 24px rgba(58, 134, 255, 0.42)",
-              },
-            }}
-          >
-            찾으러 가기
-          </Button>
-        </div>
-      </div>
-
-      {showTransportButtons && (
-        <div
-          ref={transportSectionRef}
-          style={{
-            marginTop: "24px",
-            width: "100%",
-            minHeight: "100vh",
-            paddingTop: "4rem",
-          }}
-        >
-          <div
-            className="gmedium"
-            style={{
-              // textAlign: "left",
-              // paddingLeft: "3rem",
-              fontSize: "24px",
-              marginBottom: "3rem",
-            }}
-          >
-            어디서 잃어버렸나요?
-          </div>
+        <div>
           <div
             style={{
+              width: "100%",
               display: "flex",
               flexDirection: "column",
-              justifyContent: "center",
               alignItems: "center",
+              textAlign: "center",
               gap: "22px",
-              flexWrap: "wrap",
             }}
           >
-            {["버스", "택시", "전철"].map((label) => (
-              <Button
-                key={label}
-                variant="outlined"
-                onClick={() => {
-                  forceScrollTop();
-                  navigate(
-                    `/lost-and-found/transport/${transportTypeMap[label]}`,
-                  );
-                  window.setTimeout(forceScrollTop, 0);
-                  window.setTimeout(forceScrollTop, 120);
-                }}
-                sx={{
-                  fontWeight: 700,
-                  borderRadius: "30px",
-                  width: "220px",
-                  height: "50px",
-                  fontSize: "16px",
-                  borderWidth: "1px",
-                  // borderColor: "#3a86ff",
-                  borderColor:
-                    "linear-gradient(135deg, #22c1c3 0%, #3a86ff 100%)",
-                  color: "#2f74ea",
-                  fontFamily: "GMedium",
-                  boxShadow: "0 2px 2px rgba(58, 134, 255, 0.2)",
-                  "&:hover": {
-                    borderColor: "#2f74ea",
-                    backgroundColor: "rgba(58, 134, 255, 0.08)",
-                    boxShadow: "0 8px 18px rgba(58, 134, 255, 0.28)",
-                  },
+            <img
+              src="/seoul-my-soul.png"
+              alt="Seoul My Soul"
+              style={{
+                display: "block",
+                width: "100%",
+                maxWidth: "90px",
+                height: "auto",
+                objectFit: "cover",
+              }}
+            />
+            <div
+              // className="mb16"
+              style={{
+                fontSize: "2.7rem",
+                fontFamily: "SeoulAlrimTTF, sans-serif",
+                fontWeight: 700,
+                lineHeight: 1.3,
+                letterSpacing: "0.01em",
+                color: "#182235",
+                textAlign: "center",
+              }}
+            >
+              서울 대중교통
+              <br />
+              분실물 가이드
+            </div>
+            <div
+              style={{
+                width: "58px",
+                height: "4px",
+                borderRadius: "999px",
+                background: "rgba(47,116,234)",
+                // boxShadow: "0 4px 10px rgba(47, 116, 234, 0.2)",
+                marginBottom: "24px",
+              }}
+            />
+            <div
+              className="mb16 fs18 glight"
+              style={{
+                paddingBottom: "0.25rem",
+                fontFamily: "SeoulNamsan, sans-serif",
+                color: "#35507a",
+                textAlign: "center",
+                lineHeight: 1.55,
+                maxWidth: "560px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "1.3rem",
+                  fontWeight: 800,
+                  color: "#1f5fcc",
+                  marginBottom: "6px",
                 }}
               >
-                {label}
-              </Button>
-            ))}
+                어디에서 물건을 잃어버렸나요?
+              </div>
+              <div style={{ fontSize: "0.86rem" }}>
+                분실 장소를 선택하면 지금 확인해야 할 정보를
+                <br />
+                안내해드려요.
+              </div>
+            </div>
+
+            <div
+              style={{
+                width: "100%",
+                maxWidth: "760px",
+                display: "grid",
+                gap: "8px",
+                marginTop: "-20px",
+                // marginTop: "8px",
+              }}
+            >
+              {transportCards.map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  className="transport-card"
+                  onClick={() => {
+                    navigate(
+                      `/lost-and-found/transport/${transportTypeMap[item.label]}`,
+                    );
+                  }}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: "20px",
+                    border: "1px solid #dbe4f0",
+                    borderRadius: "12px",
+                    backgroundColor: "#ffffff",
+                    padding: mobile ? "8px 14px" : "4px 18px",
+                    boxShadow: "0 10px 24px rgba(15, 23, 42, 0.08)",
+                    cursor: "pointer",
+                    color: "inherit",
+                    textAlign: "left",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 14px 28px rgba(15, 23, 42, 0.12)";
+                    e.currentTarget.style.borderColor = "#c9d6ef";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow =
+                      "0 10px 24px rgba(15, 23, 42, 0.08)";
+                    e.currentTarget.style.borderColor = "#dbe4f0";
+                  }}
+                >
+                  <div
+                    style={{
+                      width: mobile ? "76px" : "92px",
+                      height: mobile ? "76px" : "92px",
+                      flexShrink: 0,
+
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+
+                      overflow: "hidden",
+                    }}
+                  >
+                    <img
+                      src={item.iconSrc}
+                      alt={item.label}
+                      style={{
+                        width: "74%",
+                        height: "74%",
+                        objectFit: "contain",
+                        display: "block",
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: "1.2rem",
+                        fontWeight: 800,
+                        color: "#172033",
+                        marginBottom: "10px",
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      {item.label}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.8rem",
+                        color: "#4b5d7a",
+                        lineHeight: 1.45,
+                        textAlign: "left",
+                      }}
+                    >
+                      {item.description}
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={28}
+                    strokeWidth={2.5}
+                    color="#1f5fcc"
+                    className="transport-card-arrow"
+                    style={{ flexShrink: 0 }}
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </DefaultLayout>
   );
 };

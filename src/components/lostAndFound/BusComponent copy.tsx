@@ -433,12 +433,12 @@ const BusComponent = () => {
               variant="outlined"
               onClick={() =>
                 window.open(
-                  "https://www.lost112.go.kr/find/findList.do",
+                  "https://minwon24.police.go.kr/cvlcpt/cvlcptAply.do?cvlcptId=MW-201&keyword=",
                   "_blank",
                 )
               }
             >
-              경찰청 분실물 조회하기
+              경찰민원24 분실물 조회하기
             </Button>
           </>
         </>
@@ -452,7 +452,7 @@ const BusComponent = () => {
         <div style={{ marginTop: "12px" }}>
           일정 기간 주인을 찾지 못한 물품은 경찰서로 인계되며
         </div>
-        <div>이후 LOST112에서 조회할 수 있습니다.</div>
+        <div>이후 경찰민원24에서 조회할 수 있습니다.</div>
       </div>
     </div>
   );
